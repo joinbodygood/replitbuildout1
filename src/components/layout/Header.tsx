@@ -5,11 +5,13 @@ import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { LanguageToggle } from "./LanguageToggle";
 import { Button } from "@/components/ui/Button";
+import { useCart } from "@/context/CartContext";
 
 export function Header() {
   const t = useTranslations("nav");
   const locale = useLocale();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { itemCount } = useCart();
 
   const navLinks = [
     { label: t("programs"), href: `/${locale}/programs` },
@@ -39,6 +41,16 @@ export function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
+          <a href={`/${locale}/cart`} className="relative text-body hover:text-brand-red transition-colors">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
+            </svg>
+            {itemCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-brand-red text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                {itemCount}
+              </span>
+            )}
+          </a>
           <LanguageToggle />
           <Button href={`/${locale}/quiz`} size="sm">
             {t("getStarted")}
@@ -71,6 +83,21 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
+            <a
+              href={`/${locale}/cart`}
+              className="relative inline-flex items-center gap-2 text-base font-medium text-body hover:text-brand-red"
+              onClick={() => setMobileOpen(false)}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
+              </svg>
+              {t("cart") ?? "Cart"}
+              {itemCount > 0 && (
+                <span className="bg-brand-red text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                  {itemCount}
+                </span>
+              )}
+            </a>
             <div className="flex items-center justify-between pt-4 border-t border-border">
               <LanguageToggle />
               <Button href={`/${locale}/quiz`} size="sm">

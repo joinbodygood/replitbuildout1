@@ -5,6 +5,7 @@ import { routing } from "@/i18n/routing";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Analytics } from "@/components/analytics/Analytics";
+import { CartProvider } from "@/context/CartContext";
 
 type Props = {
   children: React.ReactNode;
@@ -27,10 +28,12 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <Header />
-      <main>{children}</main>
-      <Footer />
-      <Analytics />
+      <CartProvider>
+        <Header />
+        <main>{children}</main>
+        <Footer />
+        <Analytics />
+      </CartProvider>
     </NextIntlClientProvider>
   );
 }
