@@ -1,5 +1,6 @@
 import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/Button";
+import { ShieldCheck, Star } from "lucide-react";
 
 export function Hero() {
   const locale = useLocale();
@@ -16,37 +17,42 @@ export function Hero() {
             </p>
             <h1 className="font-heading text-heading text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
               {isEs ? (
-                <>Un peso saludable<br />le hace{" "}<span className="text-brand-red">Body Good</span></>
+                <>Mereces una médica que<br />realmente <span className="text-brand-red">te escuche.</span></>
               ) : (
-                <>A healthy weight<br />Does a{" "}<span className="text-brand-red">Body Good</span></>
+                <>You deserve a doctor<br />who actually <span className="text-brand-red">listens.</span></>
               )}
             </h1>
-            <p className="text-body-muted text-lg mb-8 max-w-lg">
+            <p className="text-body-muted text-lg mb-8 max-w-lg leading-relaxed">
               {isEs
-                ? "GLP-1 recetados por médicos certificados. Precios transparentes. Desde $139/mes. Sin cuotas ocultas."
-                : "GLP-1 medications prescribed by board-certified doctors. Transparent pricing starting at $139/mo. No hidden fees."}
+                ? "Atención médica real de médicos certificados que entienden tu cuerpo. Medicamentos GLP-1 recetados, entregados discretamente. Desde $139/mes."
+                : "Real medical care from board-certified doctors who understand your body. GLP-1 medications prescribed and delivered discreetly. Starting at $139/mo."}
             </p>
 
-            {/* Three paths teaser */}
-            <div className="flex flex-col gap-3 mb-6">
-              <Button href={`/${locale}/quiz`} size="lg">
-                {isEs ? "No estoy segura — Tomar el Quiz →" : "Not Sure — Take the 2-Minute Quiz →"}
+            <div className="flex flex-col gap-3 mb-8">
+              <Button href={`/${locale}/programs`} size="lg">
+                {isEs ? "Ver Nuestros Programas →" : "Explore Our Programs →"}
               </Button>
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button href={`/${locale}/programs`} variant="outline" size="md">
-                  {isEs ? "Ya sé lo que quiero" : "I Know What I Want"}
+                <Button href={`/${locale}/quiz`} variant="outline" size="md">
+                  {isEs ? "Tomar el Quiz de 2 Minutos" : "Take the 2-Minute Quiz"}
                 </Button>
                 <Button href={`/${locale}/insurance-check`} variant="secondary" size="md">
-                  {isEs ? "¿Cubre mi seguro?" : "Will Insurance Cover Me?"}
+                  {isEs ? "Verificar Cobertura de Seguro — Gratis" : "Check Insurance Coverage — Free"}
                 </Button>
               </div>
             </div>
 
-            <p className="text-body-muted text-sm">
-              {isEs
-                ? "✓ Consulta gratis · ✓ Sin compromiso · ✓ Envío discreto gratis"
-                : "✓ Free consultation · ✓ No commitment · ✓ Free discreet shipping"}
-            </p>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+              {(isEs
+                ? ["Consulta gratis", "Sin compromiso", "Envío discreto gratis"]
+                : ["Free consultation", "No commitment", "Free discreet shipping"]
+              ).map((item) => (
+                <span key={item} className="flex items-center gap-1.5 text-sm text-body-muted">
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-red shrink-0" />
+                  {item}
+                </span>
+              ))}
+            </div>
           </div>
 
           {/* Visual panel */}
@@ -64,29 +70,34 @@ export function Hero() {
               </div>
               <p className="text-body text-sm leading-relaxed italic">
                 {isEs
-                  ? '"Después de los 35, tu cuerpo necesita un enfoque diferente. Los medicamentos GLP-1 son la herramienta más efectiva que tenemos para la pérdida de peso sostenida."'
-                  : '"After 35, your body needs a different approach. GLP-1 medications are the most effective tool we have for sustainable, lasting weight loss."'}
+                  ? '"Después de los 35, tu cuerpo necesita un enfoque diferente. Mereces atención médica que trabaje contigo, no en tu contra."'
+                  : '"After 35, your body needs a different approach. You deserve medical care that works with you, not against you."'}
               </p>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
               {[
                 { num: "5,000+", label: isEs ? "Pacientes" : "Patients" },
-                { num: "4.9★", label: isEs ? "Calificación" : "Rating" },
+                { num: "4.9", label: isEs ? "Calificación" : "Rating" },
                 { num: "15–25%", label: isEs ? "Pérdida de peso" : "Avg. weight loss" },
               ].map((s) => (
                 <div key={s.label} className="bg-white rounded-card p-4 text-center shadow-card border border-border">
-                  <p className="font-heading text-heading text-lg font-bold">{s.num}</p>
+                  <p className="font-heading text-heading text-lg font-bold flex items-center justify-center gap-0.5">
+                    {s.num}
+                    {s.label.includes("Rating") || s.label.includes("Calificación") ? (
+                      <Star size={14} className="fill-yellow-400 text-yellow-400 ml-0.5" />
+                    ) : null}
+                  </p>
                   <p className="text-body-muted text-xs mt-0.5">{s.label}</p>
                 </div>
               ))}
             </div>
 
             <div className="bg-white rounded-card p-4 border border-border flex items-center gap-3">
-              <span className="text-2xl">🔒</span>
+              <ShieldCheck size={22} className="text-brand-red shrink-0" />
               <p className="text-body-muted text-xs">
                 {isEs
-                  ? "256-bit SSL · Cumplimiento HIPAA · Sin almacenamiento de PHI"
+                  ? "256-bit SSL · Cumplimiento HIPAA · Sin almacenamiento de PHI en esta plataforma"
                   : "256-bit SSL · HIPAA Compliant · No PHI stored on this platform"}
               </p>
             </div>

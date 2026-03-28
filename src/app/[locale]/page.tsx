@@ -1,11 +1,15 @@
 import { setRequestLocale } from "next-intl/server";
 import { Hero } from "@/components/sections/Hero";
 import { TrustMarquee } from "@/components/sections/TrustMarquee";
-import { ThreePaths } from "@/components/sections/ThreePaths";
+import { WhatBringsYou } from "@/components/sections/WhatBringsYou";
 import { PainPoints } from "@/components/sections/PainPoints";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { Providers } from "@/components/sections/Providers";
+import { FounderLetter } from "@/components/sections/FounderLetter";
+import { ValueProps } from "@/components/sections/ValueProps";
+import { InsuranceCTA } from "@/components/sections/InsuranceCTA";
+import { FAQ } from "@/components/sections/FAQ";
 import { BottomCTA } from "@/components/sections/BottomCTA";
 
 type Props = {
@@ -20,11 +24,15 @@ export default async function HomePage({ params }: Props) {
     <>
       <Hero />
       <TrustMarquee />
-      <ThreePaths />
+      <WhatBringsYou />
       <PainPoints />
       <HowItWorks />
       <Testimonials />
       <Providers />
+      <FounderLetter />
+      <ValueProps />
+      <InsuranceCTA />
+      <FAQ />
       <BottomCTA />
     </>
   );

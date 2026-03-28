@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { AnnouncementBar } from "@/components/sections/AnnouncementBar";
 import { Analytics } from "@/components/analytics/Analytics";
 import { CartProvider } from "@/context/CartContext";
 
@@ -29,6 +30,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <NextIntlClientProvider messages={messages}>
       <CartProvider>
+        <AnnouncementBar />
         <Header />
         <main>{children}</main>
         <Footer />
