@@ -446,6 +446,106 @@ async function main() {
 
   console.log(`Blog posts: ${await prisma.blogPost.count()}`);
 
+  // ─── Insurance Probability Data ─────────────────────
+  await prisma.insuranceProbability.deleteMany();
+
+  const insuranceData: Array<{
+    carrier: string;
+    planType: string;
+    state: string;
+    medication: string;
+    probability: number;
+    notes: string;
+  }> = [];
+
+  // Helper to push multiple states at once
+  function addInsurance(carrier: string, planType: string, states: string[], medication: string, probability: number, notes: string) {
+    for (const state of states) {
+      insuranceData.push({ carrier, planType, state, medication, probability, notes });
+    }
+  }
+
+  const majorStates = ["FL", "CA", "TX", "NY", "IL", "PA", "OH", "GA", "NC", "MI"];
+
+  // UnitedHealthcare - generally good coverage
+  addInsurance("UnitedHealthcare", "PPO", majorStates, "wegovy", 78, "UHC PPO plans typically cover Wegovy with prior auth");
+  addInsurance("UnitedHealthcare", "PPO", majorStates, "zepbound", 72, "UHC PPO coverage for Zepbound improving in 2026");
+  addInsurance("UnitedHealthcare", "PPO", majorStates, "semaglutide", 45, "Compounded not typically covered by insurance");
+  addInsurance("UnitedHealthcare", "PPO", majorStates, "tirzepatide", 42, "Compounded not typically covered by insurance");
+  addInsurance("UnitedHealthcare", "HMO", majorStates, "wegovy", 62, "UHC HMO requires step therapy before Wegovy");
+  addInsurance("UnitedHealthcare", "HMO", majorStates, "zepbound", 58, "UHC HMO Zepbound coverage varies by region");
+
+  // Blue Cross Blue Shield - varies by state
+  addInsurance("Blue Cross Blue Shield", "PPO", ["FL", "CA", "TX", "NY"], "wegovy", 82, "BCBS PPO strong coverage for Wegovy in major states");
+  addInsurance("Blue Cross Blue Shield", "PPO", ["FL", "CA", "TX", "NY"], "zepbound", 75, "BCBS PPO Zepbound coverage expanding");
+  addInsurance("Blue Cross Blue Shield", "HMO", ["FL", "CA", "TX", "NY"], "wegovy", 65, "BCBS HMO requires prior authorization");
+  addInsurance("Blue Cross Blue Shield", "HMO", ["FL", "CA", "TX", "NY"], "zepbound", 60, "BCBS HMO Zepbound prior auth required");
+  addInsurance("Blue Cross Blue Shield", "EPO", ["FL", "CA", "TX", "NY"], "wegovy", 55, "BCBS EPO limited formulary for weight loss");
+
+  // Aetna - moderate coverage
+  addInsurance("Aetna", "PPO", majorStates, "wegovy", 70, "Aetna PPO covers Wegovy with BMI 30+ or 27+ with comorbidities");
+  addInsurance("Aetna", "PPO", majorStates, "zepbound", 65, "Aetna PPO Zepbound added to formulary mid-2025");
+  addInsurance("Aetna", "HMO", majorStates, "wegovy", 52, "Aetna HMO restrictive for weight loss medications");
+  addInsurance("Aetna", "HMO", majorStates, "zepbound", 48, "Aetna HMO Zepbound approval rates lower");
+
+  // Cigna - good for branded
+  addInsurance("Cigna", "PPO", majorStates, "wegovy", 75, "Cigna PPO favorable for Wegovy coverage");
+  addInsurance("Cigna", "PPO", majorStates, "zepbound", 70, "Cigna PPO Zepbound covered with prior auth");
+  addInsurance("Cigna", "HMO", majorStates, "wegovy", 58, "Cigna HMO requires step therapy");
+  addInsurance("Cigna", "EPO", majorStates, "wegovy", 50, "Cigna EPO limited weight loss coverage");
+
+  // Humana - moderate
+  addInsurance("Humana", "PPO", ["FL", "TX", "GA", "OH"], "wegovy", 68, "Humana PPO covers Wegovy in most plans");
+  addInsurance("Humana", "PPO", ["FL", "TX", "GA", "OH"], "zepbound", 62, "Humana PPO Zepbound coverage varies");
+  addInsurance("Humana", "HMO", ["FL", "TX", "GA", "OH"], "wegovy", 50, "Humana HMO restrictive for GLP-1");
+
+  // Kaiser - West Coast focus
+  addInsurance("Kaiser Permanente", "HMO", ["CA"], "wegovy", 72, "Kaiser CA has strong GLP-1 coverage");
+  addInsurance("Kaiser Permanente", "HMO", ["CA"], "zepbound", 68, "Kaiser CA added Zepbound to formulary");
+
+  // Anthem - varies
+  addInsurance("Anthem", "PPO", ["CA", "NY", "OH", "IN", "GA"], "wegovy", 73, "Anthem PPO generally covers Wegovy");
+  addInsurance("Anthem", "PPO", ["CA", "NY", "OH", "IN", "GA"], "zepbound", 67, "Anthem PPO Zepbound with prior auth");
+  addInsurance("Anthem", "HMO", ["CA", "NY", "OH"], "wegovy", 55, "Anthem HMO requires step therapy first");
+
+  // Florida Blue - FL specific
+  addInsurance("Florida Blue", "PPO", ["FL"], "wegovy", 80, "Florida Blue PPO strong GLP-1 coverage");
+  addInsurance("Florida Blue", "PPO", ["FL"], "zepbound", 74, "Florida Blue PPO covers Zepbound with PA");
+  addInsurance("Florida Blue", "HMO", ["FL"], "wegovy", 63, "Florida Blue HMO requires prior authorization");
+  addInsurance("Florida Blue", "HMO", ["FL"], "zepbound", 58, "Florida Blue HMO Zepbound review required");
+
+  // Ambetter / Centene - lower coverage
+  addInsurance("Ambetter", "HMO", majorStates, "wegovy", 38, "Ambetter marketplace plans limited GLP-1 coverage");
+  addInsurance("Ambetter", "HMO", majorStates, "zepbound", 35, "Ambetter Zepbound rarely covered");
+  addInsurance("Centene", "HMO", majorStates, "wegovy", 40, "Centene managed care limited weight loss coverage");
+
+  // Oscar Health - marketplace
+  addInsurance("Oscar Health", "EPO", ["FL", "CA", "TX", "NY", "NJ"], "wegovy", 45, "Oscar marketplace plans variable GLP-1 coverage");
+  addInsurance("Oscar Health", "EPO", ["FL", "CA", "TX", "NY", "NJ"], "zepbound", 42, "Oscar Zepbound limited coverage");
+
+  // For all carriers, compounded meds have low/no coverage
+  for (const carrier of ["Blue Cross Blue Shield", "Aetna", "Cigna", "Humana", "Anthem", "Florida Blue", "Ambetter", "Centene", "Oscar Health", "Kaiser Permanente"]) {
+    addInsurance(carrier, "PPO", ["FL"], "semaglutide", 15, "Compounded medications rarely covered by insurance");
+    addInsurance(carrier, "PPO", ["FL"], "tirzepatide", 12, "Compounded medications rarely covered by insurance");
+  }
+
+  for (const entry of insuranceData) {
+    await prisma.insuranceProbability.upsert({
+      where: {
+        carrier_planType_state_medication: {
+          carrier: entry.carrier,
+          planType: entry.planType,
+          state: entry.state,
+          medication: entry.medication,
+        },
+      },
+      update: { probability: entry.probability, notes: entry.notes },
+      create: entry,
+    });
+  }
+
+  console.log(`Insurance probability entries: ${await prisma.insuranceProbability.count()}`);
+
   console.log("Seed complete!");
   console.log(`Products: ${await prisma.product.count()}`);
   console.log(`Variants: ${await prisma.productVariant.count()}`);

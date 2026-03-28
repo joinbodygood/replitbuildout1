@@ -3,6 +3,10 @@ import type { NextConfig } from "next";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
-const nextConfig: NextConfig = {};
+const nextConfig: NextConfig = {
+  allowedDevOrigins: [
+    process.env.REPLIT_DEV_DOMAIN ?? "",
+  ].filter(Boolean),
+};
 
 export default withNextIntl(nextConfig);

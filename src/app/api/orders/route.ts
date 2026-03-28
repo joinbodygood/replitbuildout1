@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { fireWebhook } from "@/lib/webhooks";
 
 export async function POST(req: NextRequest) {
   try {
@@ -32,6 +33,14 @@ export async function POST(req: NextRequest) {
         },
       },
       include: { items: true },
+    });
+
+    await fireWebhook("order.created", {
+      orderId: order.id,
+      email: body.email,
+      total: body.total,
+      items: body.items,
+      locale: body.locale,
     });
 
     // Increment discount code usage if used

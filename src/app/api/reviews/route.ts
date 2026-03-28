@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { fireWebhook } from "@/lib/webhooks";
 
 export async function GET(req: NextRequest) {
   const productSlug = req.nextUrl.searchParams.get("product");
@@ -42,6 +43,13 @@ export async function POST(req: NextRequest) {
         locale: body.locale || "en",
         isApproved: false, // requires admin approval
       },
+    });
+
+    await fireWebhook("review.submitted", {
+      reviewId: review.id,
+      email: body.email,
+      rating: body.rating,
+      productSlug: body.productSlug,
     });
 
     return NextResponse.json({ success: true, id: review.id });

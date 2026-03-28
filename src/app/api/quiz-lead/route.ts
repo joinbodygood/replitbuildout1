@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { fireWebhook } from "@/lib/webhooks";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,6 +18,15 @@ export async function POST(req: NextRequest) {
         locale: body.locale || "en",
         completedAt: new Date(),
       },
+    });
+
+    await fireWebhook("lead.captured", {
+      email: body.email,
+      phone: body.phone,
+      bmi: body.bmi,
+      quizOutcome: body.quizOutcome,
+      locale: body.locale,
+      utmSource: body.utmSource,
     });
 
     return NextResponse.json({ success: true });

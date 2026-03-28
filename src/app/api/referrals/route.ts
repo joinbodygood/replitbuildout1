@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { fireWebhook } from "@/lib/webhooks";
 
 // Generate a referral code for a given email
 export async function POST(req: NextRequest) {
@@ -24,6 +25,11 @@ export async function POST(req: NextRequest) {
         referrerEmail: email,
         referrerCode: code,
       },
+    });
+
+    await fireWebhook("referral.created", {
+      email,
+      code,
     });
 
     return NextResponse.json({ code });
