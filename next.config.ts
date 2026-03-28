@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: [
     process.env.REPLIT_DEV_DOMAIN ?? "",
   ].filter(Boolean),
+  devIndicators: false,
 };
 
 export default withNextIntl(nextConfig);
