@@ -1,26 +1,62 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-brand-red: #ed1b1b;
+  --color-brand-red-hover: #d01818;
+  --color-brand-red-dark: #b91414;
+  --color-brand-pink: #fde7e7;
+  --color-brand-pink-soft: #fef4f4;
+  --color-heading: #0C0D0F;
+  --color-body: #55575A;
+  --color-body-muted: #888a8d;
+  --color-surface: #ffffff;
+  --color-surface-dim: #f7f7f7;
+  --color-border: #e8e8e8;
+  --color-border-light: #f0f0f0;
+  --color-success: #28A745;
+  --color-success-soft: #e8f5e9;
+  --color-warning: #FFC107;
+  --color-error: #DC3545;
+  --font-heading: 'Poppins', sans-serif;
+  --font-body: 'Manrope', sans-serif;
+  --radius-card: 12px;
+  --radius-pill: 50px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-btn: 0 4px 12px rgba(237, 27, 27, 0.2);
+  --shadow-btn-hover: 0 6px 16px rgba(237, 27, 27, 0.3);
+  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.10);
+  --ease-smooth: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-base: 0.35s;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+  color: var(--color-body);
+  background-color: var(--color-surface);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  color: var(--color-heading);
 }
