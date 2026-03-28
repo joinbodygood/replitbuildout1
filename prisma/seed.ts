@@ -524,82 +524,112 @@ async function main() {
   });
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 5. WELLNESS INJECTIONS
+  // 5. WELLNESS INJECTIONS (v2 catalog — March 2026)
   // ═══════════════════════════════════════════════════════════════════════
   console.log("\n✨ Wellness injections...");
 
-  await upsertProduct({
-    slug: "wellness-b12", sku: "WI-B12", category: "wellness",
-    programTag: "wellness-injection, b12, energy",
-    fulfillment: "direct_ship", dosageForm: "Injectable",
-    fccMedicationName: "Methylcobalamin", fccConcentration: "1mg/mL",
-    requiresPrescription: false, sortOrder: 1,
-    nameEn: "Vitamin B12 Injection", nameEs: "Inyección de Vitamina B12",
-    shortEn: "Methylcobalamin 1mg/mL, 10mL vial. 10+ doses. Energy and metabolism support.",
-    shortEs: "Metilcobalamina 1mg/mL, vial de 10mL. Más de 10 dosis. Energía y metabolismo.",
-    variants: [{ sku: "WI-B12-10ML", label: "10mL Vial", supplyDuration: "one-time", price: 7500, sortOrder: 1 }],
+  // Deactivate legacy products replaced by v2 catalog
+  await prisma.product.updateMany({
+    where: { slug: { in: ["wellness-bioboost", "wellness-mic", "wellness-b12", "wellness-nad-injection", "wellness-nad-spray", "wellness-sermorelin"] } },
+    data: { isActive: false },
   });
 
   await upsertProduct({
-    slug: "wellness-mic", sku: "WI-MIC", category: "wellness",
-    programTag: "wellness-injection, mic, fat-burner",
+    slug: "lipotropic-super-b", sku: "WI-LSB-1MO", category: "wellness-injection",
+    programTag: "wellness-injection, energy, metabolism, b-vitamins, fat-burning, upsell",
     fulfillment: "direct_ship", dosageForm: "Injectable",
-    fccMedicationName: "Methionine/Inositol/Choline", fccConcentration: "25mg/50mg/50mg/mL",
-    requiresPrescription: false, sortOrder: 2,
-    nameEn: "MIC Fat Burning Injection", nameEs: "Inyección Quemadora de Grasa MIC",
-    shortEn: "Lipotropic MIC 10mL, 10–20 doses. Fat metabolism and energy support.",
-    shortEs: "Mezcla lipotrófica MIC 10mL. 10–20 dosis. Metabolismo de grasas y energía.",
-    variants: [{ sku: "WI-MIC-10ML", label: "10mL Vial", supplyDuration: "one-time", price: 9900, sortOrder: 1 }],
-  });
-
-  await upsertProduct({
-    slug: "wellness-bioboost", sku: "WI-BIOBOOST", category: "wellness",
-    programTag: "wellness-injection, bioboost, all-in-one",
-    fulfillment: "direct_ship", dosageForm: "Injectable",
-    fccMedicationName: "Lipotropic Super B", fccConcentration: "Multi-compound",
-    requiresPrescription: false, sortOrder: 3,
-    nameEn: "BioBoost Plus Injection", nameEs: "Inyección BioBoost Plus",
-    shortEn: "All-in-one Lipotropic Super B complex. 30mL, 30 doses. Energy, fat burn, metabolism.",
-    shortEs: "Complejo Lipotrófico Super B todo en uno. 30mL, 30 dosis. Energía y metabolismo.",
-    variants: [{ sku: "WI-BIOBOOST-30ML", label: "30mL Vial", supplyDuration: "one-time", price: 14900, sortOrder: 1 }],
-  });
-
-  await upsertProduct({
-    slug: "wellness-nad-injection", sku: "WI-NAD-INJ", category: "wellness",
-    programTag: "wellness-injection, nad, anti-aging, energy",
-    fulfillment: "direct_ship", dosageForm: "Injectable",
-    fccMedicationName: "NAD+", fccConcentration: "50mg/mL",
-    requiresPrescription: false, sortOrder: 4,
-    nameEn: "NAD+ Injection", nameEs: "Inyección de NAD+",
-    shortEn: "NAD+ 50mg/mL, 20mL (10x2mL vials). 30-day supply. Anti-aging and energy.",
-    shortEs: "NAD+ 50mg/mL, 20mL (10x2mL viales). Suministro de 30 días. Anti-envejecimiento.",
-    variants: [{ sku: "WI-NAD-INJ-30D", label: "30-Day Supply", supplyDuration: "1-month", price: 19900, sortOrder: 1 }],
-  });
-
-  await upsertProduct({
-    slug: "wellness-nad-spray", sku: "WI-NAD-SPRAY", category: "wellness",
-    programTag: "wellness-injection, nad, anti-aging, nasal",
-    fulfillment: "direct_ship", dosageForm: "Nasal Spray",
-    fccMedicationName: "NAD+", fccConcentration: "50mg/mL",
-    requiresPrescription: false, sortOrder: 5,
-    nameEn: "NAD+ Nasal Spray", nameEs: "Spray Nasal de NAD+",
-    shortEn: "NAD+ nasal spray 50mg/mL, 30mL. 30-day supply. Non-injection anti-aging.",
-    shortEs: "Spray nasal NAD+ 50mg/mL, 30mL. 30 días. Anti-envejecimiento sin inyección.",
-    variants: [{ sku: "WI-NAD-SPRAY-30ML", label: "30mL Spray", supplyDuration: "1-month", price: 8900, sortOrder: 1 }],
-  });
-
-  await upsertProduct({
-    slug: "wellness-sermorelin", sku: "WI-SERM", category: "wellness",
-    programTag: "wellness-injection, sermorelin, hgh, anti-aging",
-    fulfillment: "direct_ship", dosageForm: "Injectable",
-    fccMedicationName: "Sermorelin",
-    sortOrder: 6,
-    nameEn: "Sermorelin Peptide Injection", nameEs: "Inyección Péptida de Sermorelina",
-    shortEn: "Sermorelin peptide — HGH secretagogue. 6mL vial, 30-day supply.",
-    shortEs: "Péptido Sermorelina — secretagogo de GH. Vial de 6mL, 30 días.",
+    fccMedicationName: "Lipotropic Super B",
+    requiresPrescription: true, isActive: true, isFeatured: true, sortOrder: 1,
+    nameEn: "Lipotropic Super B Injection", nameEs: "Inyección Lipotrópica Super B",
+    shortEn: "11-ingredient energy and metabolism powerhouse — B12, B-complex, L-Carnitine, and fat-burning lipotropics in one shot.",
+    shortEs: "Potente fórmula de 11 ingredientes para energía y metabolismo — B12, complejo B, L-Carnitina y lipotrópicos en una sola inyección.",
     variants: [
-      { sku: "WI-SERM-1MG", label: "6mL — 1mg/mL Standard", doseLevel: "1mg/mL", supplyDuration: "1-month", price: 19900, sortOrder: 1 },
-      { sku: "WI-SERM-15MG", label: "6mL — 1.5mg/mL Higher", doseLevel: "1.5mg/mL", supplyDuration: "1-month", price: 19900, sortOrder: 2 },
+      { sku: "WI-LSB-1MO-10ML", label: "10mL — 1-Month Supply", supplyDuration: "1-month", price: 12900, sortOrder: 1 },
+      { sku: "WI-LSB-3MO-30ML", label: "30mL — 3-Month Supply", supplyDuration: "3-month", price: 9900, compareAtPrice: 12900, sortOrder: 2 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "nad-plus", sku: "WI-NAD-1MO", category: "wellness-injection",
+    programTag: "wellness-injection, longevity, anti-aging, energy, cellular-health, upsell",
+    fulfillment: "direct_ship", dosageForm: "Injectable",
+    fccMedicationName: "NAD+ (Nicotinamide Adenine Dinucleotide)", fccConcentration: "100mg/mL",
+    requiresPrescription: true, isActive: true, isFeatured: true, sortOrder: 2,
+    nameEn: "NAD+ Injection", nameEs: "Inyección de NAD+",
+    shortEn: "NAD+ 100mg/mL, 10mL vial. Cellular energy, anti-aging, and metabolic health.",
+    shortEs: "NAD+ 100mg/mL, vial de 10mL. Energía celular, anti-envejecimiento y salud metabólica.",
+    variants: [
+      { sku: "WI-NAD-1MO-10ML", label: "10mL — 1-Month Supply", supplyDuration: "1-month", price: 19900, sortOrder: 1 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "sermorelin", sku: "WI-SERM-1MO", category: "wellness-injection",
+    programTag: "wellness-injection, peptide, growth-hormone, anti-aging, recovery, sleep, upsell",
+    fulfillment: "direct_ship", dosageForm: "Injectable",
+    fccMedicationName: "Sermorelin", fccConcentration: "1.5mg/mL",
+    requiresPrescription: true, isActive: true, isFeatured: true, sortOrder: 3,
+    nameEn: "Sermorelin Injection", nameEs: "Inyección de Sermorelina",
+    shortEn: "Sermorelin 1.5mg/mL peptide — growth hormone secretagogue. 6mL vial, 30-day supply.",
+    shortEs: "Péptido Sermorelina 1.5mg/mL — secretagogo de hormona de crecimiento. Vial de 6mL, 30 días.",
+    variants: [
+      { sku: "WI-SERM-1MO-6ML", label: "6mL — 1-Month Supply", doseLevel: "1.5mg/mL", supplyDuration: "1-month", price: 17900, sortOrder: 1 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "glutathione", sku: "WI-GLUT-1MO", category: "wellness-injection",
+    programTag: "wellness-injection, detox, skin, antioxidant, wellness, upsell",
+    fulfillment: "direct_ship", dosageForm: "Injectable",
+    fccMedicationName: "Glutathione", fccConcentration: "200mg/mL",
+    requiresPrescription: true, isActive: true, isFeatured: true, sortOrder: 4,
+    nameEn: "Glutathione Injection", nameEs: "Inyección de Glutatión",
+    shortEn: "Master antioxidant — supports detox, skin radiance, and cellular health. 30mL vial.",
+    shortEs: "Antioxidante maestro — apoya la desintoxicación, luminosidad de piel y salud celular. Vial de 30mL.",
+    variants: [
+      { sku: "WI-GLUT-1MO-30ML", label: "30mL — 1-Month Supply", supplyDuration: "1-month", price: 14900, sortOrder: 1 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "l-carnitine", sku: "WI-LCAR-1MO", category: "wellness-injection",
+    programTag: "wellness-injection, fat-burning, energy, metabolism, muscle, upsell",
+    fulfillment: "direct_ship", dosageForm: "Injectable",
+    fccMedicationName: "L-Carnitine (Levocarnitine)", fccConcentration: "500mg/mL",
+    requiresPrescription: true, isActive: true, isFeatured: false, sortOrder: 5,
+    nameEn: "L-Carnitine Injection", nameEs: "Inyección de L-Carnitina",
+    shortEn: "Amino acid that shuttles fat into cells for energy — supports fat burning and muscle preservation.",
+    shortEs: "Aminoácido que transporta grasa a las células para energía — apoya la quema de grasa y preservación muscular.",
+    variants: [
+      { sku: "WI-LCAR-1MO-10ML", label: "10mL — 1-Month Supply", supplyDuration: "1-month", price: 9900, sortOrder: 1 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "lipo-c", sku: "WI-LIPOC-1MO", category: "wellness-injection",
+    programTag: "wellness-injection, fat-burning, weight-loss, metabolism, lipotropic, upsell",
+    fulfillment: "direct_ship", dosageForm: "Injectable",
+    fccMedicationName: "Lipo-C",
+    requiresPrescription: true, isActive: true, isFeatured: false, sortOrder: 6,
+    nameEn: "Lipo-C Injection", nameEs: "Inyección Lipo-C",
+    shortEn: "Fat-burning lipotropic blend — MIC + L-Carnitine + Thiamine for enhanced metabolism.",
+    shortEs: "Mezcla lipotrópica quema-grasa — MIC + L-Carnitina + Tiamina para un metabolismo mejorado.",
+    variants: [
+      { sku: "WI-LIPOC-1MO-10ML", label: "10mL — 1-Month Supply", supplyDuration: "1-month", price: 9900, sortOrder: 1 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "vitamin-b12", sku: "WI-B12-1MO", category: "wellness-injection",
+    programTag: "wellness-injection, energy, metabolism, b12, wellness, upsell",
+    fulfillment: "direct_ship", dosageForm: "Injectable",
+    fccMedicationName: "Vitamin B12 (Methylcobalamin)", fccConcentration: "1mg/mL",
+    requiresPrescription: true, isActive: true, isFeatured: false, sortOrder: 7,
+    nameEn: "Vitamin B12 Injection", nameEs: "Inyección de Vitamina B12",
+    shortEn: "Medical-grade Methylcobalamin (B12) — supports energy, metabolism, and nerve function. 10mL vial.",
+    shortEs: "Metilcobalamina (B12) de grado médico — apoya la energía, el metabolismo y la función nerviosa. Vial de 10mL.",
+    variants: [
+      { sku: "WI-B12-1MO-10ML", label: "10mL — 1-Month Supply", supplyDuration: "1-month", price: 5900, sortOrder: 1 },
     ],
   });
 

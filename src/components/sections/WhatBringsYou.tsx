@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useLocale } from "next-intl";
-import { Scale, Sparkles, Heart, Brain, ClipboardList } from "lucide-react";
+import { Scale, Sparkles, Heart, Brain, ClipboardList, Syringe } from "lucide-react";
 
 const categories = [
   {
@@ -10,6 +10,7 @@ const categories = [
     href: { en: "/en/quiz", es: "/es/quiz" },
     comingSoon: false,
     highlight: false,
+    isNew: false,
   },
   {
     icon: Sparkles,
@@ -18,6 +19,7 @@ const categories = [
     href: { en: "/en/quiz/hair", es: "/es/quiz/hair" },
     comingSoon: false,
     highlight: false,
+    isNew: false,
   },
   {
     icon: Heart,
@@ -26,6 +28,7 @@ const categories = [
     href: { en: "/en/quiz/feminine-health", es: "/es/quiz/feminine-health" },
     comingSoon: false,
     highlight: false,
+    isNew: false,
   },
   {
     icon: Brain,
@@ -34,6 +37,16 @@ const categories = [
     href: { en: "/en/quiz/mental-wellness", es: "/es/quiz/mental-wellness" },
     comingSoon: false,
     highlight: false,
+    isNew: false,
+  },
+  {
+    icon: Syringe,
+    label: { en: "Wellness Injections", es: "Inyecciones de Bienestar" },
+    desc: { en: "Medical-grade injections for energy, fat-burning, detox & longevity — shipped to your door", es: "Inyecciones de grado médico para energía, quema de grasa, desintoxicación y longevidad" },
+    href: { en: "/en/wellness-quiz", es: "/es/wellness-quiz" },
+    comingSoon: false,
+    highlight: false,
+    isNew: true,
   },
   {
     icon: ClipboardList,
@@ -42,6 +55,7 @@ const categories = [
     href: { en: "/en/programs", es: "/es/programs" },
     comingSoon: false,
     highlight: true,
+    isNew: false,
   },
 ];
 
@@ -84,6 +98,11 @@ export function WhatBringsYou() {
                 {cat.comingSoon && (
                   <span className="absolute top-4 right-4 text-xs font-semibold text-body-muted bg-surface-dim px-2 py-0.5 rounded-full border border-border">
                     {isEs ? "Próximamente" : "Coming Soon"}
+                  </span>
+                )}
+                {cat.isNew && (
+                  <span className="absolute top-4 right-4 text-xs font-bold text-white px-2 py-0.5 rounded-full" style={{ backgroundColor: "#ed1b1b" }}>
+                    NEW
                   </span>
                 )}
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${

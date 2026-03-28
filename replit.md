@@ -20,6 +20,7 @@ A custom telehealth e-commerce platform for Body Good Studio, a physician-led we
 3. **Free insurance probability checker** — unique lead magnet
 4. **One smart quiz with 4 outcomes** — not separate funnels, one branching flow
 5. **$45 branded Rx program** — Wegovy/Zepbound prescription, undercuts Ro ($145/mo) and Walgreens ($49/visit)
+6. **Wellness Injection catalog** — 7 compounded injectables with guided quiz and personalized recommendation engine
 
 ## Tech Stack
 
