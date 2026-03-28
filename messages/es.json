@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "title": "Body Good Studio | Programas Médicos para Bajar de Peso",
+    "description": "Programas de telemedicina para bajar de peso dirigidos por médicos. Medicamentos GLP-1 desde $139/mes. Atención bilingüe en inglés y español."
+  },
+  "nav": {
+    "programs": "Programas",
+    "howItWorks": "Cómo Funciona",
+    "pricing": "Precios",
+    "about": "Nosotros",
+    "faq": "Preguntas",
+    "blog": "Blog",
+    "login": "Iniciar Sesión",
+    "getStarted": "Comenzar"
+  },
+  "footer": {
+    "company": "Compañía",
+    "programs": "Programas",
+    "support": "Soporte",
+    "legal": "Legal",
+    "about": "Sobre Nosotros",
+    "howItWorks": "Cómo Funciona",
+    "pricing": "Precios",
+    "faq": "Preguntas Frecuentes",
+    "contact": "Contacto",
+    "privacy": "Política de Privacidad",
+    "terms": "Términos de Servicio",
+    "hipaa": "Aviso HIPAA",
+    "telehealth": "Consentimiento de Telemedicina",
+    "refund": "Política de Reembolso",
+    "copyright": "Body Good Studio. Todos los derechos reservados.",
+    "tagline": "Pérdida de peso por telemedicina dirigida por médicos."
+  },
+  "home": {
+    "heroEyebrow": "Pérdida de Peso con Médicos",
+    "heroTitle": "Baja de Peso con Medicamentos que Realmente Funcionan",
+    "heroSubtitle": "Tratamientos GLP-1 recetados por médicos reales. Precios todo incluido desde $139/mes. Sin cargos ocultos. Atención bilingüe en inglés y español.",
+    "ctaQuiz": "¿Cuál Opción es la Correcta Para Mí?",
+    "ctaPrograms": "Explorar Programas",
+    "ctaInsurance": "Verifica tu Cobertura de Seguro",
+    "statsPatients": "Pacientes Atendidos",
+    "statsWeightLoss": "Pérdida de Peso Promedio",
+    "statsSatisfaction": "Tasa de Satisfacción",
+    "trustTitle": "Con la confianza de pacientes en todo el país",
+    "testimonialsTitle": "Lo Que Dicen Nuestros Pacientes"
+  },
+  "about": {
+    "title": "Sobre Body Good Studio",
+    "subtitle": "Cuidado médico para bajar de peso que te encuentra donde estás.",
+    "drLindaTitle": "Conoce a la Dra. Linda Moleon, MD",
+    "drLindaBio": "La Dra. Linda fundó Body Good Studio con una misión simple: hacer que el tratamiento efectivo para bajar de peso sea accesible, asequible y personal. Como médica certificada que entiende el camino de la pérdida de peso de primera mano, construyó una práctica que trata a cada paciente como familia.",
+    "teamTitle": "Nuestro Equipo Clínico",
+    "teamDescription": "Nuestro equipo incluye a la Dra. Sharmaine, Jena PA y Rhea PA — todos con experiencia en manejo de peso por telemedicina. Cada plan de tratamiento es revisado personalmente por un proveedor licenciado.",
+    "valuesTitle": "Lo Que Defendemos",
+    "value1Title": "Doctores Reales, Cuidado Real",
+    "value1Description": "Cada receta es escrita por un médico certificado o PA licenciado. Sin algoritmos. Sin atajos.",
+    "value2Title": "Precios Transparentes",
+    "value2Description": "Lo que ves es lo que pagas. Sin cuotas de membresía ocultas. Sin cargos sorpresa.",
+    "value3Title": "Bilingüe Desde el Primer Día",
+    "value3Description": "Servimos a nuestra comunidad en inglés y español porque la salud nunca debería tener una barrera de idioma."
+  },
+  "howItWorks": {
+    "title": "Cómo Funciona",
+    "subtitle": "Del cuestionario a la receta en 4 simples pasos.",
+    "step1Title": "Toma el Cuestionario",
+    "step1Description": "Responde algunas preguntas sobre tus metas de salud. Te recomendaremos el programa adecuado para ti.",
+    "step2Title": "Elige Tu Plan",
+    "step2Description": "Escoge tu medicamento y nivel de compromiso. Precios transparentes y todo incluido — sin cargos ocultos.",
+    "step3Title": "Completa Tu Formulario Médico",
+    "step3Description": "Después del pago, completa un breve formulario médico. Un proveedor licenciado revisa tu historial en 24 horas.",
+    "step4Title": "Comienza Tu Tratamiento",
+    "step4Description": "Una vez aprobado, tu medicamento se envía directamente a tu puerta. Tu equipo de cuidado está disponible para preguntas en cualquier momento.",
+    "ctaTitle": "¿Lista para comenzar?",
+    "ctaButton": "Toma el Cuestionario"
+  },
+  "faq": {
+    "title": "Preguntas Frecuentes",
+    "subtitle": "Todo lo que necesitas saber sobre nuestros programas de pérdida de peso.",
+    "general": "General",
+    "glp1": "Medicamentos GLP-1",
+    "insurance": "Seguros",
+    "billing": "Facturación y Envíos"
+  },
+  "legal": {
+    "privacyTitle": "Política de Privacidad",
+    "termsTitle": "Términos de Servicio",
+    "telehealthTitle": "Consentimiento de Telemedicina",
+    "hipaaTitle": "Aviso HIPAA de Prácticas de Privacidad",
+    "refundTitle": "Política de Reembolso",
+    "lastUpdated": "Última actualización",
+    "placeholder": "Texto legal completo será proporcionado por el equipo legal. Esta página es un marcador de posición."
+  },
+  "language": {
+    "en": "English",
+    "es": "Español",
+    "toggle": "Idioma"
+  }
+}

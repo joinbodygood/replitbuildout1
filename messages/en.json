@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "title": "Body Good Studio | Medical Weight Loss Programs",
+    "description": "Physician-led telehealth weight loss programs. GLP-1 medications starting at $139/mo. Bilingual care in English and Spanish."
+  },
+  "nav": {
+    "programs": "Programs",
+    "howItWorks": "How It Works",
+    "pricing": "Pricing",
+    "about": "About",
+    "faq": "FAQ",
+    "blog": "Blog",
+    "login": "Log In",
+    "getStarted": "Get Started"
+  },
+  "footer": {
+    "company": "Company",
+    "programs": "Programs",
+    "support": "Support",
+    "legal": "Legal",
+    "about": "About Us",
+    "howItWorks": "How It Works",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "contact": "Contact",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "hipaa": "HIPAA Notice",
+    "telehealth": "Telehealth Consent",
+    "refund": "Refund Policy",
+    "copyright": "Body Good Studio. All rights reserved.",
+    "tagline": "Physician-led telehealth weight loss."
+  },
+  "home": {
+    "heroEyebrow": "Physician-Led Weight Loss",
+    "heroTitle": "Lose Weight With Medications That Actually Work",
+    "heroSubtitle": "GLP-1 treatments prescribed by real doctors. All-inclusive pricing starting at $139/mo. No hidden fees. Bilingual care in English & Spanish.",
+    "ctaQuiz": "Which Option Is Right For Me?",
+    "ctaPrograms": "Explore Programs",
+    "ctaInsurance": "Check Your Insurance Coverage",
+    "statsPatients": "Patients Treated",
+    "statsWeightLoss": "Avg. Weight Loss",
+    "statsSatisfaction": "Satisfaction Rate",
+    "trustTitle": "Trusted by patients across the country",
+    "testimonialsTitle": "What Our Patients Say"
+  },
+  "about": {
+    "title": "About Body Good Studio",
+    "subtitle": "Physician-led weight loss care that meets you where you are.",
+    "drLindaTitle": "Meet Dr. Linda Moleon, MD",
+    "drLindaBio": "Dr. Linda founded Body Good Studio with a simple mission: make effective weight loss treatment accessible, affordable, and personal. As a board-certified physician who understands the weight loss journey firsthand, she built a practice that treats every patient like family.",
+    "teamTitle": "Our Clinical Team",
+    "teamDescription": "Our team includes Dr. Sharmaine, Jena PA, and Rhea PA — all experienced in telehealth weight management. Every treatment plan is personally reviewed by a licensed provider.",
+    "valuesTitle": "What We Stand For",
+    "value1Title": "Real Doctors, Real Care",
+    "value1Description": "Every prescription is written by a board-certified physician or licensed PA. No algorithms. No shortcuts.",
+    "value2Title": "Transparent Pricing",
+    "value2Description": "What you see is what you pay. No hidden membership fees. No surprise charges.",
+    "value3Title": "Bilingual From Day One",
+    "value3Description": "We serve our community in English and Spanish because healthcare should never have a language barrier."
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "subtitle": "From quiz to prescription in 4 simple steps.",
+    "step1Title": "Take the Quiz",
+    "step1Description": "Answer a few questions about your health goals. We'll recommend the right program for you.",
+    "step2Title": "Choose Your Plan",
+    "step2Description": "Pick your medication and commitment tier. Transparent, all-inclusive pricing — no hidden fees.",
+    "step3Title": "Complete Your Medical Intake",
+    "step3Description": "After checkout, complete a brief medical form. A licensed provider reviews your history within 24 hours.",
+    "step4Title": "Start Your Treatment",
+    "step4Description": "Once approved, your medication ships directly to your door. Your care team is available for questions anytime.",
+    "ctaTitle": "Ready to get started?",
+    "ctaButton": "Take the Quiz"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know about our weight loss programs.",
+    "general": "General",
+    "glp1": "GLP-1 Medications",
+    "insurance": "Insurance",
+    "billing": "Billing & Shipping"
+  },
+  "legal": {
+    "privacyTitle": "Privacy Policy",
+    "termsTitle": "Terms of Service",
+    "telehealthTitle": "Telehealth Consent",
+    "hipaaTitle": "HIPAA Notice of Privacy Practices",
+    "refundTitle": "Refund Policy",
+    "lastUpdated": "Last updated",
+    "placeholder": "Full legal text to be provided by counsel. This page is a placeholder."
+  },
+  "language": {
+    "en": "English",
+    "es": "Español",
+    "toggle": "Language"
+  }
+}
