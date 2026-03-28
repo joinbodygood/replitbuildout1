@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { Analytics } from "@/components/analytics/Analytics";
 
 type Props = {
   children: React.ReactNode;
@@ -30,6 +31,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         <Header />
         <main>{children}</main>
         <Footer />
+        <Analytics />
       </body>
     </NextIntlClientProvider>
   );
