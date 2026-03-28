@@ -66,8 +66,16 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="border-t border-border pt-6 text-center text-sm text-body-muted">
-          &copy; {new Date().getFullYear()} {t("copyright")}
+        <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p className="text-sm text-body-muted">
+            &copy; {new Date().getFullYear()} {t("copyright")}
+          </p>
+          <Link
+            href="/admin/login"
+            className="text-xs text-body-muted opacity-40 hover:opacity-70 transition-opacity"
+          >
+            Team Login
+          </Link>
         </div>
       </div>
     </footer>

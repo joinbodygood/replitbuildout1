@@ -35,6 +35,53 @@ A custom telehealth e-commerce platform for Body Good Studio, a physician-led we
 | Webhooks | n8n (fire-and-forget, silent when URL not set) |
 | Auth | Stytch SMS OTP (not yet integrated — placeholder for checkout) |
 
+## Admin Dashboard
+
+**Route:** `/admin/*` (separate from patient-facing storefront)
+
+### Access
+- **Team Login link:** Footer → "Team Login" (discreet, low-opacity)
+- **Login URL:** `/admin/login`
+- **Initial credentials:** See `prisma/seed-admin.ts` — run to create/reset users
+- **Session:** httpOnly cookie, 8-hour expiry
+- **Re-seed:** `npx ts-node --compiler-options '{"module":"CommonJS"}' prisma/seed-admin.ts`
+
+### Seeded Users
+| Name | Email | Role | Default Password |
+|------|-------|------|-----------------|
+| Dr. Linda Moleon, MD | linda@bodygoodstudio.com | super_admin | ChangeMe2024! |
+| Ayush | ayush@bodygoodstudio.com | developer | ChangeMe2024! |
+
+### Built Modules
+| Module | Route | Status |
+|--------|-------|--------|
+| Login | `/admin/login` | ✅ Full |
+| Dashboard | `/admin` | ✅ KPIs + Revenue chart + Recent orders |
+| Orders | `/admin/orders` | ✅ List + Detail + Status edit |
+| Patients | `/admin/patients` | ✅ List with LTV + Order data |
+| Products | `/admin/products` | ✅ List with pricing |
+| Discounts | `/admin/discounts` | ✅ List + Create codes |
+| Team | `/admin/settings/team` | ✅ Member list |
+| Subscriptions | `/admin/subscriptions` | 🔄 Stub — awaiting PayPal recurring |
+| Analytics | `/admin/analytics` | 🔄 Stub — next phase |
+| Content | `/admin/content` | 🔄 Stub — next phase |
+| Messaging | `/admin/messaging` | 🔄 Stub — awaiting Chatwoot config |
+| Marketing | `/admin/marketing` | 🔄 Stub — awaiting Mailgun/Twilio |
+
+### Key Files
+- `src/lib/admin-auth.ts` — session auth, RBAC permissions
+- `src/app/admin/(dashboard)/layout.tsx` — protected admin layout (sidebar + topbar)
+- `src/app/admin/login/page.tsx` — public login page
+- `src/components/admin/AdminSidebar.tsx` — sidebar navigation
+- `prisma/seed-admin.ts` — seeder for admin users
+- `src/app/api/admin/*` — all admin API routes
+
+### Adding Team Members
+Edit `prisma/seed-admin.ts` and add a new entry, then run:
+```
+npx ts-node --compiler-options '{"module":"CommonJS"}' prisma/seed-admin.ts
+```
+
 ## Design System
 
 | Token | Value |

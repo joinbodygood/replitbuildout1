@@ -222,6 +222,58 @@ model Review {
   @@index([isApproved, createdAt])
 }
 
+// ─── Admin ──────────────────────────────────────────
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  role         String   @default("support") // super_admin, clinical_admin, provider, support, marketing, developer
+  passwordHash String
+  isActive     Boolean  @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sessions     AdminSession[]
+  auditLogs    AdminAuditLog[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model AdminSession {
+  id          String   @id @default(cuid())
+  adminId     String
+  token       String   @unique
+  expiresAt   DateTime
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  admin       AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([adminId])
+}
+
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  action     String   // e.g. "order.refund", "patient.suspend", "discount.create"
+  entityType String?  // "order", "patient", etc.
+  entityId   String?
+  details    String?  // JSON string of change details
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  admin      AdminUser @relation(fields: [adminId], references: [id])
+
+  @@index([adminId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
 // ─── Blog ───────────────────────────────────────────
 
 model BlogPost {
