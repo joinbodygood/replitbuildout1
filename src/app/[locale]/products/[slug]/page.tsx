@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { Container } from "@/components/ui/Container";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { ProductVariantSelector } from "@/components/product/ProductVariantSelector";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
@@ -30,15 +31,7 @@ export default async function ProductPage({ params }: Props) {
   const t = product.translations[0];
   if (!t) notFound();
 
-  const formatPrice = (cents: number) => `$${(cents / 100).toFixed(0)}`;
-
-  // Group variants by supply duration for the pricing table
-  const subscriptionVariants = product.variants.filter(
-    (v) => v.supplyDuration !== "one-time"
-  );
-  const oneTimeVariants = product.variants.filter(
-    (v) => v.supplyDuration === "one-time"
-  );
+  const isEs = locale === "es";
 
   return (
     <>
@@ -57,93 +50,38 @@ export default async function ProductPage({ params }: Props) {
         </Container>
       </section>
 
-      {/* Pricing */}
+      {/* Add to Cart + Pricing */}
+      <section className="py-12 border-b border-border">
+        <Container narrow>
+          <ProductVariantSelector
+            productId={product.id}
+            productName={t.name}
+            productSlug={product.slug}
+            variants={product.variants}
+            locale={locale}
+          />
+        </Container>
+      </section>
+
+      {/* Description */}
       <section className="py-16">
         <Container narrow>
-          {subscriptionVariants.length > 0 && (
-            <div className="mb-12">
-              <h2 className="font-heading text-heading text-2xl font-bold mb-6 text-center">
-                {locale === "es" ? "Elige Tu Plan" : "Choose Your Plan"}
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {subscriptionVariants.map((v) => {
-                  const savings = v.compareAtPrice
-                    ? (v.compareAtPrice - v.price) *
-                      (v.supplyDuration === "6-month" ? 6 : v.supplyDuration === "3-month" ? 3 : 1)
-                    : null;
-                  const isBestValue = v.supplyDuration === "6-month";
-
-                  return (
-                    <div
-                      key={v.id}
-                      className={`relative rounded-card p-6 text-center transition-all hover:-translate-y-1 ${
-                        isBestValue
-                          ? "border-2 border-brand-red shadow-card-hover"
-                          : "border border-border shadow-card"
-                      }`}
-                    >
-                      {isBestValue && (
-                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                          <Badge variant="red">
-                            {locale === "es" ? "MEJOR VALOR" : "BEST VALUE"}
-                          </Badge>
-                        </div>
-                      )}
-                      <p className="text-body-muted text-sm font-medium mb-2 capitalize">
-                        {v.supplyDuration?.replace("-", " ")}
-                      </p>
-                      <p className="font-heading text-heading text-3xl font-bold">
-                        {formatPrice(v.price)}
-                        <span className="text-body-muted text-base font-normal">
-                          /{locale === "es" ? "mes" : "mo"}
-                        </span>
-                      </p>
-                      {savings && savings > 0 && (
-                        <p className="text-success text-sm font-semibold mt-2">
-                          {locale === "es" ? "Ahorras" : "Save"} {formatPrice(savings)}
-                        </p>
-                      )}
-                      {v.doseLevel && (
-                        <p className="text-body-muted text-xs mt-1">{v.doseLevel}</p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {oneTimeVariants.length > 0 && subscriptionVariants.length === 0 && (
-            <div className="text-center mb-12">
-              <p className="font-heading text-heading text-4xl font-bold">
-                {formatPrice(oneTimeVariants[0].price)}
-              </p>
-              <p className="text-body-muted mt-2">
-                {locale === "es" ? "Pago único" : "One-time payment"}
-              </p>
-            </div>
-          )}
-
-          {/* Description */}
           <div className="prose prose-lg max-w-none mb-12">
             <h2 className="font-heading text-heading text-2xl font-bold mb-4">
-              {locale === "es" ? "Detalles del Programa" : "Program Details"}
+              {isEs ? "Detalles del Programa" : "Program Details"}
             </h2>
             <p className="text-body leading-relaxed whitespace-pre-line">
               {t.descriptionLong}
             </p>
           </div>
 
-          {/* CTA */}
-          <div className="text-center">
-            <Button href={`/${locale}/quiz`} size="lg">
-              {locale === "es" ? "Comenzar" : "Get Started"}
-            </Button>
-            <p className="text-body-muted text-sm mt-3">
-              {locale === "es"
-                ? "Completa un cuestionario rápido para ver si calificas"
-                : "Complete a quick quiz to see if you qualify"}
+          <div className="text-center pt-4 border-t border-border">
+            <p className="text-body-muted text-sm mb-3">
+              {isEs ? "¿Preguntas? Nuestro equipo médico está aquí para ayudarte." : "Questions? Our medical team is here to help."}
             </p>
+            <Button href={`/${locale}/faq`} variant="outline" size="sm">
+              {isEs ? "Ver Preguntas Frecuentes" : "View FAQs"}
+            </Button>
           </div>
         </Container>
       </section>
