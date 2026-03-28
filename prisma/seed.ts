@@ -340,6 +340,21 @@ async function main() {
     });
   }
 
+  // ─── Discount Codes ─────────────────────────────────
+  await prisma.discountCode.deleteMany();
+
+  await prisma.discountCode.create({
+    data: { code: "WELCOME25", type: "fixed", value: 2500, minOrderValue: 10000, isActive: true },
+  });
+  await prisma.discountCode.create({
+    data: { code: "SAVE10", type: "percentage", value: 10, isActive: true },
+  });
+  await prisma.discountCode.create({
+    data: { code: "FRIEND25", type: "fixed", value: 2500, isActive: true },
+  });
+
+  console.log(`Discount codes: ${await prisma.discountCode.count()}`);
+
   console.log("Seed complete!");
   console.log(`Products: ${await prisma.product.count()}`);
   console.log(`Variants: ${await prisma.productVariant.count()}`);

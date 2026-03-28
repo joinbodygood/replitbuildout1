@@ -122,3 +122,64 @@ model FaqTranslation {
 
   @@unique([faqId, locale])
 }
+
+// ─── Orders ─────────────────────────────────────────
+
+model Order {
+  id              String      @id @default(cuid())
+  email           String
+  phone           String?
+  status          String      @default("pending_intake") // pending_intake, processing, shipped, delivered, cancelled, refunded
+  subtotal        Int         // cents
+  discount        Int         @default(0) // cents
+  total           Int         // cents
+  discountCode    String?
+  paypalOrderId   String?
+  shippingName    String?
+  shippingAddress String?
+  shippingCity    String?
+  shippingState   String?
+  shippingZip     String?
+  locale          String      @default("en")
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  items           OrderItem[]
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id          String @id @default(cuid())
+  orderId     String
+  productName String
+  variantLabel String
+  sku         String?
+  price       Int    // cents
+  quantity    Int
+
+  order       Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+// ─── Discount Codes ─────────────────────────────────
+
+model DiscountCode {
+  id            String    @id @default(cuid())
+  code          String    @unique
+  type          String    // "percentage" or "fixed"
+  value         Int       // percentage (e.g., 10 for 10%) or cents (e.g., 2500 for $25)
+  minOrderValue Int?      // cents, minimum order to apply
+  maxUses       Int?      // null = unlimited
+  usedCount     Int       @default(0)
+  productSlug   String?   // null = site-wide, or specific product slug
+  isActive      Boolean   @default(true)
+  expiresAt     DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([code, isActive])
+}
