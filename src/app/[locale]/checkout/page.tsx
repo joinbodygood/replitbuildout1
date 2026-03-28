@@ -346,21 +346,22 @@ export default function CheckoutPage() {
                   <div className="mb-6">
                     <PayPalButton
                       amount={finalTotal}
+                      discountCode={discountApplied?.code}
                       disabled={processing}
                       onApprove={async (paypalOrderId) => {
                         setProcessing(true);
                         try {
-                          const res = await fetch("/api/orders", {
+                          const res = await fetch("/api/paypal/capture-order", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
+                              paypalOrderId,
                               email,
                               phone: phone || null,
                               subtotal: total,
-                              discount: discountAmount,
-                              total: finalTotal,
+                              discountAmount,
+                              finalTotal,
                               discountCode: discountApplied?.code || null,
-                              paypalOrderId,
                               shippingName,
                               shippingAddress,
                               shippingCity,
@@ -370,6 +371,7 @@ export default function CheckoutPage() {
                               items: items.map((item) => ({
                                 name: item.name,
                                 variantLabel: item.variantLabel,
+                                sku: item.variantId,
                                 price: item.price,
                                 quantity: item.quantity,
                               })),
@@ -380,9 +382,12 @@ export default function CheckoutPage() {
                             setOrderId(data.orderId);
                             setStep("confirmation");
                             clearCart();
+                          } else {
+                            alert(isEs ? "Error al procesar el pago. Contacta soporte." : "Payment processing error. Please contact support.");
                           }
                         } catch (error) {
                           console.error(error);
+                          alert(isEs ? "Error inesperado. Intenta de nuevo." : "Unexpected error. Please try again.");
                         } finally {
                           setProcessing(false);
                         }

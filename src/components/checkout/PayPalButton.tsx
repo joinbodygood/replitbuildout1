@@ -3,26 +3,25 @@
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 
 type PayPalButtonProps = {
-  amount: number; // cents
-  onApprove: (orderId: string) => void;
-  onError?: () => void;
+  amount: number;
+  discountCode?: string;
+  onApprove: (paypalOrderId: string) => void;
+  onError?: (message?: string) => void;
   disabled?: boolean;
 };
 
-export function PayPalButton({ amount, onApprove, onError, disabled }: PayPalButtonProps) {
+export function PayPalButton({ amount, discountCode, onApprove, onError, disabled }: PayPalButtonProps) {
   const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
 
   if (!clientId) {
     return (
       <div className="p-6 rounded-card border-2 border-dashed border-border text-center">
         <p className="text-body-muted text-sm">
-          PayPal Client ID not configured. Add NEXT_PUBLIC_PAYPAL_CLIENT_ID to .env
+          PayPal not configured. Contact support.
         </p>
       </div>
     );
   }
-
-  const amountStr = (amount / 100).toFixed(2);
 
   return (
     <PayPalScriptProvider
@@ -41,27 +40,30 @@ export function PayPalButton({ amount, onApprove, onError, disabled }: PayPalBut
             label: "pay",
             height: 50,
           }}
-          createOrder={(_data, actions) => {
-            return actions.order.create({
-              intent: "CAPTURE",
-              purchase_units: [
-                {
-                  amount: {
-                    currency_code: "USD",
-                    value: amountStr,
-                  },
-                  description: "Body Good Studio - Weight Loss Program",
-                },
-              ],
+          createOrder={async () => {
+            const res = await fetch("/api/paypal/create-order", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                subtotal: amount,
+                discountCode: discountCode || null,
+                items: [],
+              }),
             });
-          }}
-          onApprove={async (_data, actions) => {
-            if (actions.order) {
-              const details = await actions.order.capture();
-              onApprove(details.id || "");
+
+            if (!res.ok) {
+              onError?.("Failed to initialize payment");
+              throw new Error("Failed to create PayPal order");
             }
+
+            const data = await res.json();
+            return data.paypalOrderId;
           }}
-          onError={() => {
+          onApprove={async (data) => {
+            onApprove(data.orderID);
+          }}
+          onError={(err) => {
+            console.error("PayPal error:", err);
             onError?.();
           }}
         />
