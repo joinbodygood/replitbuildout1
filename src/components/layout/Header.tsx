@@ -41,7 +41,7 @@ export function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
-          <a href={`/${locale}/cart`} className="relative text-body hover:text-brand-red transition-colors">
+          <Link href={`/${locale}/cart`} className="relative text-body hover:text-brand-red transition-colors">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
             </svg>
@@ -50,7 +50,7 @@ export function Header() {
                 {itemCount}
               </span>
             )}
-          </a>
+          </Link>
           <LanguageToggle />
           <Button href={`/${locale}/quiz`} size="sm">
             {t("getStarted")}
@@ -83,7 +83,7 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
-            <a
+            <Link
               href={`/${locale}/cart`}
               className="relative inline-flex items-center gap-2 text-base font-medium text-body hover:text-brand-red"
               onClick={() => setMobileOpen(false)}
@@ -97,7 +97,7 @@ export function Header() {
                   {itemCount}
                 </span>
               )}
-            </a>
+            </Link>
             <div className="flex items-center justify-between pt-4 border-t border-border">
               <LanguageToggle />
               <Button href={`/${locale}/quiz`} size="sm">

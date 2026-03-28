@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { useCart } from "@/context/CartContext";
 import { Container } from "@/components/ui/Container";
@@ -13,7 +12,6 @@ type CheckoutStep = "info" | "shipping" | "payment" | "confirmation";
 export default function CheckoutPage() {
   const { items, total, clearCart, itemCount } = useCart();
   const locale = useLocale();
-  const router = useRouter();
   const isEs = locale === "es";
 
   const [step, setStep] = useState<CheckoutStep>("info");
