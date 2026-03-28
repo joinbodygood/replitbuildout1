@@ -27,12 +27,10 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <body className="bg-surface text-body text-base leading-relaxed antialiased">
-        <Header />
-        <main>{children}</main>
-        <Footer />
-        <Analytics />
-      </body>
+      <Header />
+      <main>{children}</main>
+      <Footer />
+      <Analytics />
     </NextIntlClientProvider>
   );
 }

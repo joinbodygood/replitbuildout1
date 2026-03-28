@@ -28,8 +28,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`${poppins.variable} ${manrope.variable} font-body`}>
-      {children}
-    </div>
+    <html className={`${poppins.variable} ${manrope.variable}`}>
+      <body className="bg-surface text-body font-body text-base leading-relaxed antialiased">
+        {children}
+      </body>
+    </html>
   );
 }
