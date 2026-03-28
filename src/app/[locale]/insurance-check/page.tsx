@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, Fragment } from "react";
 import { useLocale } from "next-intl";
+import { Check, AlertTriangle, Target, CheckCircle, Info } from "lucide-react";
 
 // ─────────────────────────────────────────────
 // EMBEDDED PROBABILITY DATABASE (client-side only)
@@ -814,9 +815,12 @@ function BmiStep({
                 {bmiLabel}
               </div>
               <div className="text-xs text-gray-400 mt-0.5">
-                {bmiValue >= 30
-                  ? "✓ Meets most insurance thresholds"
-                  : bmiValue >= 27
+                {bmiValue >= 30 ? (
+                  <span className="flex items-center gap-1">
+                    <CheckCircle size={12} className="text-green-600 shrink-0" />
+                    Meets most insurance thresholds
+                  </span>
+                ) : bmiValue >= 27
                   ? "Qualifies with a documented comorbidity"
                   : "Below most plan minimums"}
               </div>
@@ -851,7 +855,7 @@ function BmiStep({
                 {isCalced && isActive && (
                   <span className="text-xs bg-red-200 text-white px-2 py-0.5 rounded-full">your BMI</span>
                 )}
-                {isActive && <span className="text-lg">✓</span>}
+                {isActive && <Check size={18} className="text-white shrink-0" />}
               </div>
             </button>
           );
@@ -1124,13 +1128,15 @@ export default function InsuranceCheckPage() {
     return (
       <StepWrapper title="What state are you in?" subtitle="Coverage rules vary significantly by state." progressPct={progressPct} currentStep={currentStepNum} totalSteps={TOTAL_QUIZ_STEPS}>
         {answers.state && isMandateState && (
-          <div className="mb-4 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-800 text-sm">
-            ✓ Your state requires fully-insured plans to cover weight loss medication.
+          <div className="mb-4 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-800 text-sm flex items-start gap-2">
+            <CheckCircle size={16} className="shrink-0 mt-0.5" />
+            <span>Your state requires fully-insured plans to cover weight loss medication.</span>
           </div>
         )}
         {answers.state && isRestrictedState && (
-          <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-amber-800 text-sm">
-            ⚠ Some insurers in your state have recently limited GLP-1 coverage.
+          <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-amber-800 text-sm flex items-start gap-2">
+            <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+            <span>Some insurers in your state have recently limited GLP-1 coverage.</span>
           </div>
         )}
         <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-6">
@@ -1200,7 +1206,7 @@ export default function InsuranceCheckPage() {
                 className={`${pillBtn} flex items-center justify-between ${isSelected ? pillBtnSelected : pillBtnUnselected}`}
               >
                 <span>{o.label}</span>
-                {isSelected && <span className="text-lg">✓</span>}
+                {isSelected && <Check size={18} className="text-white shrink-0" />}
               </button>
             );
           })}
@@ -1241,8 +1247,8 @@ export default function InsuranceCheckPage() {
         <div className="max-w-md mx-auto px-4 py-12 w-full">
           <div className="bg-white rounded-3xl shadow-lg p-8">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 rounded-full bg-[#fde7e7] flex items-center justify-center mx-auto mb-4 text-2xl">
-                🎯
+              <div className="w-16 h-16 rounded-full bg-[#fde7e7] flex items-center justify-center mx-auto mb-4">
+                <Target size={28} className="text-[#ed1b1b]" />
               </div>
               <h2 style={{ fontFamily: "var(--font-heading)" }} className="text-2xl font-bold text-gray-900 mb-2">
                 Your results are ready!
@@ -1350,7 +1356,11 @@ export default function InsuranceCheckPage() {
         <div className="max-w-lg mx-auto px-4 pb-16">
           {/* Inline disclaimer — non-dismissible */}
           <div className="my-6 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-900">
-            <strong>⚠ Important:</strong> These estimates are based on published formulary data and carrier policies as of March 2026.{" "}
+            <div className="flex items-start gap-2 mb-1">
+              <AlertTriangle size={16} className="shrink-0 mt-0.5 text-amber-700" />
+              <strong>Important:</strong>
+            </div>
+            These estimates are based on published formulary data and carrier policies as of March 2026.{" "}
             <strong>This is not a guarantee of coverage.</strong> Body Good does not determine your insurance coverage at any point. Your actual coverage depends on your specific plan details, which can only be verified by checking your real benefits.
           </div>
 
