@@ -154,17 +154,26 @@ Redirect to Zoho/GLOW for medical intake
 - 11 products seeded with full EN/ES translations and pricing (22 variants)
 - Dynamic product pages (/products/[slug]) with tier pricing
 - Product listing page (/products), Pricing comparison table (/pricing)
-- Bridge page (/programs) — 4 cards for informed visitors
+- Programs page (/programs) — 6 category cards (Anti-Aging "Coming Soon"); each category links to its quiz
 
-### Quiz Engine
+### Quiz Engine — Weight Loss (GLP-1)
 - Single smart quiz with branching logic and 4 outcome paths
 - 3 interstitial trust cards (stats, Dr. Linda, semaglutide vs tirzepatide)
 - BMI calculator, email + phone capture (mid-quiz), medical disqualifier screens
 - Insurance detail collection with probability check
-- 4 recommendation pages (compounded, insurance, oral, branded)
+- 4 recommendation pages (compounded, insurance, oral, branded) with DualPathCard
 - Free insurance probability checker (/insurance-check)
 - 251 insurance probability entries seeded for 10 carriers
 - Quiz lead API + insurance probability API
+- QuizLead schema extended with 9 patient-context fields
+
+### Quiz Engine — Category Quizzes (4 Categories)
+- **Shared infrastructure:** `CategoryQuizEngine.tsx` (declarative, reusable), `DualPathCard.tsx` (Ship-to-Door vs Pharmacy Rx dual-path result card)
+- **Hair Restoration** (`/quiz/hair`) — 4 questions, 6 outcomes: women-mild, women-moderate, women-postpartum, men-mild, men-moderate, men-advanced
+- **Skincare & Glow** (`/quiz/skin`) — 4 questions, 4 outcomes: anti-aging, brightening, hormonal-acne, rosacea
+- **Feminine Health** (`/quiz/feminine-health`) — 4 questions, 4 outcomes: acute-infection (pharmacy-only), vaginal-dryness, intimate-wellness, hormonal-support
+- **Mental Wellness** (`/quiz/mental-wellness`) — 4 questions, 6 outcomes: anxiety, sleep, depression, adhd-focus, mood-swings, energy-fatigue; includes 988 crisis safety banner
+- WhatBringsYou homepage section links each card directly to its category quiz (no more "Coming Soon")
 
 ### Checkout & Payments
 - Cart context with localStorage persistence, cart page, AddToCartButton
