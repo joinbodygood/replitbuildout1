@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEDUSA — Weight Management Quiz | Body Good Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #ed1b1b;
+    --soft-pink: #fde7e7;
+    --heading: #0C0D0F;
+    --body: #55575A;
+    --border: #E5E5E5;
+    --white: #ffffff;
+    --bg: #fafafa;
+    --green: #1a8a5c;
+    --amber: #d4870e;
+    --purple: #6b46c1;
+    --blue: #2563eb;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Manrope', sans-serif;
+    color: var(--body);
+    background: var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── HEADER ── */
+  .doc-header {
+    background: var(--heading);
+    color: var(--white);
+    padding: 48px 0 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .doc-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--red), #F088AD, var(--red));
+  }
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+  .header-badge {
+    display: inline-block;
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--red);
+    background: rgba(237,27,27,0.1);
+    padding: 6px 16px;
+    border-radius: 50px;
+    margin-bottom: 20px;
+  }
+  .header-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1.15;
+    color: var(--white);
+    margin-bottom: 12px;
+  }
+  .header-title span { color: var(--red); }
+  .header-sub {
+    font-size: 16px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.6);
+    max-width: 600px;
+    line-height: 1.5;
+  }
+  .header-meta {
+    margin-top: 24px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .meta-item {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.5px;
+  }
+  .meta-item strong { color: rgba(255,255,255,0.7); }
+
+  /* ── CONTAINER ── */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* ── SECTION ── */
+  .section {
+    margin: 48px 0;
+  }
+  .section-label {
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--heading);
+    margin-bottom: 6px;
+  }
+  .section-desc {
+    font-size: 15px;
+    color: var(--body);
+    max-width: 680px;
+    margin-bottom: 32px;
+  }
+
+  /* ── PHASE BANNER ── */
+  .phase-banner {
+    background: var(--heading);
+    color: var(--white);
+    padding: 20px 28px;
+    border-radius: 12px;
+    margin: 48px 0 28px;
+    position: relative;
+  }
+  .phase-banner::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--red);
+    border-radius: 12px 0 0 12px;
+  }
+  .phase-num {
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 4px;
+  }
+  .phase-name {
+    font-family: 'Poppins', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .phase-detail {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 4px;
+  }
+
+  /* ── QUESTION CARD ── */
+  .q-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .q-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+  }
+  .q-card.screen::before { background: var(--red); }
+  .q-card.route::before { background: var(--blue); }
+  .q-card.capture::before { background: var(--green); }
+
+  .q-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .q-card.screen .q-number { background: rgba(237,27,27,0.1); color: var(--red); }
+  .q-card.route .q-number { background: rgba(37,99,235,0.1); color: var(--blue); }
+  .q-card.capture .q-number { background: rgba(26,138,92,0.1); color: var(--green); }
+
+  .q-text {
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--heading);
+    margin-bottom: 4px;
+    line-height: 1.35;
+  }
+  .q-format {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(85,87,90,0.5);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+  }
+  .q-purpose {
+    background: rgba(37,99,235,0.04);
+    border-left: 3px solid rgba(37,99,235,0.3);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--body);
+    border-radius: 0 8px 8px 0;
+    margin-top: 20px;
+    line-height: 1.55;
+  }
+  .q-purpose strong { color: var(--heading); }
+
+  /* ── ANSWER OPTIONS ── */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: all 0.15s;
+  }
+  .opt:hover { border-color: #ccc; background: #fafafa; }
+  .opt-bullet {
+    width: 20px; height: 20px;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .opt-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--heading);
+    line-height: 1.4;
+  }
+  .opt-sub {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--body);
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+  .opt-route {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 6px;
+  }
+  .route-ins { background: rgba(37,99,235,0.08); color: var(--blue); }
+  .route-sp { background: rgba(26,138,92,0.08); color: var(--green); }
+  .route-brand { background: rgba(107,70,193,0.08); color: var(--purple); }
+  .route-oral { background: rgba(212,135,14,0.08); color: var(--amber); }
+  .route-algo { background: rgba(85,87,90,0.08); color: var(--body); }
+  .route-hot { background: rgba(237,27,27,0.08); color: var(--red); }
+
+  .opt-clear {
+    border-style: dashed;
+    border-color: var(--green);
+    background: rgba(26,138,92,0.02);
+  }
+  .opt-clear .opt-bullet { border-color: var(--green); }
+
+  .opt-disq {
+    border-color: rgba(237,27,27,0.2);
+    background: rgba(237,27,27,0.02);
+  }
+
+  /* ── DISQUALIFICATION SCREEN ── */
+  .disq-screen {
+    background: var(--white);
+    border: 2px dashed rgba(237,27,27,0.3);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin: -8px 0 24px;
+    position: relative;
+  }
+  .disq-tag {
+    display: inline-block;
+    font-family: 'Poppins', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--red);
+    background: rgba(237,27,27,0.08);
+    padding: 4px 12px;
+    border-radius: 50px;
+    margin-bottom: 14px;
+  }
+  .disq-headline {
+    font-family: 'Poppins', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--heading);
+    margin-bottom: 10px;
+    line-height: 1.35;
+  }
+  .disq-body {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--body);
+    margin-bottom: 16px;
+  }
+  .disq-cta {
+    display: inline-block;
+    background: var(--heading);
+    color: var(--white);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 24px;
+    border-radius: 50px;
+    text-decoration: none;
+  }
+  .disq-note {
+    font-size: 11px;
+    color: rgba(85,87,90,0.5);
+    margin-top: 12px;
+    font-style: italic;
+  }
+
+  /* ── INTERSTITIAL CARD ── */
+  .interstitial {
+    background: linear-gradient(135deg, var(--soft-pink) 0%, var(--white) 100%);
+    border: 1px solid rgba(237,27,27,0.12);
+    border-radius: 12px;
+    padding: 36px 32px;
+    margin: 32px 0;
+    position: relative;
+  }
+  .interstitial::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--red), #F088AD);
+    border-radius: 12px 12px 0 0;
+  }
+  .inter-tag {
+    display: inline-block;
+    font-family: 'Poppins', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 14px;
+  }
+  .inter-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--heading);
+    margin-bottom: 16px;
+    line-height: 1.3;
+  }
+  .inter-body {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--body);
+  }
+  .inter-body p { margin-bottom: 14px; }
+  .inter-body strong { color: var(--heading); font-weight: 700; }
+  .inter-body em { font-style: italic; color: var(--heading); }
+  .inter-cta {
+    display: inline-block;
+    background: var(--red);
+    color: var(--white);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 28px;
+    border-radius: 50px;
+    text-decoration: none;
+    margin-top: 8px;
+  }
+
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+  .compare-col {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .compare-col h4 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--heading);
+    margin-bottom: 10px;
+  }
+  .compare-col p {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--body);
+  }
+  .compare-stat {
+    font-family: 'Poppins', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    margin: 8px 0 4px;
+  }
+  .stat-sema { color: var(--blue); }
+  .stat-tirz { color: var(--red); }
+  .compare-stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--body);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── QUOTE BLOCK ── */
+  .quote-block {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 24px;
+    margin: 20px 0 8px;
+    border: 1px solid var(--border);
+    position: relative;
+  }
+  .quote-block::before {
+    content: '\201C';
+    font-family: 'Poppins', sans-serif;
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--red);
+    opacity: 0.15;
+    position: absolute;
+    top: 8px; left: 16px;
+    line-height: 1;
+  }
+  .quote-text {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--heading);
+    font-style: italic;
+    padding-left: 8px;
+  }
+  .quote-sig {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--red);
+    margin-top: 12px;
+    padding-left: 8px;
+  }
+  .quote-cred {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--body);
+    padding-left: 8px;
+  }
+
+  /* ── STATS GRID ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+  .stat-block {
+    padding: 20px;
+    border-radius: 10px;
+  }
+  .stat-block.problem {
+    background: rgba(237,27,27,0.04);
+    border: 1px solid rgba(237,27,27,0.1);
+  }
+  .stat-block.solution {
+    background: rgba(26,138,92,0.04);
+    border: 1px solid rgba(26,138,92,0.1);
+  }
+  .stat-block h4 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .stat-block.problem h4 { color: var(--red); }
+  .stat-block.solution h4 { color: var(--green); }
+  .stat-item {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--body);
+    margin-bottom: 10px;
+    padding-left: 16px;
+    position: relative;
+  }
+  .stat-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 7px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+  .stat-block.problem .stat-item::before { background: var(--red); }
+  .stat-block.solution .stat-item::before { background: var(--green); }
+  .stat-item strong { color: var(--heading); }
+
+  /* ── ROUTING TABLE ── */
+  .routing-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+    margin: 16px 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .routing-table th {
+    background: var(--heading);
+    color: var(--white);
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 12px 16px;
+    text-align: left;
+  }
+  .routing-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.45;
+  }
+  .routing-table tr:last-child td { border-bottom: none; }
+  .routing-table tr:nth-child(even) td { background: #fafafa; }
+
+  /* ── RESULT PREVIEW ── */
+  .result-preview {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .result-num {
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .result-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--heading);
+    margin-bottom: 6px;
+  }
+  .result-trigger {
+    font-size: 12px;
+    color: var(--body);
+    margin-bottom: 12px;
+  }
+  .result-products {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--body);
+  }
+  .result-products strong { color: var(--heading); }
+
+  .res-ins .result-num { color: var(--blue); }
+  .res-sp .result-num { color: var(--green); }
+  .res-oral .result-num { color: var(--amber); }
+  .res-brand .result-num { color: var(--purple); }
+
+  /* ── AUTOMATION BLOCK ── */
+  .auto-block {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 0;
+    font-size: 13px;
+    border-left: 2px solid var(--border);
+    margin: 16px 0 16px 16px;
+  }
+  .auto-time {
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--red);
+    padding: 12px 0 12px 16px;
+    position: relative;
+  }
+  .auto-time::before {
+    content: '';
+    position: absolute;
+    left: -5px; top: 16px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--red);
+  }
+  .auto-content {
+    padding: 12px 0 12px 16px;
+    color: var(--body);
+    line-height: 1.5;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .auto-content strong { color: var(--heading); }
+
+  /* ── NOTES ── */
+  .note-block {
+    background: rgba(37,99,235,0.03);
+    border: 1px solid rgba(37,99,235,0.12);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .note-block h4 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--blue);
+    margin-bottom: 8px;
+  }
+  .note-block p {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--body);
+    margin-bottom: 8px;
+  }
+  .note-block p:last-child { margin-bottom: 0; }
+
+  /* ── FLOW OVERVIEW ── */
+  .flow-overview {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 20px 0;
+  }
+  .flow-row {
+    display: grid;
+    grid-template-columns: 52px 1fr 200px;
+    gap: 12px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    align-items: center;
+    font-size: 13px;
+  }
+  .flow-row:nth-child(odd) { background: rgba(0,0,0,0.02); }
+  .flow-q {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--heading);
+  }
+  .flow-label { color: var(--body); }
+  .flow-purpose {
+    font-size: 11px;
+    font-weight: 600;
+    text-align: right;
+    color: rgba(85,87,90,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .flow-row.flow-card {
+    background: var(--soft-pink);
+    border: 1px solid rgba(237,27,27,0.08);
+  }
+  .flow-row.flow-card .flow-q { color: var(--red); }
+
+  /* ── FOOTER ── */
+  .doc-footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 0;
+    margin-top: 48px;
+    text-align: center;
+    font-size: 12px;
+    color: rgba(85,87,90,0.4);
+  }
+
+  @media (max-width: 640px) {
+    .header-title { font-size: 26px; }
+    .compare-grid, .stats-grid { grid-template-columns: 1fr; }
+    .flow-row { grid-template-columns: 48px 1fr; }
+    .flow-purpose { display: none; }
+    .q-card, .interstitial { padding: 24px; }
+  }
+
+  @media print {
+    body { background: white; }
+    .doc-header { padding: 32px 0; }
+    .q-card, .interstitial, .disq-screen { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- HEADER -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="doc-header">
+  <div class="header-inner">
+    <div class="header-badge">Internal Document</div>
+    <div class="header-title">MEDUSA <span>Quiz Copy</span></div>
+    <div class="header-sub">Weight Management Program Quiz &mdash; Full copy, routing logic, interstitial cards, disqualification screens, and result page mapping. Primary CTA for ads, blog, and website.</div>
+    <div class="header-meta">
+      <div class="meta-item"><strong>Version:</strong> 1.0</div>
+      <div class="meta-item"><strong>Date:</strong> March 23, 2026</div>
+      <div class="meta-item"><strong>Questions:</strong> 10</div>
+      <div class="meta-item"><strong>Education Cards:</strong> 3</div>
+      <div class="meta-item"><strong>Result Outcomes:</strong> 4</div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- QUIZ OVERVIEW -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Overview</div>
+  <div class="section-title">Quiz Architecture</div>
+  <div class="section-desc">10 questions across 3 phases, with 3 interstitial education cards. The quiz screens for eligibility, builds trust, and routes each person to their ideal program: Insurance, Self-Pay Injectable, Oral, or Brand-Name Rx.</div>
+
+  <div class="flow-overview">
+    <div class="flow-row"><div class="flow-q">Q1</div><div class="flow-label">What state do you live in?</div><div class="flow-purpose">Eligibility</div></div>
+    <div class="flow-row"><div class="flow-q">Q2</div><div class="flow-label">Do any of the following apply to you?</div><div class="flow-purpose">Safety screen</div></div>
+    <div class="flow-row"><div class="flow-q">Q3</div><div class="flow-label">How much weight are you looking to lose?</div><div class="flow-purpose">Clinical routing</div></div>
+    <div class="flow-row"><div class="flow-q">Q4</div><div class="flow-label">Which of these feels most like your story?</div><div class="flow-purpose">Experience + emotion</div></div>
+    <div class="flow-row flow-card"><div class="flow-q">Card 1</div><div class="flow-label">Semaglutide vs. Tirzepatide education</div><div class="flow-purpose">Education</div></div>
+    <div class="flow-row"><div class="flow-q">Q5</div><div class="flow-label">How do you feel about self-injections?</div><div class="flow-purpose">Injectable vs. oral</div></div>
+    <div class="flow-row"><div class="flow-q">Q6</div><div class="flow-label">Interested in using health insurance?</div><div class="flow-purpose">Insurance fork</div></div>
+    <div class="flow-row"><div class="flow-q">Q7</div><div class="flow-label">What matters most in your medication?</div><div class="flow-purpose">Budget / brand</div></div>
+    <div class="flow-row flow-card"><div class="flow-q">Card 2</div><div class="flow-label">Dr. Linda &amp; Nurse Ketty joint message</div><div class="flow-purpose">Trust</div></div>
+    <div class="flow-row"><div class="flow-q">Q8</div><div class="flow-label">How soon are you looking to get started?</div><div class="flow-purpose">Lead scoring</div></div>
+    <div class="flow-row flow-card"><div class="flow-q">Card 3</div><div class="flow-label">Obesity statistics + GLP-1 social proof</div><div class="flow-purpose">Validation</div></div>
+    <div class="flow-row"><div class="flow-q">Q9</div><div class="flow-label">Email capture</div><div class="flow-purpose">Conversion gate</div></div>
+    <div class="flow-row"><div class="flow-q">Q10</div><div class="flow-label">Do you currently have health insurance?</div><div class="flow-purpose">Final routing</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- PRE-QUIZ LANDING HOOK -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Pre-Quiz</div>
+  <div class="section-title">Landing Hook</div>
+
+  <div class="q-card route">
+    <div class="q-text" style="font-size: 22px;">What&rsquo;s the best weight loss program for YOUR body, budget, and lifestyle?</div>
+    <p style="font-size: 15px; color: var(--body); margin: 12px 0 20px; line-height: 1.6;">Answer a few quick questions. Get a personalized recommendation from a doctor who&rsquo;s been exactly where you are.</p>
+    <div style="display: inline-block; background: var(--red); color: white; font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 700; padding: 14px 32px; border-radius: 50px;">Take the 2-Minute Quiz &rarr;</div>
+    <p style="font-size: 12px; color: rgba(85,87,90,0.5); margin-top: 12px;">Free. No login required. Takes less than 2 minutes.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- PHASE 1 -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="phase-banner">
+  <div class="phase-num">Phase 1</div>
+  <div class="phase-name">Anonymous Screening</div>
+  <div class="phase-detail">No identity collected. State eligibility + medical contraindications. Zero PHI risk.</div>
+</div>
+
+<!-- Q1 -->
+<div class="q-card screen">
+  <div class="q-number">1</div>
+  <div class="q-text">First things first &mdash; what state do you live in?</div>
+  <div class="q-format">Dropdown / searchable select</div>
+  <div class="options">
+    <div class="opt"><div class="opt-bullet"></div><div><div class="opt-text">All 50 states + DC + territories</div><div class="opt-sub">Licensed state &rarr; proceed to Q2</div></div></div>
+    <div class="opt opt-disq"><div class="opt-bullet"></div><div><div class="opt-text">Unlicensed state selected</div><div class="opt-sub">&rarr; State Disqualification Screen</div></div></div>
+  </div>
+</div>
+
+<!-- STATE DISQUALIFICATION -->
+<div class="disq-screen">
+  <div class="disq-tag">Disqualification &mdash; State</div>
+  <div class="disq-headline">We&rsquo;re not in [state] yet &mdash; but we&rsquo;re growing fast.</div>
+  <div class="disq-body">Body Good Studio is currently licensed in [X] states, and [state] isn&rsquo;t one of them &mdash; yet. Drop your email below and you&rsquo;ll be the first to know when we expand to your area. Plus, you&rsquo;ll get Dr. Linda&rsquo;s free GLP-1 starter guide while you wait.</div>
+  <div class="disq-cta">Notify me when you&rsquo;re in [state] &rarr;</div>
+  <div class="disq-note">We&rsquo;ll never spam you. Unsubscribe anytime. Email is stored separately &mdash; no medical data is associated with it.</div>
+</div>
+
+<!-- Q2 -->
+<div class="q-card screen">
+  <div class="q-number">2</div>
+  <div class="q-text">Do any of the following apply to you?</div>
+  <div class="q-format">Multi-select checkboxes &bull; Select all that apply</div>
+  <div class="options">
+    <div class="opt opt-disq"><div class="opt-bullet"></div><div><div class="opt-text">Type 1 diabetes</div></div></div>
+    <div class="opt opt-disq"><div class="opt-bullet"></div><div><div class="opt-text">Chronic pancreatitis</div></div></div>
+    <div class="opt opt-disq"><div class="opt-bullet"></div><div><div class="opt-text">Gastroparesis (stomach paralysis)</div></div></div>
+    <div class="opt opt-disq"><div class="opt-bullet"></div><div><div class="opt-text">MEN II (Multiple Endocrine Neoplasia type 2)</div></div></div>
+    <div class="opt opt-disq"><div class="opt-bullet"></div><div><div class="opt-text">Personal or family history of medullary thyroid cancer</div></div></div>
+    <div class="opt opt-disq"><div class="opt-bullet"></div><div><div class="opt-text">Currently pregnant or breastfeeding</div></div></div>
+    <div class="opt opt-clear"><div class="opt-bullet"></div><div><div class="opt-text" style="color: var(--green);">None of the above apply to me</div><div class="opt-sub">This option clears all others when selected &rarr; proceed to Q3</div></div></div>
+  </div>
+  <div class="q-purpose"><strong>HIPAA note:</strong> This question is asked anonymously. No identity has been collected. Answers are never stored with identifying information. Any condition selected triggers immediate disqualification.</div>
+</div>
+
+<!-- CONTRAINDICATION DISQUALIFICATION -->
+<div class="disq-screen">
+  <div class="disq-tag">Disqualification &mdash; Contraindication</div>
+  <div class="disq-headline">Based on your answers, GLP-1 medication may not be the right fit right now.</div>
+  <div class="disq-body">Certain medical conditions require additional evaluation before starting GLP-1 therapy. This isn&rsquo;t a final medical determination &mdash; it&rsquo;s a safety screen to protect you.<br><br>Our physician team would be happy to review your specific situation personally. Drop your email below and someone from Dr. Linda&rsquo;s clinical team will reach out to discuss your options.</div>
+  <div class="disq-cta">Have the team reach out &rarr;</div>
+  <div class="disq-note">Your answers are anonymous and are not stored with your email. This is not a diagnosis.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- PHASE 2 -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="phase-banner">
+  <div class="phase-num">Phase 2</div>
+  <div class="phase-name">Routing + Trust Building</div>
+  <div class="phase-detail">Behavioral and preference questions that feel personal while determining the right program. Three education cards woven between questions.</div>
+</div>
+
+<!-- Q3 -->
+<div class="q-card route">
+  <div class="q-number">3</div>
+  <div class="q-text">How much weight are you looking to lose?</div>
+  <div class="q-format">Single select &bull; Visual cards</div>
+  <div class="options">
+    <div class="opt"><div class="opt-bullet"></div><div><div class="opt-text">10&ndash;20 lbs</div><div class="opt-sub">&ldquo;I want to drop a size or two&rdquo;</div><div class="opt-route route-sp">Mild preference: semaglutide or oral</div></div></div>
+    <div class="opt"><div class="opt-bullet"></div><div><div class="opt-text">20&ndash;40 lbs</div><div class="opt-sub">&ldquo;I&rsquo;ve got a solid chunk to lose&rdquo;</div><div class="opt-route route-algo">Neutral &mdash; all programs viable</div></div></div>
+    <div class="opt"><div class="opt-bullet"></div><div><div class="opt-text">40&ndash;60 lbs</div><div class="opt-sub">&ldquo;I&rsquo;m ready for a real transformation&rdquo;</div><div class="opt-route route-oral">Mild preference: tirzepatide</div></div></div>
+    <div class="opt"><div class="opt-bullet"></div><div><div class="opt-text">60+ lbs</div><div class="opt-sub">&ldquo;I need significant support&rdquo;</div><div class="opt-route route-hot">Strong preference: tirzepatide or insurance</div></div></div>
+  </div>
+  <div class="q-purpose"><strong>Routing logic:</strong> Segments by clinical intensity. Heavier weight loss goals route toward tirzepatide (dual-hormone, stronger clinical data for 40+ lb losses). Also sets emotional tone &mdash; they see themselves reflected immediately in the subtext.</div>
+</div>
+
+<!-- Q4 -->
+<div class="q-card route">
+  <div class="q-number">4</div>
+  <div class="q-text">Which of these feels most like your story?</div>
+  <div class="q-format">Single select &bull; Story cards</div>
+  <div class="options">
+    <div class="opt"><div class="opt-bullet"></div><div><div class="opt-text">&ldquo;I&rsquo;ve tried GLP-1s before but stopped &mdash; and the weight came back.&rdquo;</div><div class="opt-route route-hot">Tag: experienced, regain</div></div></div>
+    <div class="opt"><div class="opt-bullet"></div><div><div class="opt-text">&ldquo;I&rsquo;ve tried every diet, every program, everything EXCEPT medication.&rdquo;</div><div class="opt-route route-sp">Tag: first-timer, exhaustion</div></div></div>
+    <div class="opt"><div class="opt-bullet"></div><div><div class="opt-text">&ldquo;I know these medications work &mdash; I just need help finding the right one at the right price.&rdquo;</div><div class="opt-route route-ins">Tag: educated, access/cost</div></div></div>
+    <div class="opt"><div class="opt-bullet"></div><div><div class="opt-text">&ldquo;I&rsquo;m just starting to look into this &mdash; I don&rsquo;t really know where to begin.&rdquo;</div><div class="opt-route route-algo">Tag: first-timer, overwhelm</div></div></div>
+  </div>
+  <div class="q-purpose"><strong>Purpose:</strong> Captures experience level AND emotional state in one question. Each answer populates into the results page and first follow-up email for personalization. Not a direct routing question &mdash; this is the emotional hook that makes the recommendation feel human.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- INTERSTITIAL CARD 1 -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="interstitial">
+  <div class="inter-tag">Education Card 1 of 3</div>
+  <div class="inter-title">Two medications. One goal. Here&rsquo;s the difference.</div>
+
+  <div class="compare-grid">
+    <div class="compare-col">
+      <h4>Semaglutide</h4>
+      <p style="font-size: 12px; color: var(--body); margin-bottom: 10px;">The active ingredient in Ozempic &amp; Wegovy</p>
+      <p>Works by mimicking a hormone called GLP-1 that controls hunger signals in your brain. Available as an injection or a daily pill.</p>
+      <div class="compare-stat stat-sema">~15%</div>
+      <div class="compare-stat-label">Average body weight lost in clinical trials</div>
+    </div>
+    <div class="compare-col">
+      <h4>Tirzepatide</h4>
+      <p style="font-size: 12px; color: var(--body); margin-bottom: 10px;">The active ingredient in Mounjaro &amp; Zepbound</p>
+      <p>Works on <strong>two</strong> hormones &mdash; GLP-1 and GIP &mdash; which is why clinical trials showed even greater results. Available as an injection or oral formulation.</p>
+      <div class="compare-stat stat-tirz">~20%</div>
+      <div class="compare-stat-label">Average body weight lost in clinical trials</div>
+    </div>
+  </div>
+
+  <div class="inter-body">
+    <p>Both are FDA-approved. Both are safe when prescribed by a physician. The right one for you depends on your body, your goals, and your history. <strong>That&rsquo;s exactly what this quiz helps us figure out.</strong></p>
+  </div>
+
+  <div class="inter-cta">Next Question &rarr;</div>
+</div>
+
+<!-- Q5 -->
+<div class="q-card route">
+  <div class="q-number">5</div>
+  <div class="q-text">How do you feel about self-injections?</div>
+  <div class="q-format">Single select &bull; Icon cards</div>
+  <div class="options">
+    <div class="opt"><div class="opt-bullet"></div><div><div class="opt-text">&ldquo;Totally fine &mdash; needles don&rsquo;t bother me&rdquo;</div><div class="opt-route route-sp">Injectable pathway stays open</div></div></div>
+    <div class="opt"><div class="opt-bullet"></div><div><div class="opt-text">&ldquo;I&rsquo;d prefer to avoid them if possible&rdquo;</div><div class="opt-route route-oral">Oral pathway weighted</div></div></div>
+    <div class="opt"><div class="opt-bullet"></div><div><div class="opt-text">&ldquo;Absolutely not &mdash; no needles&rdquo;</div><div class="opt-route route-oral">Oral pathway strongly weighted (override)</div></div></div>
+  </div>
+  <div class="q-purpose"><strong>Critical fork:</strong> This is the single biggest routing decision in the quiz. &ldquo;Absolutely not&rdquo; routes hard to the oral program. &ldquo;Prefer to avoid&rdquo; keeps both doors open but weights oral. This question alone determines ~40% of the final recommendation.</div>
+</div>
+
+<!-- Q6 -->
+<div class="q-card route">
+  <div class="q-number">6</div>
+  <div class="q-text">Are you interested in using health insurance to cover your medication?</div>
+  <div class="q-format">Single select</div>
+  <div class="options">
+    <div class="opt"><div class="opt-bullet"></div><div><div class="opt-text">&ldquo;Yes &mdash; I&rsquo;d love to see if my insurance covers this&rdquo;</div><div class="opt-route route-ins">Routes toward: Insurance program</div></div></div>
+    <div class="opt"><div class="opt-bullet"></div><div><div class="opt-text">&ldquo;No &mdash; I&rsquo;d rather pay out of pocket and skip the insurance hassle&rdquo;</div><div class="opt-route route-sp">Routes toward: Self-pay (type determined by Q7)</div></div></div>
+    <div class="opt"><div class="opt-bullet"></div><div><div class="opt-text">&ldquo;I&rsquo;m not sure &mdash; show me all my options&rdquo;</div><div class="opt-route route-algo">Routes toward: Hybrid results showing both</div></div></div>
+  </div>
+</div>
+
+<!-- Q7 -->
+<div class="q-card route">
+  <div class="q-number">7</div>
+  <div class="q-text">When it comes to your medication, what matters most?</div>
+  <div class="q-format">Single select</div>
+  <div class="options">
+    <div class="opt"><div class="opt-bullet"></div><div>
+      <div class="opt-text">&ldquo;Give me the most affordable option&rdquo;</div>
+      <div class="opt-sub">I want effective medication at the lowest monthly cost.</div>
+      <div class="opt-route route-sp">Routes toward: Compounded self-pay (semaglutide default)</div>
+    </div></div>
+    <div class="opt"><div class="opt-bullet"></div><div>
+      <div class="opt-text">&ldquo;I want the exact brand-name medication&rdquo;</div>
+      <div class="opt-sub">Wegovy, Zepbound &mdash; the ones I&rsquo;ve been hearing about.</div>
+      <div class="opt-route route-brand">Routes toward: Branded Rx management + Wegovy oral</div>
+    </div></div>
+    <div class="opt"><div class="opt-bullet"></div><div>
+      <div class="opt-text">&ldquo;I want whatever&rsquo;s going to get me the best results&rdquo;</div>
+      <div class="opt-sub">Match me to the most effective option for my goals.</div>
+      <div class="opt-route route-algo">Routes based on Q3 + Q5 (typically tirzepatide)</div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- INTERSTITIAL CARD 2 -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="interstitial">
+  <div class="inter-tag">Trust Card 2 of 3</div>
+  <div class="inter-title">Real talk from the women behind your care.</div>
+
+  <div class="quote-block">
+    <div class="quote-text">
+      We get it. We really do.<br><br>
+      The diets that work for three weeks and then don&rsquo;t. The guilt after eating something &ldquo;wrong.&rdquo; The mornings where you avoid the mirror. The doctor&rsquo;s appointments where no one actually listens.<br><br>
+      We&rsquo;ve been there &mdash; not just as providers, but as women who&rsquo;ve fought our own battles with weight, hormones, and self-image. Dr. Linda gained 80 pounds during her twin pregnancy. Ketty has walked alongside patients and family members who were told to &ldquo;just eat less and move more&rdquo; when the real answer was medical.<br><br>
+      That&rsquo;s why we built Body Good. Not to be another weight loss company &mdash; but to be the practice we wished existed when WE needed help.<br><br>
+      When you become our patient, you&rsquo;re not a number. You&rsquo;re not a subscription. You&rsquo;re someone we see, we hear, and we&rsquo;re going to fight for. Every prescription is personally reviewed. Every question gets a real answer. Every patient gets a team that actually cares &mdash; because we know what it feels like when no one does.<br><br>
+      You&rsquo;re not alone in this. And you don&rsquo;t have to figure it out by yourself anymore.
+    </div>
+    <div class="quote-sig">&mdash; Dr. Linda Moleon, DO &amp; Nurse Ketty Moleon, NP</div>
+    <div class="quote-cred">Double Board-Certified in Obesity Medicine &amp; Anesthesiology &nbsp;|&nbsp; Board-Certified Nurse Practitioner</div>
+  </div>
+
+  <p style="font-size: 12px; color: var(--body); margin-top: 16px; font-style: italic;"><strong>Design note:</strong> Single photo of both together (ideal) or two headshots side by side. Warm, approachable. The sign-off should feel like a letter &mdash; consider a subtle handwritten-style font for the names.</p>
+
+  <div class="inter-cta">Almost done &mdash; just a few more &rarr;</div>
+</div>
+
+<!-- Q8 -->
+<div class="q-card route">
+  <div class="q-number">8</div>
+  <div class="q-text">How soon are you looking to get started?</div>
+  <div class="q-format">Single select</div>
+  <div class="options">
+    <div class="opt"><div class="opt-bullet"></div><div>
+      <div class="opt-text">&ldquo;This week &mdash; I&rsquo;m ready now&rdquo;</div>
+      <div class="opt-route route-hot">Hot lead &mdash; Claudia SMS fires within 5 min</div>
+    </div></div>
+    <div class="opt"><div class="opt-bullet"></div><div>
+      <div class="opt-text">&ldquo;Within the next month&rdquo;</div>
+      <div class="opt-route route-sp">Warm lead &mdash; enters nurture sequence</div>
+    </div></div>
+    <div class="opt"><div class="opt-bullet"></div><div>
+      <div class="opt-text">&ldquo;I&rsquo;m researching and comparing options&rdquo;</div>
+      <div class="opt-route route-algo">Cool lead &mdash; education-heavy drip</div>
+    </div></div>
+    <div class="opt"><div class="opt-bullet"></div><div>
+      <div class="opt-text">&ldquo;I&rsquo;m waiting for the right moment&rdquo;</div>
+      <div class="opt-route route-algo">Cold lead &mdash; long-term nurture with periodic offers</div>
+    </div></div>
+  </div>
+  <div class="q-purpose"><strong>Purpose:</strong> Lead scoring only &mdash; this doesn&rsquo;t change the program recommendation. It determines the speed and intensity of post-quiz follow-up from Claudia and the email/SMS sequences.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- INTERSTITIAL CARD 3 -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="interstitial">
+  <div class="inter-tag">Statistics Card 3 of 3</div>
+  <div class="inter-title">You&rsquo;re not alone. And this isn&rsquo;t willpower.</div>
+
+  <div class="stats-grid">
+    <div class="stat-block problem">
+      <h4>The Problem</h4>
+      <div class="stat-item"><strong>More than 40%</strong> of American adults are living with obesity &mdash; that&rsquo;s over 100 million people.</div>
+      <div class="stat-item">In 2024, <strong>every single U.S. state</strong> had an obesity prevalence above 25%.</div>
+      <div class="stat-item">Obesity-related healthcare costs exceed <strong>$173 billion</strong> every year.</div>
+      <div class="stat-item">This isn&rsquo;t a discipline problem. It&rsquo;s a biology problem &mdash; and it finally has a medical solution.</div>
+    </div>
+    <div class="stat-block solution">
+      <h4>The Solution</h4>
+      <div class="stat-item"><strong>1 in 8 American adults</strong> are currently taking a GLP-1 medication for weight loss or chronic conditions.</div>
+      <div class="stat-item">Over <strong>30 million Americans</strong> used GLP-1 medications for weight loss in 2025 alone.</div>
+      <div class="stat-item">GLP-1 prescriptions now account for <strong>more than 7%</strong> of all prescriptions written in the U.S.</div>
+      <div class="stat-item">This isn&rsquo;t experimental. This isn&rsquo;t a trend. This is modern medicine &mdash; and it&rsquo;s changing lives every day.</div>
+    </div>
+  </div>
+
+  <p style="font-size: 12px; color: var(--body); margin-top: 8px; font-style: italic;"><strong>Design note:</strong> Left = The Problem (subtle red tones). Right = The Solution (warm green tones). Consider a simple data visualization for &ldquo;1 in 8 adults&rdquo; &mdash; a visual grid of figures with highlighted ones. No doom-and-gloom imagery &mdash; this should feel empowering.</p>
+
+  <div class="inter-cta">See my results &rarr;</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- PHASE 3 -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="phase-banner">
+  <div class="phase-num">Phase 3</div>
+  <div class="phase-name">Capture + Commitment</div>
+  <div class="phase-detail">Email gate after sunk cost is established. Final question locks the program match.</div>
+</div>
+
+<!-- Q9 -->
+<div class="q-card capture">
+  <div class="q-number">9</div>
+  <div class="q-text">Your personalized recommendation is ready. Where should we send it?</div>
+  <div class="q-format">Email input + First name field</div>
+
+  <div style="background: #f8f8f8; border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-top: 16px;">
+    <div style="font-size: 12px; font-weight: 600; color: var(--body); margin-bottom: 6px;">First Name</div>
+    <div style="background: white; border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; font-size: 14px; color: #ccc; margin-bottom: 12px;">Your first name</div>
+    <div style="font-size: 12px; font-weight: 600; color: var(--body); margin-bottom: 6px;">Email Address</div>
+    <div style="background: white; border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; font-size: 14px; color: #ccc; margin-bottom: 16px;">your@email.com</div>
+    <div style="background: var(--red); color: white; text-align: center; padding: 14px; border-radius: 50px; font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 700;">See My Results &rarr;</div>
+    <p style="font-size: 11px; color: rgba(85,87,90,0.4); text-align: center; margin-top: 10px;">We never sell your information. Unsubscribe anytime.</p>
+  </div>
+
+  <div class="q-purpose"><strong>Subtext shown to user:</strong> &ldquo;We&rsquo;ll send your results, your doctor-matched program recommendation, and an exclusive offer for first-time patients.&rdquo;<br><br><strong>Conversion psychology:</strong> They&rsquo;ve answered 8 questions &mdash; the sunk cost is real. By framing this as &ldquo;your results are ready,&rdquo; you&rsquo;re not asking for permission to market. You&rsquo;re giving them something they&rsquo;ve earned.</div>
+</div>
+
+<!-- Q10 -->
+<div class="q-card capture">
+  <div class="q-number">10</div>
+  <div class="q-text">One last thing &mdash; do you currently have health insurance?</div>
+  <div class="q-format">Single select</div>
+  <div class="options">
+    <div class="opt"><div class="opt-bullet"></div><div>
+      <div class="opt-text">&ldquo;Yes &mdash; through my employer&rdquo;</div>
+      <div class="opt-route route-ins">Confirms insurance pathway eligibility</div>
+    </div></div>
+    <div class="opt"><div class="opt-bullet"></div><div>
+      <div class="opt-text">&ldquo;Yes &mdash; I have private/marketplace insurance&rdquo;</div>
+      <div class="opt-route route-ins">Confirms insurance pathway eligibility</div>
+    </div></div>
+    <div class="opt"><div class="opt-bullet"></div><div>
+      <div class="opt-text">&ldquo;Yes &mdash; Medicaid/Medicare&rdquo;</div>
+      <div class="opt-route route-algo">Flag: Medicare doesn&rsquo;t cover weight loss Rx &mdash; show self-pay with note</div>
+    </div></div>
+    <div class="opt"><div class="opt-bullet"></div><div>
+      <div class="opt-text">&ldquo;No &mdash; I&rsquo;m uninsured or self-pay&rdquo;</div>
+      <div class="opt-route route-sp">Confirms self-pay pathway</div>
+    </div></div>
+    <div class="opt"><div class="opt-bullet"></div><div>
+      <div class="opt-text">&ldquo;I&rsquo;m not sure / I&rsquo;d rather not say&rdquo;</div>
+      <div class="opt-route route-algo">Routes as self-pay with insurance option shown</div>
+    </div></div>
+  </div>
+  <div class="q-purpose"><strong>Final routing lock:</strong> This question combined with Q6 (insurance intent) and Q7 (budget/brand preference) determines the result page. Special handling for Medicaid/Medicare &mdash; Medicare Part D does not cover weight-loss-specific prescriptions, so these patients see self-pay options with an explanatory note.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- ROUTING LOGIC -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Routing Engine</div>
+  <div class="section-title">Final Result Determination</div>
+  <div class="section-desc">The routing algorithm uses Q5 (needles), Q6 (insurance intent), Q7 (budget/brand), and Q10 (insurance status) as primary inputs. Q3 (weight goal) determines semaglutide vs. tirzepatide sub-routing within each result.</div>
+
+  <table class="routing-table">
+    <thead>
+      <tr>
+        <th>Q6 (Insurance)</th>
+        <th>Q7 (Priority)</th>
+        <th>Q5 (Needles)</th>
+        <th>Q10 (Status)</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>&ldquo;Yes, use insurance&rdquo;</td>
+        <td>Any</td>
+        <td>Any</td>
+        <td>Employer / Private</td>
+        <td><strong style="color: var(--blue);">Insurance Program</strong></td>
+      </tr>
+      <tr>
+        <td>&ldquo;Yes, use insurance&rdquo;</td>
+        <td>Any</td>
+        <td>Any</td>
+        <td>Medicaid/Medicare</td>
+        <td><strong style="color: var(--green);">Self-Pay</strong> + note re: coverage limitations</td>
+      </tr>
+      <tr>
+        <td>&ldquo;Yes, use insurance&rdquo;</td>
+        <td>Any</td>
+        <td>Any</td>
+        <td>No / Not sure</td>
+        <td><strong style="color: var(--green);">Self-Pay</strong> (insurance unavailable)</td>
+      </tr>
+      <tr>
+        <td>&ldquo;No, self-pay&rdquo;</td>
+        <td>&ldquo;Most affordable&rdquo;</td>
+        <td>Fine / Prefer avoid</td>
+        <td>Any</td>
+        <td><strong style="color: var(--green);">Self-Pay Compounded</strong> (sema default)</td>
+      </tr>
+      <tr>
+        <td>&ldquo;No, self-pay&rdquo;</td>
+        <td>&ldquo;Most affordable&rdquo;</td>
+        <td>Absolutely not</td>
+        <td>Any</td>
+        <td><strong style="color: var(--amber);">Oral Program</strong> (Glow Rx Appetite)</td>
+      </tr>
+      <tr>
+        <td>&ldquo;No, self-pay&rdquo;</td>
+        <td>&ldquo;Brand-name&rdquo;</td>
+        <td>Fine</td>
+        <td>Any</td>
+        <td><strong style="color: var(--purple);">Branded Rx Management</strong></td>
+      </tr>
+      <tr>
+        <td>&ldquo;No, self-pay&rdquo;</td>
+        <td>&ldquo;Brand-name&rdquo;</td>
+        <td>Prefer avoid / No</td>
+        <td>Any</td>
+        <td><strong style="color: var(--purple);">Branded Rx</strong> (Wegovy oral highlighted)</td>
+      </tr>
+      <tr>
+        <td>&ldquo;No, self-pay&rdquo;</td>
+        <td>&ldquo;Best results&rdquo;</td>
+        <td>Fine</td>
+        <td>Any</td>
+        <td><strong style="color: var(--green);">Self-Pay Tirzepatide</strong></td>
+      </tr>
+      <tr>
+        <td>&ldquo;No, self-pay&rdquo;</td>
+        <td>&ldquo;Best results&rdquo;</td>
+        <td>Prefer avoid / No</td>
+        <td>Any</td>
+        <td><strong style="color: var(--amber);">Oral Program</strong> (Glow Rx Metabolic Reset)</td>
+      </tr>
+      <tr>
+        <td>&ldquo;Not sure&rdquo;</td>
+        <td>Any</td>
+        <td>Fine</td>
+        <td>Any &ldquo;Yes&rdquo;</td>
+        <td><strong>Hybrid:</strong> Insurance + Self-Pay shown</td>
+      </tr>
+      <tr>
+        <td>&ldquo;Not sure&rdquo;</td>
+        <td>Any</td>
+        <td>Any</td>
+        <td>No / Not sure</td>
+        <td><strong style="color: var(--green);">Self-Pay</strong> (routed by Q3 + Q7)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note-block" style="margin-top: 24px;">
+    <h4>Needle Override Rule</h4>
+    <p>If Q5 = &ldquo;Absolutely not &mdash; no needles,&rdquo; the result ALWAYS routes to the Oral Program regardless of other answers &mdash; UNLESS they specifically selected &ldquo;brand-name&rdquo; in Q7, in which case show Wegovy Oral as the primary recommendation with Glow Rx products as alternatives.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- RESULT PAGES -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Result Pages</div>
+  <div class="section-title">4 Outcome Pages</div>
+  <div class="section-desc">Each result page includes a personalized headline, program summary, pricing, Dr. Linda quote, program-specific discount code pop-up, and a clear checkout CTA. Detailed result page copy is a separate deliverable.</div>
+
+  <div class="result-preview res-ins">
+    <div class="result-num">Result 01 &mdash; Insurance Navigation</div>
+    <div class="result-title">Insurance Navigation Program</div>
+    <div class="result-trigger"><strong>Triggered by:</strong> Q6 = &ldquo;Yes, use insurance&rdquo; + Q10 = employer or private insurance</div>
+    <div class="result-products">
+      <strong>Products shown:</strong> Tier 1 Eligibility Check ($25) &rarr; Tier 2 PA Submission ($50) &rarr; Tier 3 Approval ($85 one-time) &rarr; Tier 4 Ongoing Management ($75/mo)<br><br>
+      <strong>Primary CTA:</strong> &ldquo;Check My Coverage &mdash; $25&rdquo;<br>
+      <strong>Fallback:</strong> Self-pay options shown below as &ldquo;Don&rsquo;t want to wait? Start self-pay today.&rdquo;
+    </div>
+  </div>
+
+  <div class="result-preview res-sp">
+    <div class="result-num">Result 02 &mdash; Self-Pay Compounded Injectable</div>
+    <div class="result-title">Self-Pay Compounded Program</div>
+    <div class="result-trigger"><strong>Triggered by:</strong> Q6 = &ldquo;No, self-pay&rdquo; + Q5 = fine with needles + Q7 = &ldquo;affordable&rdquo; or &ldquo;best results&rdquo;</div>
+    <div class="result-products">
+      <strong>Sub-routing by Q3 (weight goal):</strong><br>
+      10&ndash;40 lbs &rarr; <strong>Semaglutide</strong> highlighted as &ldquo;Your Match&rdquo; | Starting at $179/mo (1-mo) down to $149/mo (6-mo)<br>
+      40+ lbs &rarr; <strong>Tirzepatide</strong> highlighted as &ldquo;Your Match&rdquo; | Starter phase $315 (1-mo) down to $259/mo (6-mo)<br><br>
+      <strong>Both always shown</strong> &mdash; the recommended one is &ldquo;Best Match,&rdquo; the other is &ldquo;Also Available.&rdquo;
+    </div>
+  </div>
+
+  <div class="result-preview res-oral">
+    <div class="result-num">Result 03 &mdash; Oral Medication Program</div>
+    <div class="result-title">Oral / Needle-Free Program</div>
+    <div class="result-trigger"><strong>Triggered by:</strong> Q5 = &ldquo;Absolutely not&rdquo; or &ldquo;Prefer to avoid&rdquo; (strong weight)</div>
+    <div class="result-products">
+      <strong>Pre-selected &ldquo;Best Match&rdquo; based on Q3 + Q7:</strong><br><br>
+      <strong>Glow Rx Appetite</strong> (Compounded Oral Semaglutide) &mdash; Starting at $149/mo<br>
+      Best for: budget-conscious, lighter goals (10&ndash;40 lbs), &ldquo;most affordable&rdquo; in Q7<br><br>
+      <strong>Glow Rx Metabolic Reset</strong> (Compounded Oral Tirzepatide) &mdash; Starting at $149/mo<br>
+      Best for: aggressive goals (40+ lbs), &ldquo;best results&rdquo; in Q7<br><br>
+      <strong>Wegovy Oral</strong> (Brand-Name Semaglutide Pill) &mdash; Starting at $55/mo with Body Good<br>
+      Best for: &ldquo;brand-name&rdquo; in Q7, patients who want FDA-approved brand medication<br><br>
+      <strong>Display logic:</strong> One product is pre-selected as &ldquo;Your Best Match&rdquo; with a highlight border. The other two appear below as &ldquo;Also available &mdash; based on your profile.&rdquo;
+    </div>
+  </div>
+
+  <div class="result-preview res-brand">
+    <div class="result-num">Result 04 &mdash; Branded Rx Management</div>
+    <div class="result-title">Brand-Name Prescription Management</div>
+    <div class="result-trigger"><strong>Triggered by:</strong> Q7 = &ldquo;I want the exact brand-name medication&rdquo;</div>
+    <div class="result-products">
+      <strong>Products shown:</strong><br>
+      <strong>Wegovy / Zepbound / Mounjaro</strong> management &mdash; $55/mo (1-mo) down to $25/mo (6-mo)<br>
+      Physician oversight, Rx management, dosage adjustments<br><br>
+      <strong>If needle-averse (Q5):</strong> Wegovy Oral highlighted first, injectable brands shown as alternatives<br><br>
+      <strong>Note:</strong> Patient must have their own supply pathway (insurance, manufacturer coupon, etc.) or be willing to pay pharmacy price. Body Good provides the medical oversight and prescription management.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- POST-QUIZ AUTOMATIONS -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Automations</div>
+  <div class="section-title">Post-Quiz Trigger Sequence</div>
+  <div class="section-desc">Automated follow-up based on quiz completion, lead temperature (Q8), and matched program. All triggers fire from Zoho Creator + Mailgun (email) and Claudia bot (SMS).</div>
+
+  <div class="auto-block">
+    <div class="auto-time">0&ndash;5 min</div>
+    <div class="auto-content"><strong>Email:</strong> Personalized results summary + program-specific discount code<br><strong>Claudia SMS</strong> (Q8 = &ldquo;This week&rdquo; only): &ldquo;Hi [first name] &mdash; this is Claudia from Dr. Linda&rsquo;s team. I saw you matched with our [program]. Your welcome offer is still active. Any questions before you get started? I&rsquo;m here.&rdquo;</div>
+
+    <div class="auto-time">10 min</div>
+    <div class="auto-content"><strong>Claudia SMS</strong> (no purchase, warm leads): Gentle nudge with discount reminder</div>
+
+    <div class="auto-time">24 hrs</div>
+    <div class="auto-content"><strong>Email:</strong> Education piece tailored to Q4 answer. Experienced users get &ldquo;why this time is different&rdquo; angle. First-timers get &ldquo;what to expect in your first month.&rdquo;</div>
+
+    <div class="auto-time">48 hrs</div>
+    <div class="auto-content"><strong>Email:</strong> Social proof / testimonial matched to their program result</div>
+
+    <div class="auto-time">72 hrs</div>
+    <div class="auto-content"><strong>SMS:</strong> Urgency &mdash; &ldquo;Your [discount code] expires in 48 hours&rdquo;</div>
+
+    <div class="auto-time">5 days</div>
+    <div class="auto-content"><strong>Email:</strong> FAQ + objection handling based on matched program</div>
+
+    <div class="auto-time">7 days</div>
+    <div class="auto-content"><strong>Email:</strong> Final offer &mdash; &ldquo;Last chance&rdquo; + Dr. Linda personal note</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- DEVELOPMENT NOTES -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Dev Notes</div>
+  <div class="section-title">Implementation Requirements</div>
+
+  <div class="note-block">
+    <h4>HIPAA Compliance</h4>
+    <p>No medical answers (Q2 contraindications) are ever stored with identifying information. The contraindication screen is anonymous &mdash; email capture only happens on the disqualification pop-up AFTER the quiz terminates, stored in a separate system from medical answers. Phase 1 and Phase 2 answers must live in separate data stores from the email captured in Phase 3.</p>
+  </div>
+
+  <div class="note-block">
+    <h4>Discount Codes by Result</h4>
+    <p><strong>Insurance:</strong> No discount (already $25 entry)<br>
+    <strong>Self-Pay Semaglutide:</strong> [CODE] for $X off first month<br>
+    <strong>Self-Pay Tirzepatide:</strong> [CODE] for $X off first month<br>
+    <strong>Oral (Glow Rx):</strong> [CODE] for $X off first month<br>
+    <strong>Branded Rx:</strong> [CODE] for $X off first month</p>
+    <p><em>Discount amounts and codes TBD by Dr. Linda.</em></p>
+  </div>
+
+  <div class="note-block">
+    <h4>Tracking &amp; Attribution</h4>
+    <p>Each result page = unique URL for attribution. UTM parameters from the ad source must carry through the full quiz into the result page URL and Shopify checkout. Quiz completion events should fire to: Meta Pixel, Google Ads, TikTok Pixel, and Zoho CRM via n8n webhook.</p>
+  </div>
+
+  <div class="note-block">
+    <h4>Mobile-First Design Requirements</h4>
+    <p>Every screen must be thumb-friendly. Max 4 answer options visible without scrolling on any question. Interstitial cards should be swipeable. Sticky bottom CTA bar on mobile throughout. Progress bar at top showing completion percentage.</p>
+  </div>
+
+  <div class="note-block">
+    <h4>Abandoned Quiz Recovery</h4>
+    <p>If a user reaches Q9 (email capture) but doesn&rsquo;t submit, track this as an abandoned quiz event. If they previously entered any partial data through a cookie or session, fire a retargeting pixel event for &ldquo;quiz abandoner&rdquo; audience. No email recovery is possible since email hasn&rsquo;t been captured yet &mdash; this is ad retargeting only.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- FOOTER -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="doc-footer">
+  Body Good Studio &nbsp;&bull;&nbsp; MEDUSA Quiz Copy v1.0 &nbsp;&bull;&nbsp; March 23, 2026<br>
+  Internal document &mdash; not for public distribution<br><br>
+  <strong>Next deliverable:</strong> Full result page copy for all 4 outcomes
+</div>
+
+</div><!-- /container -->
+</body>
+</html>

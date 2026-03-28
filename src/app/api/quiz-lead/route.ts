@@ -9,8 +9,16 @@ export async function POST(req: NextRequest) {
     await db.quizLead.create({
       data: {
         email: body.email || "",
+        firstName: body.firstName || null,
         phone: body.phone || null,
-        bmi: body.bmi || null,
+        state: body.state || null,
+        weightGoal: body.weightGoal || null,
+        story: body.story || null,
+        needleComfort: body.needleComfort || null,
+        insuranceInterest: body.insuranceInterest || null,
+        insuranceType: body.insuranceType || null,
+        priority: body.priority || null,
+        timeline: body.timeline || null,
         quizOutcome: body.quizOutcome || null,
         utmSource: body.utmSource || null,
         utmMedium: body.utmMedium || null,
@@ -22,9 +30,10 @@ export async function POST(req: NextRequest) {
 
     await fireWebhook("lead.captured", {
       email: body.email,
+      firstName: body.firstName,
       phone: body.phone,
-      bmi: body.bmi,
       quizOutcome: body.quizOutcome,
+      timeline: body.timeline,
       locale: body.locale,
       utmSource: body.utmSource,
     });

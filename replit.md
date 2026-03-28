@@ -213,7 +213,7 @@ Redirect to Zoho/GLOW for medical intake
 
 - **Product** + ProductTranslation + ProductVariant + ProductImage
 - **InsuranceProbability** — 251 entries across 10 carriers, 10 states, 4 medications
-- **QuizLead** — email, phone, BMI, quiz outcome, UTM params
+- **QuizLead** — email, firstName, phone, state, weightGoal, story, needleComfort, insuranceInterest, insuranceType, priority, timeline, quizOutcome, UTM params
 - **FaqItem** + FaqTranslation — 7 bilingual FAQ entries
 - **Order** + OrderItem — full order system with status workflow
 - **DiscountCode** — 3 codes seeded (WELCOME25, SAVE10, FRIEND25)

@@ -64,7 +64,7 @@ src/
   lib/
     db.ts              # Prisma client singleton
     webhooks.ts        # fires events to N8N_WEBHOOK_URL (fire-and-forget, safe if unset)
-  middleware.ts        # locale detection + routing
+  proxy.ts             # locale detection + routing (Next.js 16: renamed from middleware.ts)
 messages/
   en.json              # English translations
   es.json              # Spanish translations

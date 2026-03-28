@@ -84,17 +84,25 @@ model InsuranceProbability {
 }
 
 model QuizLead {
-  id           String   @id @default(cuid())
-  email        String
-  phone        String?
-  bmi          Float?
-  quizOutcome  String?
-  utmSource    String?
-  utmMedium    String?
-  utmCampaign  String?
-  locale       String   @default("en")
-  completedAt  DateTime?
-  createdAt    DateTime @default(now())
+  id                String    @id @default(cuid())
+  email             String
+  firstName         String?
+  phone             String?
+  state             String?
+  weightGoal        String?
+  story             String?
+  needleComfort     String?
+  insuranceInterest String?
+  insuranceType     String?
+  priority          String?
+  timeline          String?
+  quizOutcome       String?
+  utmSource         String?
+  utmMedium         String?
+  utmCampaign       String?
+  locale            String    @default("en")
+  completedAt       DateTime?
+  createdAt         DateTime  @default(now())
 
   @@index([email])
   @@index([createdAt])
