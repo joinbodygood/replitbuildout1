@@ -625,6 +625,251 @@ function StepWrapper({
   );
 }
 
+// ─────────────────────────────────────────────
+// BMI CALCULATOR STEP — module-level to prevent re-mounting
+// ─────────────────────────────────────────────
+function getBmiRange(bmi: number): string {
+  if (bmi < 27) return "under27";
+  if (bmi < 30) return "27to30";
+  if (bmi < 35) return "30to35";
+  if (bmi < 40) return "35to40";
+  return "40plus";
+}
+
+function BmiStep({
+  progressPct, currentStepNum, totalSteps,
+  selectedRange, pillBtn, pillBtnSelected, pillBtnUnselected, primaryBtn, onSelect,
+}: {
+  progressPct: number; currentStepNum: number; totalSteps: number;
+  selectedRange: string; pillBtn: string; pillBtnSelected: string; pillBtnUnselected: string; primaryBtn: string;
+  onSelect: (val: string) => void;
+}) {
+  const [unit, setUnit] = useState<"imperial" | "metric">("imperial");
+  const [feet, setFeet] = useState("");
+  const [inches, setInches] = useState("");
+  const [cm, setCm] = useState("");
+  const [lbs, setLbs] = useState("");
+  const [kg, setKg] = useState("");
+  const [calcRange, setCalcRange] = useState("");
+  const [bmiValue, setBmiValue] = useState<number | null>(null);
+  const [activeRange, setActiveRange] = useState(selectedRange);
+
+  function computeBmi() {
+    let bmi: number | null = null;
+    if (unit === "imperial") {
+      const totalInches = (parseFloat(feet) || 0) * 12 + (parseFloat(inches) || 0);
+      const weight = parseFloat(lbs);
+      if (totalInches > 0 && weight > 0) {
+        bmi = (weight * 703) / (totalInches * totalInches);
+      }
+    } else {
+      const heightCm = parseFloat(cm);
+      const weight = parseFloat(kg);
+      if (heightCm > 0 && weight > 0) {
+        bmi = weight / Math.pow(heightCm / 100, 2);
+      }
+    }
+    if (bmi !== null && bmi > 10 && bmi < 80) {
+      const rounded = Math.round(bmi * 10) / 10;
+      setBmiValue(rounded);
+      const range = getBmiRange(rounded);
+      setCalcRange(range);
+      setActiveRange(range);
+    } else {
+      setBmiValue(null);
+      setCalcRange("");
+    }
+  }
+
+  useEffect(() => { computeBmi(); }, [feet, inches, cm, lbs, kg, unit]);
+
+  const BMI_RANGES = [
+    { value: "under27", label: "Under 27", info: "Below overweight threshold" },
+    { value: "27to30", label: "27–29.9", info: "Overweight — qualifies with comorbidity" },
+    { value: "30to35", label: "30–34.9", info: "Obese class I — meets most plan criteria" },
+    { value: "35to40", label: "35–39.9", info: "Obese class II — strong eligibility" },
+    { value: "40plus", label: "40+", info: "Obese class III — meets all thresholds" },
+    { value: "not_sure", label: "I'd rather not say", info: "" },
+  ];
+
+  const bmiColor =
+    bmiValue === null ? null :
+    bmiValue >= 30 ? "#15803d" :
+    bmiValue >= 27 ? "#b45309" : "#6b7280";
+
+  const bmiLabel =
+    bmiValue === null ? null :
+    bmiValue >= 40 ? "Obese Class III" :
+    bmiValue >= 35 ? "Obese Class II" :
+    bmiValue >= 30 ? "Obese Class I" :
+    bmiValue >= 27 ? "Overweight" :
+    bmiValue >= 25 ? "Slightly Overweight" : "Normal weight";
+
+  return (
+    <StepWrapper
+      title="What is your BMI range?"
+      subtitle="Don't know your BMI? Use the calculator below."
+      progressPct={progressPct}
+      currentStep={currentStepNum}
+      totalSteps={totalSteps}
+    >
+      {/* BMI CALCULATOR */}
+      <div className="bg-[#fde7e7] rounded-2xl p-5 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <span style={{ fontFamily: "var(--font-heading)" }} className="text-sm font-bold text-gray-800">
+            BMI Calculator
+          </span>
+          <div className="flex rounded-full bg-white border border-gray-200 overflow-hidden text-xs">
+            <button
+              type="button"
+              onClick={() => { setUnit("imperial"); setBmiValue(null); setCalcRange(""); }}
+              className={`px-4 py-1.5 font-semibold transition-colors ${unit === "imperial" ? "bg-[#ed1b1b] text-white" : "text-gray-500 hover:text-gray-800"}`}
+            >
+              lbs / ft
+            </button>
+            <button
+              type="button"
+              onClick={() => { setUnit("metric"); setBmiValue(null); setCalcRange(""); }}
+              className={`px-4 py-1.5 font-semibold transition-colors ${unit === "metric" ? "bg-[#ed1b1b] text-white" : "text-gray-500 hover:text-gray-800"}`}
+            >
+              kg / cm
+            </button>
+          </div>
+        </div>
+
+        {unit === "imperial" ? (
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1 font-medium">Feet</label>
+              <input
+                type="number"
+                value={feet}
+                onChange={(e) => setFeet(e.target.value)}
+                placeholder="5"
+                min="3" max="8"
+                className="w-full px-3 py-3 rounded-xl border-2 border-white focus:border-[#ed1b1b] outline-none text-gray-800 text-center text-lg font-bold bg-white transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1 font-medium">Inches</label>
+              <input
+                type="number"
+                value={inches}
+                onChange={(e) => setInches(e.target.value)}
+                placeholder="6"
+                min="0" max="11"
+                className="w-full px-3 py-3 rounded-xl border-2 border-white focus:border-[#ed1b1b] outline-none text-gray-800 text-center text-lg font-bold bg-white transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1 font-medium">Weight (lbs)</label>
+              <input
+                type="number"
+                value={lbs}
+                onChange={(e) => setLbs(e.target.value)}
+                placeholder="185"
+                min="50" max="700"
+                className="w-full px-3 py-3 rounded-xl border-2 border-white focus:border-[#ed1b1b] outline-none text-gray-800 text-center text-lg font-bold bg-white transition-colors"
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1 font-medium">Height (cm)</label>
+              <input
+                type="number"
+                value={cm}
+                onChange={(e) => setCm(e.target.value)}
+                placeholder="168"
+                min="100" max="250"
+                className="w-full px-3 py-3 rounded-xl border-2 border-white focus:border-[#ed1b1b] outline-none text-gray-800 text-center text-lg font-bold bg-white transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1 font-medium">Weight (kg)</label>
+              <input
+                type="number"
+                value={kg}
+                onChange={(e) => setKg(e.target.value)}
+                placeholder="84"
+                min="20" max="300"
+                className="w-full px-3 py-3 rounded-xl border-2 border-white focus:border-[#ed1b1b] outline-none text-gray-800 text-center text-lg font-bold bg-white transition-colors"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* BMI result */}
+        {bmiValue !== null && (
+          <div className="mt-4 bg-white rounded-xl px-4 py-3 flex items-center justify-between">
+            <div>
+              <span className="text-xs text-gray-400">Your BMI</span>
+              <div style={{ fontFamily: "var(--font-heading)", color: bmiColor ?? "#1f2937" }} className="text-3xl font-black">
+                {bmiValue}
+              </div>
+            </div>
+            <div className="text-right">
+              <div style={{ color: bmiColor ?? "#1f2937" }} className="text-sm font-semibold">
+                {bmiLabel}
+              </div>
+              <div className="text-xs text-gray-400 mt-0.5">
+                {bmiValue >= 30
+                  ? "✓ Meets most insurance thresholds"
+                  : bmiValue >= 27
+                  ? "Qualifies with a documented comorbidity"
+                  : "Below most plan minimums"}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Range buttons */}
+      <p className="text-xs text-gray-400 mb-3">
+        {calcRange ? "We've selected your range below — tap Continue or choose a different one:" : "Or select your range manually:"}
+      </p>
+      <div className="space-y-2 mb-6">
+        {BMI_RANGES.map((o) => {
+          const isActive = activeRange === o.value;
+          const isCalced = calcRange === o.value;
+          return (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => setActiveRange(o.value)}
+              className={`${pillBtn} flex items-center justify-between ${isActive ? pillBtnSelected : pillBtnUnselected}`}
+            >
+              <div>
+                <span className="font-semibold">BMI {o.label}</span>
+                {o.info && <span className={`ml-2 text-xs ${isActive ? "text-red-100" : "text-gray-400"}`}>{o.info}</span>}
+              </div>
+              <div className="flex items-center gap-2">
+                {isCalced && !isActive && (
+                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">your BMI</span>
+                )}
+                {isCalced && isActive && (
+                  <span className="text-xs bg-red-200 text-white px-2 py-0.5 rounded-full">your BMI</span>
+                )}
+                {isActive && <span className="text-lg">✓</span>}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      <button
+        type="button"
+        disabled={!activeRange}
+        onClick={() => onSelect(activeRange)}
+        className={`${primaryBtn} disabled:opacity-40`}
+      >
+        Continue →
+      </button>
+    </StepWrapper>
+  );
+}
+
 export default function InsuranceCheckPage() {
   const locale = useLocale();
   const [step, setStep] = useState<Step>("landing");
@@ -971,35 +1216,22 @@ export default function InsuranceCheckPage() {
     );
   }
 
-  // STEP 6 — BMI range
+  // STEP 6 — BMI calculator + range
   if (step === 6) {
-    const options = [
-      { value: "under27", label: "Under 27" },
-      { value: "27to30", label: "27–29.9" },
-      { value: "30to35", label: "30–34.9" },
-      { value: "35to40", label: "35–39.9" },
-      { value: "40plus", label: "40+" },
-      { value: "not_sure", label: "Not sure" },
-    ];
-    return (
-      <StepWrapper title="What is your approximate BMI range?" subtitle="Most plans require BMI 30+ (or 27+ with a comorbidity)." progressPct={progressPct} currentStep={currentStepNum} totalSteps={TOTAL_QUIZ_STEPS}>
-        <div className="space-y-3">
-          {options.map((o) => (
-            <button
-              key={o.value}
-              type="button"
-              onClick={() => {
-                setAnswers((a) => ({ ...a, bmiRange: o.value }));
-                setStep("email");
-              }}
-              className={`${pillBtn} ${answers.bmiRange === o.value ? pillBtnSelected : pillBtnUnselected}`}
-            >
-              {o.label}
-            </button>
-          ))}
-        </div>
-      </StepWrapper>
-    );
+    return <BmiStep
+      progressPct={progressPct}
+      currentStepNum={currentStepNum}
+      totalSteps={TOTAL_QUIZ_STEPS}
+      selectedRange={answers.bmiRange}
+      pillBtn={pillBtn}
+      pillBtnSelected={pillBtnSelected}
+      pillBtnUnselected={pillBtnUnselected}
+      primaryBtn={primaryBtn}
+      onSelect={(val) => {
+        setAnswers((a) => ({ ...a, bmiRange: val }));
+        setStep("email");
+      }}
+    />;
   }
 
   // EMAIL CAPTURE
