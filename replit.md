@@ -117,7 +117,8 @@ Quiz (one quiz, 4 outcomes)
     |---> Outcome C: Oral GLP-1 (from $109/mo)
     |---> Outcome D: Branded Rx - $45 prescription (Wegovy/Zepbound)
     |
-Add to Cart --> Cart --> Checkout (PayPal) --> Confirmation
+Add to Cart → /cart/upsell (add-ons: Ongoing Care $55/mo, Insurance Check $25)
+    → Cart → Checkout (PayPal) → Confirmation
     |
 Redirect to Zoho/GLOW for medical intake
 ```
@@ -161,7 +162,11 @@ Redirect to Zoho/GLOW for medical intake
 - 3 interstitial trust cards (stats, Dr. Linda, semaglutide vs tirzepatide)
 - BMI calculator, email + phone capture (mid-quiz), medical disqualifier screens
 - Insurance detail collection with probability check
-- 4 recommendation pages (compounded, insurance, oral, branded) with DualPathCard
+- 4 recommendation pages (compounded, insurance, oral, branded) — **fully rebuilt with product comparison + Add to Cart:**
+  - Compounded: MedicationChoiceCard side-by-side (Semaglutide vs Tirzepatide) + plan selectors with variant pricing from DB
+  - Insurance: 3-step accordion (Eligibility/Prior Auth/Approval) each with Add to Cart
+  - Oral: Single product with inline variant plan selector (MedicationChoiceCardInline)
+  - Branded: $45 Rx + optional management plan (MedicationChoiceCardInline); med comparison grid
 - Free insurance probability checker (/insurance-check)
 - 251 insurance probability entries seeded for 10 carriers
 - Quiz lead API + insurance probability API
@@ -169,14 +174,17 @@ Redirect to Zoho/GLOW for medical intake
 
 ### Quiz Engine — Category Quizzes (4 Categories)
 - **Shared infrastructure:** `CategoryQuizEngine.tsx` (declarative, reusable), `DualPathCard.tsx` (Ship-to-Door vs Pharmacy Rx dual-path result card)
-- **Hair Restoration** (`/quiz/hair`) — 4 questions, 6 outcomes: women-mild, women-moderate, women-postpartum, men-mild, men-moderate, men-advanced
-- **Skincare & Glow** (`/quiz/skin`) — 4 questions, 4 outcomes: anti-aging, brightening, hormonal-acne, rosacea
-- **Feminine Health** (`/quiz/feminine-health`) — 4 questions, 4 outcomes: acute-infection (pharmacy-only), vaginal-dryness, intimate-wellness, hormonal-support
-- **Mental Wellness** (`/quiz/mental-wellness`) — 4 questions, 6 outcomes: anxiety, sleep, depression, adhd-focus, mood-swings, energy-fatigue; includes 988 crisis safety banner
+- **Hair Restoration** (`/quiz/hair`) — 4 questions, 6 outcomes (women-mild/moderate/max, men-basic/combo/max); all result pages have cartData on both paths (Ship-to-Door + Pharmacy consult); uses synthetic productIds (DB not yet seeded for hair products)
+- **Skincare & Glow** (`/quiz/skin`) — 4 outcomes (anti-aging, hyperpigmentation, hormonal-acne, rosacea); all result pages have cartData; synthetic productIds
+- **Feminine Health** (`/quiz/feminine-health`) — 4 outcomes (acute-infection, vaginal-dryness, intimacy, prevention); acute-infection is pharmacy-only ($35); others are dual-path; all have cartData
+- **Mental Wellness** (`/quiz/mental-wellness`) — 6 outcomes (anxiety, performance, sleep, depression, motivation, assessment); all pharmacy-only ($49 consult); all have cartData; includes 988 crisis safety banner
+- All 4 category quizzes: `DualPathCard` shows ✓ benefits + ✗ tradeoffs; `AddToCartButton` triggers when cartData present; `redirectToUpsell=true` sends to `/cart/upsell`
 - WhatBringsYou homepage section links each card directly to its category quiz (no more "Coming Soon")
 
 ### Checkout & Payments
 - Cart context with localStorage persistence, cart page, AddToCartButton
+- **Upsell page** (`/cart/upsell`) — shown after Add to Cart; offers Ongoing Care Plan (+$55/mo) and Insurance Coverage Check (+$25); proceed to checkout CTA with cart summary
+- **MedicationChoiceCard** + **MedicationChoiceCardInline** — price-tier selector cards with plan variant picker, Add to Cart, badges, and X/✓ tradeoffs
 - Multi-step checkout (Info → Shipping → Payment → Confirmation)
 - Real PayPal SDK integration (sandbox) — **NOTE: server-side verification not yet built**
 - Order API (creates order in DB), discount code system

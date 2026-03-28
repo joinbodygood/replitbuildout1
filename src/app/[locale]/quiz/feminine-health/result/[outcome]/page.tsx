@@ -4,36 +4,22 @@ import { Container } from "@/components/ui/Container";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { DualPathCard } from "@/components/quiz/DualPathCard";
+import type { PathOption } from "@/components/quiz/DualPathCard";
 import { ShieldCheck, Clock, MessageCircle } from "lucide-react";
 
 type Props = {
   params: Promise<{ locale: string; outcome: string }>;
 };
 
-const VALID_OUTCOMES = [
-  "acute-infection",
-  "vaginal-dryness",
-  "intimacy",
-  "prevention",
-];
-
-interface FHPathOption {
-  price: string;
-  priceNote?: string;
-  badge?: string;
-  benefits: string[];
-  pharmacyNote?: string;
-  cta: string;
-  href: string;
-}
+const VALID_OUTCOMES = ["acute-infection", "vaginal-dryness", "intimacy", "prevention"];
 
 interface FHConfig {
   headline: string;
   productName: string;
   productSubtitle: string;
   recommendation: string;
-  pathA: FHPathOption | null;
-  pathB: FHPathOption | null;
+  pathA: PathOption | null;
+  pathB: PathOption | null;
   crossSell?: { title: string; desc: string; price: string; href: string };
 }
 
@@ -46,7 +32,7 @@ function getConfig(outcome: string, locale: string): FHConfig {
       productName: "UTI · Yeast Infection · BV Treatment",
       productSubtitle: "Prescription antibiotics or antifungals — same day",
       recommendation:
-        "For acute infections, the fastest path is a prescription to your local pharmacy. A provider reviews your info, writes your Rx, and sends it electronically — you pick it up same day and pay with your insurance.",
+        "For acute infections, the fastest path is a prescription to your local pharmacy. A provider reviews your info, writes your Rx, and sends it electronically — pick it up same day.",
       pathA: null,
       pathB: {
         price: "$35",
@@ -56,13 +42,23 @@ function getConfig(outcome: string, locale: string): FHConfig {
           "Provider reviews your symptoms within hours",
           "Rx sent electronically to your pharmacy of choice",
           "Pick up same day — use your insurance for the medication",
-          "UTI: Nitrofurantoin or TMP-SMX | Yeast: Fluconazole | BV: Metronidazole",
+          "UTI: Nitrofurantoin / TMP-SMX · Yeast: Fluconazole · BV: Metronidazole",
           "Follow-up included if symptoms don't resolve",
+        ],
+        tradeoffs: [
+          "Rx only — no at-home compounded formula for acute infections",
         ],
         pharmacyNote:
           "Most antibiotics and antifungals are $0–$15 with insurance. You pay Body Good $35 for the provider consultation — the medication is billed through your pharmacy.",
-        cta: "Get Treatment Now →",
+        cta: "Get Treatment Now",
         href: `${base}/programs`,
+        cartData: {
+          productId: "fh-acute-consult",
+          variantId: "fh-acute-consult-ot",
+          priceInCents: 3500,
+          variantLabel: "One-Time Consultation",
+          slug: "fh-acute-consultation",
+        },
       },
       crossSell: {
         title: "Prevent future infections: Infection Prevention Bundle",
@@ -75,23 +71,33 @@ function getConfig(outcome: string, locale: string): FHConfig {
     "vaginal-dryness": {
       headline: "Relief and restoration — on your terms.",
       productName: "Vaginal Dryness Rx",
-      productSubtitle:
-        "Estradiol or Estriol vaginal gel — bioidentical hormone therapy",
+      productSubtitle: "Estradiol or Estriol vaginal gel — bioidentical hormone therapy",
       recommendation:
-        "Vaginal dryness and discomfort — especially during or after menopause — responds extremely well to localized estrogen therapy. Low-dose vaginal estrogen is safe, highly effective, and does not carry the systemic risks of oral HRT.",
+        "Low-dose vaginal estrogen is safe, highly effective, and doesn't carry the systemic risks of oral HRT. Estriol (E3) is the gentler option — only available compounded.",
       pathA: {
         price: "$65/mo",
         priceNote: "Compounded estradiol or estriol gel, shipped free",
         badge: "Ship to My Door",
         benefits: [
-          "Compounded estradiol (E2) or estriol (E3) vaginal gel",
-          "Estriol is only available as a compounded formula (not at pharmacies)",
+          "Estradiol (E2) or Estriol (E3) vaginal gel — your provider selects",
+          "Estriol is ONLY available compounded — not at pharmacies",
           "Gentler, more targeted than systemic hormone therapy",
           "Provider consultation & treatment plan included",
           "Discreet packaging, free shipping",
         ],
-        cta: "Get Started →",
+        tradeoffs: [
+          "Self-pay — compounded estriol not covered by insurance",
+          "Estradiol variant may be available at lower cost via pharmacy",
+        ],
+        cta: "Add to Cart — $65/mo",
         href: `${base}/programs`,
+        cartData: {
+          productId: "fh-vaginal-dryness",
+          variantId: "fh-vaginal-dryness-1mo",
+          priceInCents: 6500,
+          variantLabel: "1-Month Supply — Vaginal Gel",
+          slug: "fh-vaginal-dryness",
+        },
       },
       pathB: {
         price: "$49",
@@ -104,20 +110,30 @@ function getConfig(outcome: string, locale: string): FHConfig {
           "Provider consultation & monitoring included",
           "Monthly check-ins & dose adjustments",
         ],
+        tradeoffs: [
+          "Estriol (gentler E3) only available via compounding — Path A only",
+          "Pharmacy creams may require more frequent application",
+        ],
         pharmacyNote:
-          "Estradiol vaginal cream (Premarin, Estrace) is typically covered by insurance. Estriol, a gentler alternative, is only available through compounding (Path A).",
-        cta: "Start Consultation →",
+          "Estradiol vaginal cream (Premarin, Estrace) is typically covered by insurance. Estriol — a gentler alternative — is only available through compounding.",
+        cta: "Start Consultation",
         href: `${base}/programs`,
+        cartData: {
+          productId: "fh-pharmacy-consult",
+          variantId: "fh-consult-vaginal-dryness",
+          priceInCents: 4900,
+          variantLabel: "Initial Consultation",
+          slug: "fh-consultation",
+        },
       },
     },
 
     "intimacy": {
       headline: "You deserve to feel good in your body.",
       productName: "Intimate Wellness Cream",
-      productSubtitle:
-        "Sildenafil + Arginine + Papaverine — topical arousal formula",
+      productSubtitle: "Sildenafil + Arginine + Papaverine — topical arousal formula",
       recommendation:
-        "Our Intimate Wellness Cream is a compounded topical formula that increases blood flow to the clitoris and surrounding tissue, enhancing arousal and sensitivity. Applied locally before intimacy — it works within 20–30 minutes and has no systemic side effects.",
+        "A compounded topical formula that increases blood flow locally, enhancing arousal and sensitivity. Applied before intimacy — works in 20–30 minutes, no systemic effects.",
       pathA: {
         price: "$65/mo",
         priceNote: "Compounded topical cream, shipped discreetly",
@@ -126,11 +142,22 @@ function getConfig(outcome: string, locale: string): FHConfig {
           "Sildenafil + Arginine + Papaverine — topical formula",
           "Increases blood flow and sensitivity locally",
           "Works within 20–30 minutes of application",
-          "No pills, no systemic effects, no prescription wait",
-          "Compounded — not available at any standard pharmacy",
+          "No pills, no systemic side effects, no wait",
+          "Not available at any standard pharmacy — compounded only",
         ],
-        cta: "Get Started →",
+        tradeoffs: [
+          "Self-pay — not covered by insurance",
+          "Use only as-needed — not a daily medication",
+        ],
+        cta: "Add to Cart — $65/mo",
         href: `${base}/programs`,
+        cartData: {
+          productId: "fh-intimate-wellness",
+          variantId: "fh-intimate-wellness-1mo",
+          priceInCents: 6500,
+          variantLabel: "1-Month Supply — Intimate Wellness Cream",
+          slug: "fh-intimate-wellness",
+        },
       },
       pathB: null,
       crossSell: {
@@ -146,7 +173,7 @@ function getConfig(outcome: string, locale: string): FHConfig {
       productName: "Infection Prevention Bundle",
       productSubtitle: "Probiotics + D-Mannose + Boric Acid — OTC prevention protocol",
       recommendation:
-        "Recurring UTIs, yeast infections, and BV often stem from the same root cause — microbiome imbalance. Our Prevention Bundle combines three clinically-validated OTC supplements that work together to restore vaginal pH, block bacterial adhesion, and crowd out harmful organisms.",
+        "Recurring infections often stem from microbiome imbalance. Three clinically-validated OTC supplements that work together to restore vaginal pH and block harmful organisms.",
       pathA: {
         price: "$29/mo",
         priceNote: "OTC bundle, shipped monthly",
@@ -158,8 +185,18 @@ function getConfig(outcome: string, locale: string): FHConfig {
           "No prescription needed — all OTC ingredients",
           "Free shipping in discreet packaging",
         ],
-        cta: "Get Started →",
+        tradeoffs: [
+          "Prevention only — not for active infection treatment",
+        ],
+        cta: "Add to Cart — $29/mo",
         href: `${base}/programs`,
+        cartData: {
+          productId: "fh-prevention-bundle",
+          variantId: "fh-prevention-bundle-1mo",
+          priceInCents: 2900,
+          variantLabel: "1-Month Supply — Prevention Bundle",
+          slug: "fh-prevention-bundle",
+        },
       },
       pathB: null,
       crossSell: {
@@ -237,9 +274,7 @@ export default async function FeminineHealthResultPage({ params }: Props) {
             ].map((item) => (
               <div key={item.title} className="bg-white rounded-xl p-5 text-center">
                 <div className="flex justify-center mb-3">{item.icon}</div>
-                <h3 className="font-heading text-heading font-semibold mb-1">
-                  {item.title}
-                </h3>
+                <h3 className="font-heading text-heading font-semibold mb-1">{item.title}</h3>
                 <p className="text-body-muted text-sm">{item.desc}</p>
               </div>
             ))}
@@ -250,9 +285,7 @@ export default async function FeminineHealthResultPage({ params }: Props) {
       <section className="py-10">
         <Container narrow>
           <div className="text-center">
-            <p className="text-body-muted text-sm mb-4">
-              Want to explore other options?
-            </p>
+            <p className="text-body-muted text-sm mb-4">Want to explore other options?</p>
             <Button href={`/${locale}/programs`} variant="secondary" size="md">
               Explore All Programs
             </Button>

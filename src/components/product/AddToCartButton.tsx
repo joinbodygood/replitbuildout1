@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useLocale } from "next-intl";
+import { useRouter } from "next/navigation";
 
 type AddToCartButtonProps = {
   productId: string;
@@ -11,6 +12,9 @@ type AddToCartButtonProps = {
   variantLabel: string;
   price: number;
   slug: string;
+  redirectToUpsell?: boolean;
+  className?: string;
+  label?: string;
 };
 
 export function AddToCartButton({
@@ -20,17 +24,28 @@ export function AddToCartButton({
   variantLabel,
   price,
   slug,
+  redirectToUpsell = false,
+  className,
+  label,
 }: AddToCartButtonProps) {
   const { addItem } = useCart();
   const locale = useLocale();
+  const router = useRouter();
   const isEs = locale === "es";
   const [added, setAdded] = useState(false);
 
   function handleAdd() {
     addItem({ productId, variantId, name, variantLabel, price, slug });
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+    if (redirectToUpsell) {
+      router.push(`/${locale}/cart/upsell`);
+    } else {
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+    }
   }
+
+  const defaultLabel = isEs ? "Agregar al Carrito" : "Add to Cart";
+  const addedLabel = isEs ? "✓ Agregado" : "✓ Added";
 
   return (
     <button
@@ -39,11 +54,9 @@ export function AddToCartButton({
         added
           ? "bg-success text-white"
           : "bg-brand-red text-white shadow-btn hover:bg-brand-red-hover hover:shadow-btn-hover"
-      }`}
+      } ${className ?? ""}`}
     >
-      {added
-        ? (isEs ? "✓ Agregado" : "✓ Added")
-        : (isEs ? "Agregar al Carrito" : "Add to Cart")}
+      {added ? addedLabel : (label ?? defaultLabel)}
     </button>
   );
 }
