@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Insurance Navigation Program — Landing Page Copy | Body Good Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #ed1b1b;
+    --soft-pink: #fde7e7;
+    --heading: #0C0D0F;
+    --body: #55575A;
+    --border: #E5E5E5;
+    --white: #ffffff;
+    --bg: #fafafa;
+    --green: #1a8a5c;
+    --amber: #d4870e;
+    --purple: #6b46c1;
+    --blue: #2563eb;
+    --light-blue: #eff6ff;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Manrope',sans-serif; color:var(--body); background:var(--bg); line-height:1.6; -webkit-font-smoothing:antialiased; }
+
+  /* ── HEADER ── */
+  .doc-header { background:var(--heading); color:var(--white); padding:48px 0 40px; position:relative; }
+  .doc-header::after { content:''; position:absolute; bottom:0; left:0; right:0; height:4px; background:linear-gradient(90deg,var(--blue),#60a5fa,var(--blue)); }
+  .header-inner { max-width:900px; margin:0 auto; padding:0 32px; }
+  .header-badge { display:inline-block; font-family:'Poppins',sans-serif; font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--blue); background:rgba(37,99,235,0.15); padding:6px 16px; border-radius:50px; margin-bottom:20px; }
+  .header-title { font-family:'Poppins',sans-serif; font-size:32px; font-weight:800; line-height:1.15; color:var(--white); margin-bottom:12px; }
+  .header-title span { color:#60a5fa; }
+  .header-sub { font-size:15px; font-weight:400; color:rgba(255,255,255,0.6); max-width:640px; line-height:1.5; }
+  .header-meta { margin-top:24px; display:flex; gap:24px; flex-wrap:wrap; }
+  .meta-item { font-size:12px; font-weight:600; color:rgba(255,255,255,0.4); }
+  .meta-item strong { color:rgba(255,255,255,0.7); }
+
+  .container { max-width:900px; margin:0 auto; padding:0 32px; }
+
+  /* ── SECTION ── */
+  .section { margin:48px 0; }
+  .section-label { font-family:'Poppins',sans-serif; font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; }
+  .section-title { font-family:'Poppins',sans-serif; font-size:22px; font-weight:700; color:var(--heading); margin-bottom:6px; }
+  .section-desc { font-size:14px; color:var(--body); max-width:680px; margin-bottom:28px; line-height:1.6; }
+
+  /* ── CONTENT BLOCK ── */
+  .block { background:var(--white); border:1px solid var(--border); border-radius:12px; padding:28px 32px; margin-bottom:20px; }
+  .block-label { font-family:'Poppins',sans-serif; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; display:inline-block; padding:4px 12px; border-radius:50px; }
+  .bl-hero { color:var(--red); background:rgba(237,27,27,0.08); }
+  .bl-section { color:var(--blue); background:rgba(37,99,235,0.08); }
+  .bl-trust { color:var(--green); background:rgba(26,138,92,0.08); }
+  .bl-pricing { color:var(--purple); background:rgba(107,70,193,0.08); }
+  .bl-faq { color:var(--amber); background:rgba(212,135,14,0.08); }
+  .bl-cta { color:var(--red); background:rgba(237,27,27,0.08); }
+  .bl-note { color:var(--body); background:rgba(85,87,90,0.08); }
+
+  .block h3 { font-family:'Poppins',sans-serif; font-size:18px; font-weight:700; color:var(--heading); margin-bottom:4px; line-height:1.35; }
+  .block h4 { font-family:'Poppins',sans-serif; font-size:15px; font-weight:700; color:var(--heading); margin-bottom:4px; margin-top:16px; line-height:1.35; }
+  .block p { font-size:14px; line-height:1.65; margin-bottom:12px; }
+  .block p:last-child { margin-bottom:0; }
+  .block strong { color:var(--heading); }
+
+  .copy-text { font-size:15px; line-height:1.7; color:var(--heading); font-style:italic; background:rgba(37,99,235,0.03); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 8px 8px 0; margin:12px 0; }
+  .copy-text.pink-border { border-left-color:var(--red); background:rgba(237,27,27,0.02); }
+
+  .design-note { font-size:12px; color:rgba(85,87,90,0.5); font-style:italic; margin-top:12px; padding:10px 14px; background:#f8f8f8; border-radius:8px; }
+
+  /* ── CTA MOCK ── */
+  .cta-mock { display:inline-block; background:var(--red); color:var(--white); font-family:'Poppins',sans-serif; font-size:14px; font-weight:700; padding:14px 32px; border-radius:50px; margin:8px 4px 8px 0; }
+  .cta-mock.secondary { background:var(--white); color:var(--heading); border:2px solid var(--border); }
+  .cta-mock.blue { background:var(--blue); }
+
+  /* ── TIER CARD ── */
+  .tier-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; }
+  .tier-card { border:1px solid var(--border); border-radius:10px; padding:20px; position:relative; }
+  .tier-card.featured { border-color:var(--blue); border-width:2px; }
+  .tier-card.featured::before { content:'MOST POPULAR'; position:absolute; top:-10px; left:16px; font-family:'Poppins',sans-serif; font-size:9px; font-weight:700; letter-spacing:1.5px; background:var(--blue); color:white; padding:3px 10px; border-radius:50px; }
+  .tier-price { font-family:'Poppins',sans-serif; font-size:32px; font-weight:800; color:var(--heading); }
+  .tier-price span { font-size:14px; font-weight:500; color:var(--body); }
+  .tier-name { font-family:'Poppins',sans-serif; font-size:14px; font-weight:700; color:var(--heading); margin:8px 0 4px; }
+  .tier-desc { font-size:13px; color:var(--body); line-height:1.5; }
+  .tier-list { list-style:none; margin-top:12px; }
+  .tier-list li { font-size:13px; color:var(--body); padding:5px 0 5px 20px; position:relative; line-height:1.45; }
+  .tier-list li::before { content:''; position:absolute; left:0; top:10px; width:10px; height:10px; border-radius:50%; border:2px solid var(--green); }
+
+  /* ── COMPARISON TABLE ── */
+  .comp-table { width:100%; border-collapse:separate; border-spacing:0; font-size:13px; margin:16px 0; border-radius:10px; overflow:hidden; border:1px solid var(--border); }
+  .comp-table th { background:var(--heading); color:var(--white); font-family:'Poppins',sans-serif; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:12px 14px; text-align:left; }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid var(--border); vertical-align:top; line-height:1.45; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-table tr:nth-child(even) td { background:#fafafa; }
+
+  /* ── FAQ ── */
+  .faq-item { border-bottom:1px solid var(--border); padding:16px 0; }
+  .faq-item:last-child { border-bottom:none; }
+  .faq-q { font-family:'Poppins',sans-serif; font-size:14px; font-weight:700; color:var(--heading); margin-bottom:6px; }
+  .faq-a { font-size:13px; line-height:1.6; color:var(--body); }
+
+  /* ── STEP FLOW ── */
+  .steps { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin:16px 0; }
+  .step { text-align:center; padding:16px 12px; }
+  .step-num { width:36px; height:36px; border-radius:50%; background:var(--blue); color:white; font-family:'Poppins',sans-serif; font-size:14px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; margin-bottom:10px; }
+  .step-title { font-family:'Poppins',sans-serif; font-size:13px; font-weight:700; color:var(--heading); margin-bottom:4px; }
+  .step-desc { font-size:12px; color:var(--body); line-height:1.45; }
+
+  /* ── CROSS-SELL ── */
+  .cross-sell { background:var(--heading); border-radius:12px; padding:24px 28px; margin:32px 0; }
+  .cross-sell h4 { font-family:'Poppins',sans-serif; font-size:15px; font-weight:700; color:var(--white); margin-bottom:12px; }
+  .cross-links { display:flex; gap:10px; flex-wrap:wrap; }
+  .cross-link { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:10px 16px; color:rgba(255,255,255,0.7); font-size:13px; font-weight:600; text-decoration:none; transition:all 0.15s; }
+  .cross-link:hover { background:rgba(255,255,255,0.12); color:white; }
+
+  /* ── FUNNEL VISUAL ── */
+  .funnel-flow { display:flex; align-items:center; gap:8px; margin:16px 0; flex-wrap:wrap; }
+  .funnel-step { background:var(--light-blue); border:1px solid rgba(37,99,235,0.15); border-radius:8px; padding:10px 16px; font-size:13px; font-weight:600; color:var(--blue); flex:1; min-width:140px; text-align:center; }
+  .funnel-arrow { color:var(--blue); font-size:18px; font-weight:700; flex-shrink:0; }
+
+  .doc-footer { border-top:1px solid var(--border); padding:32px 0; margin-top:48px; text-align:center; font-size:12px; color:rgba(85,87,90,0.4); }
+
+  @media (max-width:640px) {
+    .header-title { font-size:24px; }
+    .tier-grid { grid-template-columns:1fr; }
+    .steps { grid-template-columns:1fr 1fr; }
+    .funnel-flow { flex-direction:column; }
+    .funnel-arrow { transform:rotate(90deg); }
+    .block { padding:20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- HEADER -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="doc-header">
+  <div class="header-inner">
+    <div class="header-badge">Landing Page 1 of 4</div>
+    <div class="header-title">Insurance <span>Navigation Program</span></div>
+    <div class="header-sub">Full landing page copy, section by section. Covers: free probability quiz (hero CTA), $25 eligibility check upsell, $50 PA upgrade, $75/mo ongoing program, How It Works, comparison, social proof, Dr. Linda message, FAQ, and cross-sell.</div>
+    <div class="header-meta">
+      <div class="meta-item"><strong>Page type:</strong> Ad landing page + organic</div>
+      <div class="meta-item"><strong>Primary CTA:</strong> Free probability quiz</div>
+      <div class="meta-item"><strong>Medications covered:</strong> Wegovy, Zepbound, Mounjaro, Ozempic</div>
+      <div class="meta-item"><strong>Date:</strong> March 23, 2026</div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- PAGE FUNNEL OVERVIEW -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Funnel Architecture</div>
+  <div class="section-title">Conversion Flow</div>
+  <div class="section-desc">The insurance page uses a graduated commitment model. Free quiz captures the lead. $25 check converts them. $50 PA upgrade activates them. $75/mo retains them. Each step only appears after the previous one is completed.</div>
+
+  <div class="funnel-flow">
+    <div class="funnel-step"><strong>Free Quiz</strong><br>Probability check</div>
+    <div class="funnel-arrow">&rarr;</div>
+    <div class="funnel-step"><strong>$25</strong><br>Eligibility check</div>
+    <div class="funnel-arrow">&rarr;</div>
+    <div class="funnel-step"><strong>$50</strong><br>PA submission</div>
+    <div class="funnel-arrow">&rarr;</div>
+    <div class="funnel-step"><strong>$85</strong><br>Approval one-time</div>
+    <div class="funnel-arrow">&rarr;</div>
+    <div class="funnel-step"><strong>$75/mo</strong><br>Ongoing management</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 1: HERO -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Section 1</div>
+  <div class="section-title">Hero Section</div>
+
+  <div class="block">
+    <div class="block-label bl-hero">Hero Copy</div>
+
+    <h3>Will Your Insurance Cover Weight Loss Medication?</h3>
+    <p style="font-size:16px; color:var(--heading); font-weight:600; margin-top:4px;">Find out in 60 seconds. Free. No insurance card needed.</p>
+
+    <div class="copy-text">
+      Millions of Americans have insurance that covers GLP-1 medications like Wegovy, Zepbound, Mounjaro, and Ozempic &mdash; and don't even know it. Your plan might cover your medication for as little as $25/month at the pharmacy. Take our free probability quiz to see your chances before you spend a dime.
+    </div>
+
+    <div class="cta-mock blue">Check My Coverage Odds &mdash; Free &rarr;</div>
+
+    <p style="font-size:12px; color:rgba(85,87,90,0.5); margin-top:8px;">Takes 60 seconds. No insurance card needed. Instant results.</p>
+
+    <div class="design-note"><strong>Design notes:</strong> Trust bar directly below CTA: "Dr. Linda Moleon, DO &mdash; Double Board-Certified in Obesity Medicine &amp; Anesthesiology | [X]+ Patients Served | 4.9 Stars" &mdash; with a small headshot. Background should feel clean and medical but warm. No stock photos of pills or scales. Consider a subtle before/after or a patient testimonial pull-quote as secondary visual.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 2: TRUST BAR -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Section 2</div>
+  <div class="section-title">Trust Bar (Below the Fold)</div>
+
+  <div class="block">
+    <div class="block-label bl-trust">Social Proof Strip</div>
+
+    <p><strong>Copy (horizontal strip, logo-style layout):</strong></p>
+
+    <div class="copy-text">
+      "Medications covered: Wegovy (pill &amp; injection) &bull; Zepbound (vial &amp; KwikPen) &bull; Mounjaro (for diabetes) &bull; Ozempic (for diabetes)"
+    </div>
+
+    <p style="font-size:13px;">Below that, 3-4 stat badges in a row:</p>
+    <p><strong>Badge 1:</strong> "4 in 10 adults have coverage they don't know about"</p>
+    <p><strong>Badge 2:</strong> "Employer plans with GLP-1 coverage: growing every quarter"</p>
+    <p><strong>Badge 3:</strong> "Average pharmacy copay with coverage: $25/month"</p>
+    <p><strong>Badge 4:</strong> "Our team handles the paperwork. You pick up the meds."</p>
+
+    <div class="design-note"><strong>Design notes:</strong> Clean horizontal bar. Light background. Medication names should feel authoritative, not salesy. Consider small product images (Wegovy pen, Zepbound vial) for visual recognition. Stats in pill-shaped badges.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 3: HOW IT WORKS -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Section 3</div>
+  <div class="section-title">How It Works</div>
+
+  <div class="block">
+    <div class="block-label bl-section">Process Section</div>
+
+    <h3>4 Steps. We Handle the Hard Part.</h3>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">Take the Free Quiz</div>
+        <div class="step-desc">Answer a few questions about your insurance type, health conditions, and medication preference. Get your approval probability instantly.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">Get Your Eligibility Report</div>
+        <div class="step-desc">For $25, we run a real coverage check using your insurance card. You'll know exactly what your plan covers and what you'll pay at the pharmacy.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">We Submit Your PA</div>
+        <div class="step-desc">For $50, our team writes and submits your prior authorization, includes one appeal if needed, and handles all the back-and-forth with your insurance company.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-title">Pick Up Your Medication</div>
+        <div class="step-desc">Once approved, your prescription is sent to your pharmacy. Most patients pay around $25/month for their medication with insurance coverage.</div>
+      </div>
+    </div>
+
+    <div class="copy-text pink-border">
+      "You don't need to understand prior authorizations, formularies, or appeal letters. That's our job. Your only job is to show up at the pharmacy." &mdash; Dr. Linda Moleon
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 4: PART 1 - FREE PROBABILITY QUIZ -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Section 4</div>
+  <div class="section-title">Part 1: Free Probability Quiz</div>
+  <div class="section-desc">This is the primary CTA for ads. Zero cost, zero commitment, instant gratification. Captures email at the end for follow-up.</div>
+
+  <div class="block">
+    <div class="block-label bl-hero">Quiz Landing Block</div>
+
+    <h3>What Are Your Chances of Getting Approved?</h3>
+
+    <div class="copy-text">
+      Not all insurance plans are created equal. Your approval odds depend on your carrier, your plan type, your diagnosis, and which medication you want. Our free probability quiz uses real coverage data to give you an honest estimate &mdash; before you spend a dime.
+    </div>
+
+    <h4>Quiz Questions (5-6 questions, under 60 seconds):</h4>
+
+    <p><strong>Q1:</strong> Who is your insurance carrier?<br>
+    <em>Options: UnitedHealthcare, Blue Cross Blue Shield, Cigna, Aetna, Humana, Kaiser, TRICARE, Medicaid, Medicare, Other</em><br>
+    <span style="font-size:12px; color:var(--body);">Routing: Each carrier has a base probability score. TRICARE = high. Medicare = flag for limitations.</span></p>
+
+    <p><strong>Q2:</strong> What type of plan do you have?<br>
+    <em>Options: Through my employer, Private/marketplace, Medicaid, Medicare, Military/TRICARE, Not sure</em><br>
+    <span style="font-size:12px; color:var(--body);">Routing: Employer plans with obesity rider = highest probability. Medicaid = state-dependent. Medicare = weight loss not covered (flag).</span></p>
+
+    <p><strong>Q3:</strong> Have you been diagnosed with any of these conditions?<br>
+    <em>Options (multi-select): Type 2 diabetes, Prediabetes/insulin resistance, High blood pressure, High cholesterol, Sleep apnea, Heart disease, PCOS, None of these</em><br>
+    <span style="font-size:12px; color:var(--body);">Routing: T2D = highest approval odds (Mounjaro/Ozempic indication). Sleep apnea = Zepbound pathway. Heart disease = Wegovy CV indication. More conditions = higher probability.</span></p>
+
+    <p><strong>Q4:</strong> Which medication are you most interested in?<br>
+    <em>Options: Wegovy (semaglutide for weight loss), Zepbound (tirzepatide for weight loss), Mounjaro (tirzepatide for diabetes), Ozempic (semaglutide for diabetes), I'm not sure &mdash; help me choose</em><br>
+    <span style="font-size:12px; color:var(--body);">Routing: Diabetes medications (Mounjaro/Ozempic) generally have higher approval rates than weight-loss-specific medications (Wegovy/Zepbound).</span></p>
+
+    <p><strong>Q5:</strong> Have you tried diet and exercise for weight loss in the past?<br>
+    <em>Options: Yes, multiple times, Yes but with limited success, I'm currently trying, No</em><br>
+    <span style="font-size:12px; color:var(--body);">Routing: Prior failed lifestyle modification strengthens PA arguments. "Yes, multiple times" = highest weight.</span></p>
+
+    <p><strong>Q6 (optional):</strong> What is your approximate BMI?<br>
+    <em>Options: Under 27, 27-29, 30-34, 35-39, 40+, I'm not sure</em><br>
+    <span style="font-size:12px; color:var(--body);">Routing: BMI 30+ = meets obesity threshold. BMI 27-29 + comorbidity = meets overweight threshold. Under 27 = may not qualify.</span></p>
+  </div>
+
+  <div class="block">
+    <div class="block-label bl-section">Results Screen (3 Tiers)</div>
+
+    <h4>Green Result &mdash; High Probability (60-90%)</h4>
+    <div class="copy-text" style="border-left-color:var(--green);">
+      <strong>Great news &mdash; your insurance has a strong chance of covering your medication.</strong><br><br>
+      Based on your answers, patients with your insurance type, health history, and medication preference have a <strong>[X]% probability</strong> of getting approved. That means you could be paying as little as $25/month at the pharmacy instead of $1,000+.<br><br>
+      Want to know for sure? For $25, we'll run an actual coverage check using your insurance card and give you a definitive answer within 48 hours.
+    </div>
+    <div class="cta-mock blue">Verify My Coverage &mdash; $25 &rarr;</div>
+
+    <h4 style="margin-top:24px;">Yellow Result &mdash; Moderate Probability (30-60%)</h4>
+    <div class="copy-text" style="border-left-color:var(--amber);">
+      <strong>There's a decent chance your insurance covers this &mdash; but it depends on your specific plan details.</strong><br><br>
+      Your carrier and health profile suggest a <strong>[X]% probability</strong> of approval. Some plans under your carrier cover GLP-1 medications, others don't. The only way to know for sure is to run an actual eligibility check with your insurance card.<br><br>
+      For $25, we'll pull your exact coverage details and tell you: what's covered, what you'll pay, and whether a prior authorization is needed.
+    </div>
+    <div class="cta-mock blue">Check My Exact Coverage &mdash; $25 &rarr;</div>
+
+    <h4 style="margin-top:24px;">Red Result &mdash; Low Probability (Under 30%)</h4>
+    <div class="copy-text" style="border-left-color:var(--red);">
+      <strong>Honestly? Insurance coverage for your situation is unlikely &mdash; but you still have great options.</strong><br><br>
+      Based on what you've shared, your plan type has a <strong>[X]% probability</strong> of covering this medication. But that doesn't mean you're stuck. Our self-pay programs start at just $149/month &mdash; with the same medications, same physician oversight, and free shipping to your door.<br><br>
+      If you'd still like us to check your specific plan (sometimes there are surprises), we can do that for $25. Or you can explore our self-pay options right now.
+    </div>
+    <div class="cta-mock blue">Check Anyway &mdash; $25 &rarr;</div>
+    <div class="cta-mock secondary">Explore Self-Pay Options &rarr;</div>
+
+    <div class="design-note"><strong>Conversion note:</strong> Red-result patients who click "Explore Self-Pay" should land on the Self-Pay Compounded page with a banner: "Coming from the insurance quiz? We've got you covered &mdash; literally." This is a critical save. Don't lose these leads.</div>
+  </div>
+
+  <div class="block">
+    <div class="block-label bl-note">Email Capture &mdash; All Results</div>
+    <p>Regardless of result color, the results page includes an email capture below the probability score:</p>
+    <div class="copy-text">
+      <strong>Want a copy of your results?</strong> Enter your email and we'll send your personalized probability report, plus a breakdown of your options with Body Good.
+    </div>
+    <p style="font-size:12px; color:var(--body);">This captures the lead even if they don't convert to $25 immediately. They enter the nurture sequence based on their result tier (green/yellow/red).</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 5: PRICING TIERS -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Section 5</div>
+  <div class="section-title">Your Path to Coverage</div>
+  <div class="section-desc">Each step unlocks the next. At every stage, we'll tell you honestly whether it makes sense to continue or whether self-pay would be a better fit. You never spend a dollar you don't need to.</div>
+
+  <div class="block">
+    <div class="block-label bl-pricing">Sequential Journey</div>
+
+    <h3>Your Journey to Coverage &mdash; One Step at a Time</h3>
+    <p>Each step unlocks the next. You only move forward when it makes sense for you. No bundles, no pressure, no wasted money.</p>
+
+    <!-- STEP 1 -->
+    <div style="display:flex; gap:16px; margin:24px 0 16px; align-items:flex-start;">
+      <div style="width:48px; height:48px; border-radius:50%; background:var(--blue); color:white; font-family:'Poppins',sans-serif; font-size:20px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0;">1</div>
+      <div style="flex:1;">
+        <div style="font-family:'Poppins',sans-serif; font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--green); margin-bottom:2px;">Start here &mdash; Free</div>
+        <div style="font-family:'Poppins',sans-serif; font-size:18px; font-weight:700; color:var(--heading);">Free Probability Quiz</div>
+        <p style="font-size:14px; margin-top:6px;">Answer a few quick questions about your carrier, plan type, and health conditions. Get an instant estimate of your approval odds &mdash; no insurance card needed, no cost, no commitment.</p>
+        <div style="background:rgba(26,138,92,0.06); border:1px solid rgba(26,138,92,0.15); border-radius:8px; padding:10px 14px; margin-top:10px; font-size:13px;">
+          <strong style="color:var(--green);">What happens next:</strong> If your probability is moderate to high, we'll recommend moving to Step 2 for a definitive answer. If it's low, we'll be honest about it and show you affordable self-pay options instead &mdash; so you don't waste $25 on a long shot.
+        </div>
+      </div>
+    </div>
+
+    <!-- CONNECTOR -->
+    <div style="margin-left:23px; border-left:2px dashed var(--border); height:20px;"></div>
+
+    <!-- STEP 2 -->
+    <div style="display:flex; gap:16px; margin:0 0 16px; align-items:flex-start;">
+      <div style="width:48px; height:48px; border-radius:50%; background:var(--blue); color:white; font-family:'Poppins',sans-serif; font-size:20px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0;">2</div>
+      <div style="flex:1;">
+        <div style="font-family:'Poppins',sans-serif; font-size:24px; font-weight:800; color:var(--heading);">$25 <span style="font-size:14px; font-weight:500; color:var(--body);">one-time</span></div>
+        <div style="font-family:'Poppins',sans-serif; font-size:18px; font-weight:700; color:var(--heading);">Eligibility Check</div>
+        <p style="font-size:14px; margin-top:6px;">Now we get specific. Upload your insurance card and member ID, and our team runs a real coverage verification. Within 48 hours, you'll know exactly what your plan covers, what you'll pay at the pharmacy, and whether a prior authorization is required.</p>
+        <ul class="tier-list">
+          <li>Real coverage verification using your actual insurance card</li>
+          <li>Carrier-specific formulary and drug tier check</li>
+          <li>Your estimated copay and coinsurance breakdown</li>
+          <li>Prior authorization requirement confirmation</li>
+          <li>Clear recommendation: proceed to Step 3 or explore self-pay</li>
+        </ul>
+        <div style="background:rgba(212,135,14,0.06); border:1px solid rgba(212,135,14,0.15); border-radius:8px; padding:10px 14px; margin-top:10px; font-size:13px;">
+          <strong style="color:var(--amber);">Decision gate:</strong> If your eligibility check shows strong coverage, we'll recommend moving to Step 3. If your plan doesn't cover GLP-1 medications or the copay is higher than self-pay pricing, we'll tell you that honestly and route you to our self-pay programs starting at $149/mo. We'd rather save you money than sell you the next step.
+        </div>
+      </div>
+    </div>
+
+    <!-- CONNECTOR -->
+    <div style="margin-left:23px; border-left:2px dashed var(--border); height:20px;"></div>
+
+    <!-- STEP 3 -->
+    <div style="display:flex; gap:16px; margin:0 0 16px; align-items:flex-start;">
+      <div style="width:48px; height:48px; border-radius:50%; background:var(--blue); color:white; font-family:'Poppins',sans-serif; font-size:20px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0;">3</div>
+      <div style="flex:1;">
+        <div style="font-family:'Poppins',sans-serif; font-size:24px; font-weight:800; color:var(--heading);">$50 <span style="font-size:14px; font-weight:500; color:var(--body);">one-time</span></div>
+        <div style="font-family:'Poppins',sans-serif; font-size:18px; font-weight:700; color:var(--heading);">Consultation + Prior Authorization Submission</div>
+        <p style="font-size:14px; margin-top:6px;">Your eligibility check confirmed coverage &mdash; now let's get you approved. Our clinical team conducts your medical consultation, writes your prescription, and submits the prior authorization to your insurance company. If it's initially denied, we file one appeal at no extra cost.</p>
+        <ul class="tier-list">
+          <li>Medical consultation with Dr. Linda or Nurse Ketty</li>
+          <li>Prescription written for your recommended medication</li>
+          <li>Prior authorization drafted with full clinical documentation</li>
+          <li>Submitted directly to your insurance carrier</li>
+          <li>One appeal included at no additional cost if initially denied</li>
+        </ul>
+        <div style="background:rgba(26,138,92,0.06); border:1px solid rgba(26,138,92,0.15); border-radius:8px; padding:10px 14px; margin-top:10px; font-size:13px;">
+          <strong style="color:var(--green);">When you're approved:</strong> Your prescription goes to your pharmacy. Most patients pay around $25/month for their medication with insurance coverage and the manufacturer savings card. A one-time $85 approval processing fee applies at this point to finalize everything.
+        </div>
+      </div>
+    </div>
+
+    <!-- CONNECTOR -->
+    <div style="margin-left:23px; border-left:2px dashed var(--border); height:20px;"></div>
+
+    <!-- STEP 4 -->
+    <div style="display:flex; gap:16px; margin:0 0 16px; align-items:flex-start;">
+      <div style="width:48px; height:48px; border-radius:50%; background:var(--blue); color:white; font-family:'Poppins',sans-serif; font-size:20px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0;">4</div>
+      <div style="flex:1;">
+        <div style="font-family:'Poppins',sans-serif; font-size:24px; font-weight:800; color:var(--heading);">$75 <span style="font-size:14px; font-weight:500; color:var(--body);">/month &mdash; only after approval</span></div>
+        <div style="font-family:'Poppins',sans-serif; font-size:18px; font-weight:700; color:var(--heading);">Ongoing Prescription Management</div>
+        <p style="font-size:14px; margin-top:6px;">You're approved. You're picking up your meds. Now stay supported. Our monthly program keeps everything running: prescription renewals, PA renewals, dosage adjustments, and unlimited access to our clinical team. Pay-as-you-go &mdash; no contract, cancel anytime.</p>
+        <ul class="tier-list">
+          <li>Monthly prescription renewal &mdash; no gaps in medication</li>
+          <li>Unlimited messaging with our clinical team</li>
+          <li>Prior authorization renewal and annual maintenance</li>
+          <li>Dosage adjustments as your treatment progresses</li>
+          <li>Freedom option: pay-as-you-go, cancel anytime, no contract</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- BOTTOM LINE -->
+    <div class="copy-text pink-border" style="margin-top:24px;">
+      <strong>The bottom line:</strong> If you get approved, most patients pay around $25/month at the pharmacy for their medication. Add our $75/month program fee and your total monthly cost is around $100/month for brand-name, FDA-approved medication &mdash; compared to $1,000+ without insurance.<br><br>
+      <strong>And if insurance doesn't work out?</strong> You'll know at Step 1 or Step 2 &mdash; before you've spent more than $25. We'll make sure you have a clear path to affordable self-pay options instead.
+    </div>
+
+    <div class="design-note"><strong>UX note:</strong> On the live page, steps 3 and 4 should appear slightly muted/grayed out with a small lock icon and the text "Unlocks after Step 2" to reinforce the sequential nature. Only Step 1 (free quiz) and Step 2 ($25 check) should have active CTA buttons visible. Steps 3 and 4 are informational only &mdash; showing the full journey builds trust without letting someone skip ahead.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 6: WHAT MEDICATIONS ARE COVERED -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Section 6</div>
+  <div class="section-title">Semaglutide vs. Tirzepatide: Which Is Right for You?</div>
+
+  <div class="block">
+    <div class="block-label bl-section">Comparison Section</div>
+
+    <h3>Two Proven Medications. We'll Help You Get the Right One Covered.</h3>
+
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th style="width:22%"></th>
+          <th style="width:39%">Semaglutide</th>
+          <th style="width:39%">Tirzepatide</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Brand names</strong></td>
+          <td>Wegovy (weight loss)<br>Ozempic (diabetes)</td>
+          <td>Zepbound (weight loss)<br>Mounjaro (diabetes)</td>
+        </tr>
+        <tr>
+          <td><strong>How it works</strong></td>
+          <td>Targets 1 hormone (GLP-1) to reduce hunger and control blood sugar</td>
+          <td>Targets 2 hormones (GLP-1 + GIP) for stronger hunger reduction and blood sugar control</td>
+        </tr>
+        <tr>
+          <td><strong>Average weight loss</strong></td>
+          <td>~15% of body weight in clinical trials</td>
+          <td>~20% of body weight in clinical trials</td>
+        </tr>
+        <tr>
+          <td><strong>Available forms</strong></td>
+          <td>Weekly injection or daily pill (Wegovy)</td>
+          <td>Weekly injection (vial or KwikPen)</td>
+        </tr>
+        <tr>
+          <td><strong>FDA approved for</strong></td>
+          <td>Weight loss, type 2 diabetes, cardiovascular risk reduction, chronic kidney disease</td>
+          <td>Weight loss, type 2 diabetes, obstructive sleep apnea</td>
+        </tr>
+        <tr>
+          <td><strong>Insurance coverage</strong></td>
+          <td>Widely covered for diabetes (Ozempic). Growing coverage for weight loss (Wegovy).</td>
+          <td>Widely covered for diabetes (Mounjaro). Coverage expanding for weight loss (Zepbound).</td>
+        </tr>
+        <tr>
+          <td><strong>Typical pharmacy copay with insurance</strong></td>
+          <td>$25/month with manufacturer savings card</td>
+          <td>$25/month with manufacturer savings card</td>
+        </tr>
+        <tr>
+          <td><strong>Without insurance</strong></td>
+          <td>Wegovy: $149&ndash;$349/mo self-pay<br>Ozempic: $349&ndash;$499/mo self-pay</td>
+          <td>Zepbound: $299&ndash;$449/mo self-pay<br>Mounjaro: ~$1,080/mo list price</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="copy-text">
+      Not sure which one is right for you? That's what we're here for. Dr. Linda and Nurse Ketty will review your health history, insurance coverage, and goals to recommend the medication that gives you the best chance of approval AND the best results.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 7: SOCIAL PROOF -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Section 7</div>
+  <div class="section-title">Social Proof / Reviews</div>
+
+  <div class="block">
+    <div class="block-label bl-trust">Testimonials</div>
+
+    <h3>Real Patients. Real Approvals. Real Results.</h3>
+
+    <div class="copy-text" style="border-left-color:var(--green);">
+      <strong>"I had no idea my employer plan covered Zepbound until Body Good checked for me."</strong><br>
+      I was paying $400/month for compounded medication. Dr. Linda's team got my insurance to cover Zepbound and now I pay $25 at CVS. I wish I'd done this months ago.<br>
+      &mdash; Sarah M., Florida
+    </div>
+
+    <div class="copy-text" style="border-left-color:var(--green);">
+      <strong>"They handled everything. I just showed up at Walgreens."</strong><br>
+      The prior authorization process scared me. I didn't even know what it was. Body Good submitted everything, handled the appeal when it was initially denied, and two weeks later I picked up Wegovy. Total cost: $25.<br>
+      &mdash; Denise R., Texas
+    </div>
+
+    <div class="copy-text" style="border-left-color:var(--green);">
+      <strong>"I have sleep apnea and didn't know that qualified me for coverage."</strong><br>
+      The probability quiz said I had a 75% chance. I paid $25 to verify. Turns out my plan covers Zepbound for sleep apnea. I've lost 40 pounds and my sleep apnea symptoms have improved significantly.<br>
+      &mdash; Keisha T., Georgia
+    </div>
+
+    <div class="design-note"><strong>Note:</strong> These are sample testimonials written for copy direction. Replace with real patient reviews when available. Include star ratings, first name + last initial + state. Photos if available (with consent). Aim for 4-6 reviews representing different carriers, medications, and demographics.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 8: DR. LINDA MESSAGE -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Section 8</div>
+  <div class="section-title">Message from Dr. Linda</div>
+
+  <div class="block">
+    <div class="block-label bl-trust">Personal Message</div>
+
+    <h3>A Note from Your Doctor</h3>
+
+    <div class="copy-text pink-border" style="font-size:14px;">
+      I started Body Good because I was tired of watching patients &mdash; women just like me &mdash; get stuck in a system that wasn't built for them.<br><br>
+      You shouldn't need a medical degree to figure out if your insurance covers your medication. You shouldn't have to spend hours on hold with your carrier. And you definitely shouldn't give up on treatment you need because the paperwork is confusing.<br><br>
+      That's why we built this program. My team and I handle the coverage checks, the prior authorizations, the appeals, and the pharmacy coordination. You focus on feeling better.<br><br>
+      If your insurance can cover this, we'll find a way. If it can't, we'll make sure you still have affordable options. Either way, you're not doing this alone.<br><br>
+      &mdash; Dr. Linda Moleon, DO<br>
+      <span style="font-size:12px; font-style:normal; color:var(--body);">Double Board-Certified in Obesity Medicine &amp; Anesthesiology</span>
+    </div>
+
+    <div class="design-note"><strong>Design notes:</strong> Photo of Dr. Linda (warm, approachable, not clinical). The message should feel like a personal letter. Consider a handwriting-style font for the signature. This section converts skeptics &mdash; it's the "I trust this person" moment.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 9: FAQ -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Section 9</div>
+  <div class="section-title">FAQ</div>
+
+  <div class="block">
+    <div class="block-label bl-faq">Accordion &mdash; 10 Questions</div>
+
+    <div class="faq-item">
+      <div class="faq-q">What is the free probability quiz?</div>
+      <div class="faq-a">It's a quick 60-second quiz that estimates how likely your insurance is to cover GLP-1 weight loss medication. It uses your carrier, plan type, and health conditions to give you an honest probability score. No insurance card needed. No cost. No commitment.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What does the $25 eligibility check include?</div>
+      <div class="faq-a">We use your actual insurance card and member ID to run a real coverage verification. You'll get a detailed report showing: whether your plan covers GLP-1 medications, which specific medications are covered, your estimated copay, and whether a prior authorization is required. Results within 48 hours.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What is a prior authorization and why do I need one?</div>
+      <div class="faq-a">A prior authorization (PA) is your insurance company's way of confirming that a medication is medically necessary before they agree to pay for it. Many insurance plans require a PA for GLP-1 medications. Our clinical team writes and submits your PA, including all the clinical documentation your insurance needs to say "yes."</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What happens if my prior authorization is denied?</div>
+      <div class="faq-a">If your PA is initially denied, our team files one appeal on your behalf at no additional cost (it's included in the $50 PA submission fee). Many denials are overturned on appeal. If the appeal is also denied, we'll help you explore self-pay options starting at $149/month so you're never left without a path forward.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">How much will I pay at the pharmacy?</div>
+      <div class="faq-a">If your insurance covers your medication and you qualify for the manufacturer savings card, most patients pay around $25/month at the pharmacy. Your exact cost depends on your plan's copay structure, which we'll confirm during the eligibility check.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Which medications can you help me get covered?</div>
+      <div class="faq-a">We work with all four major GLP-1 medications: Wegovy (semaglutide, for weight loss &mdash; now available as a pill or injection), Zepbound (tirzepatide, for weight loss and sleep apnea), Mounjaro (tirzepatide, for type 2 diabetes), and Ozempic (semaglutide, for type 2 diabetes). We'll recommend the one that gives you the best chance of approval based on your insurance and health history.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Do I have to commit to the $75/month program?</div>
+      <div class="faq-a">No. The $75/month ongoing program is pay-as-you-go with no contract. You can cancel anytime. It includes monthly prescription renewals, unlimited clinical team support, PA renewal handling, and dosage adjustments. Think of it as having a concierge medical team for your weight loss &mdash; without the concierge price tag.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">I have Medicare or Medicaid. Can I still use this program?</div>
+      <div class="faq-a">It depends. Medicare currently does not cover medications prescribed specifically for weight loss. However, if you have type 2 diabetes, Medicare may cover Ozempic or Mounjaro for blood sugar management. Medicaid coverage varies by state. Our $25 eligibility check will give you a definitive answer for your specific situation. If insurance doesn't work out, our self-pay programs are available to everyone.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Is Body Good a real medical practice?</div>
+      <div class="faq-a">Yes. Body Good Studio is a physician-led telehealth practice founded by Dr. Linda Moleon, who is double board-certified in Obesity Medicine and Anesthesiology. Every prescription is reviewed by our licensed medical team. We are not a pharmacy, a supplement company, or a wellness brand. We are a legitimate medical practice that specializes in weight management.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What if my insurance doesn't cover it?</div>
+      <div class="faq-a">You still have excellent options. Our self-pay compounded programs start at $149/month for semaglutide and $315/month for tirzepatide, with free shipping and full physician oversight. We also offer oral (needle-free) options and branded prescription management starting at $45/month. The $25 eligibility check is never wasted &mdash; it gives you clarity either way.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 10: FINAL CTA -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Section 10</div>
+  <div class="section-title">Final CTA Section</div>
+
+  <div class="block">
+    <div class="block-label bl-cta">Closing CTA</div>
+
+    <h3>Your Insurance Might Be Paying for This. Let's Find Out.</h3>
+
+    <div class="copy-text">
+      Take the free probability quiz. It takes 60 seconds. If your chances look good, we'll handle everything from the coverage check to the pharmacy pickup. If not, we'll make sure you have affordable options. Either way, you'll know exactly where you stand.
+    </div>
+
+    <div class="cta-mock blue">Check My Coverage Odds &mdash; Free &rarr;</div>
+    <div class="cta-mock secondary">Or Start Self-Pay at $149/mo &rarr;</div>
+
+    <p style="font-size:12px; color:rgba(85,87,90,0.5); margin-top:12px;">No login required. No insurance card needed for the free quiz. Results are instant.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 11: CROSS-SELL -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Section 11</div>
+  <div class="section-title">Cross-Sell Bar</div>
+
+  <div class="cross-sell">
+    <h4>Not sure insurance is the right path? Explore your other options.</h4>
+    <div class="cross-links">
+      <a href="#" class="cross-link">Self-Pay Compounded &mdash; from $149/mo &rarr;</a>
+      <a href="#" class="cross-link">Oral / Needle-Free &mdash; from $149/mo &rarr;</a>
+      <a href="#" class="cross-link">Brand-Name Rx Management &mdash; from $45/mo &rarr;</a>
+      <a href="#" class="cross-link">Not sure? Take the Medusa Quiz &rarr;</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 12: STICKY MOBILE CTA -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Section 12</div>
+  <div class="section-title">Sticky Mobile CTA</div>
+
+  <div class="block">
+    <div class="block-label bl-note">Mobile UX Note</div>
+    <p><strong>Fixed bottom bar on mobile (always visible while scrolling):</strong></p>
+    <div style="background:var(--blue); color:white; text-align:center; padding:14px; border-radius:50px; font-family:'Poppins',sans-serif; font-size:14px; font-weight:700; margin-top:12px;">Check My Coverage &mdash; Free &rarr;</div>
+    <p style="font-size:12px; color:var(--body); margin-top:12px;">On desktop, use a sticky header CTA instead. The free quiz should always be one click away regardless of scroll position.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- LEGAL / DISCLAIMERS -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Legal</div>
+  <div class="section-title">Required Disclaimers</div>
+
+  <div class="block">
+    <div class="block-label bl-note">Footer Disclaimers</div>
+    <p style="font-size:12px; color:rgba(85,87,90,0.5); line-height:1.6;">
+      Body Good Studio is a physician-led telehealth practice. All prescriptions are reviewed and authorized by licensed medical providers. Insurance coverage, copay amounts, and prior authorization outcomes vary by carrier, plan, and individual circumstances. The free probability quiz provides an estimate based on general coverage data and does not guarantee approval or specific costs. The $25 eligibility check provides a coverage verification based on information provided and may not reflect all plan limitations.<br><br>
+      Wegovy is a registered trademark of Novo Nordisk. Zepbound, Mounjaro, and KwikPen are registered trademarks of Eli Lilly and Company. Ozempic is a registered trademark of Novo Nordisk. Body Good Studio is not affiliated with, endorsed by, or sponsored by Novo Nordisk or Eli Lilly.<br><br>
+      Individual weight loss results vary. GLP-1 medications are prescription medications with potential side effects. Consult with a healthcare provider to determine if GLP-1 therapy is appropriate for you.
+    </p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="doc-footer">
+  Body Good Studio &nbsp;&bull;&nbsp; Insurance Navigation Program &mdash; Landing Page Copy v1.0 &nbsp;&bull;&nbsp; March 23, 2026<br>
+  Internal document &mdash; not for public distribution<br><br>
+  <strong>Next:</strong> Self-Pay Compounded Program landing page
+</div>
+
+</div>
+</body>
+</html>
