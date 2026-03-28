@@ -2,555 +2,989 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+async function upsertProduct(data: {
+  slug: string;
+  sku?: string;
+  category: string;
+  programTag?: string;
+  fulfillment?: string;
+  dosageForm?: string;
+  forGender?: string;
+  pathBConsultPrice?: number;
+  pathBOngoingPrice?: number;
+  fccMedicationName?: string;
+  fccConcentration?: string;
+  requiresPrescription?: boolean;
+  isActive?: boolean;
+  isFeatured?: boolean;
+  sortOrder?: number;
+  nameEn: string;
+  nameEs?: string;
+  shortEn: string;
+  shortEs?: string;
+  variants: {
+    sku: string;
+    label?: string;
+    doseLevel?: string;
+    supplyDuration?: string;
+    price: number;
+    compareAtPrice?: number;
+    sortOrder?: number;
+  }[];
+}) {
+  const product = await prisma.product.upsert({
+    where: { slug: data.slug },
+    update: {
+      sku: data.sku,
+      programTag: data.programTag,
+      fulfillment: data.fulfillment ?? "direct_ship",
+      dosageForm: data.dosageForm,
+      forGender: data.forGender ?? "all",
+      pathBConsultPrice: data.pathBConsultPrice,
+      pathBOngoingPrice: data.pathBOngoingPrice,
+      fccMedicationName: data.fccMedicationName,
+      fccConcentration: data.fccConcentration,
+      requiresPrescription: data.requiresPrescription ?? true,
+      sortOrder: data.sortOrder ?? 0,
+    },
+    create: {
+      slug: data.slug,
+      sku: data.sku,
+      category: data.category,
+      programTag: data.programTag,
+      fulfillment: data.fulfillment ?? "direct_ship",
+      dosageForm: data.dosageForm,
+      forGender: data.forGender ?? "all",
+      pathBConsultPrice: data.pathBConsultPrice,
+      pathBOngoingPrice: data.pathBOngoingPrice,
+      fccMedicationName: data.fccMedicationName,
+      fccConcentration: data.fccConcentration,
+      requiresPrescription: data.requiresPrescription ?? true,
+      isActive: data.isActive ?? true,
+      isFeatured: data.isFeatured ?? false,
+      sortOrder: data.sortOrder ?? 0,
+    },
+  });
+
+  await prisma.productTranslation.upsert({
+    where: { productId_locale: { productId: product.id, locale: "en" } },
+    update: { name: data.nameEn, descriptionShort: data.shortEn, descriptionLong: data.shortEn },
+    create: { productId: product.id, locale: "en", name: data.nameEn, descriptionShort: data.shortEn, descriptionLong: data.shortEn },
+  });
+  await prisma.productTranslation.upsert({
+    where: { productId_locale: { productId: product.id, locale: "es" } },
+    update: { name: data.nameEs ?? data.nameEn, descriptionShort: data.shortEs ?? data.shortEn, descriptionLong: data.shortEs ?? data.shortEn },
+    create: { productId: product.id, locale: "es", name: data.nameEs ?? data.nameEn, descriptionShort: data.shortEs ?? data.shortEn, descriptionLong: data.shortEs ?? data.shortEn },
+  });
+
+  for (let i = 0; i < data.variants.length; i++) {
+    const v = data.variants[i];
+    await prisma.productVariant.upsert({
+      where: { sku: v.sku },
+      update: {
+        label: v.label,
+        doseLevel: v.doseLevel,
+        supplyDuration: v.supplyDuration,
+        price: v.price,
+        compareAtPrice: v.compareAtPrice,
+        sortOrder: v.sortOrder ?? i + 1,
+      },
+      create: {
+        productId: product.id,
+        sku: v.sku,
+        label: v.label,
+        doseLevel: v.doseLevel,
+        supplyDuration: v.supplyDuration,
+        price: v.price,
+        compareAtPrice: v.compareAtPrice,
+        sortOrder: v.sortOrder ?? i + 1,
+      },
+    });
+  }
+
+  console.log(`  ✓ ${data.nameEn}`);
+  return product;
+}
+
 async function main() {
-  // Clear existing data
-  await prisma.productImage.deleteMany();
-  await prisma.productVariant.deleteMany();
-  await prisma.productTranslation.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.faqTranslation.deleteMany();
-  await prisma.faqItem.deleteMany();
+  console.log("🌱 Seeding Body Good Studio product catalog...\n");
 
-  // ─── Products ───────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════
+  // 1. COMPOUNDED GLP-1 INJECTABLES
+  // ═══════════════════════════════════════════════════════════════════════
+  console.log("💉 Compounded GLP-1...");
 
-  // 1. Compounded Semaglutide
-  const semaglutide = await prisma.product.create({
-    data: {
-      slug: "compounded-semaglutide",
-      category: "compounded",
-      requiresPrescription: true,
-      isActive: true,
-      isFeatured: true,
-      sortOrder: 1,
-      translations: {
-        create: [
-          {
-            locale: "en",
-            name: "Compounded Semaglutide",
-            descriptionShort: "Affordable GLP-1 weight loss medication — same active ingredient as Ozempic & Wegovy.",
-            descriptionLong: "Compounded semaglutide is a GLP-1 receptor agonist that helps regulate appetite and blood sugar. Our compounded version contains the same active ingredient as brand-name Ozempic and Wegovy, prepared by licensed US compounding pharmacies at a fraction of the cost. Includes weekly subcutaneous injections, provider monitoring, and ongoing support.",
-            seoTitle: "Compounded Semaglutide for Weight Loss | Body Good Studio",
-            seoDescription: "Affordable compounded semaglutide starting at $139/mo. Same active ingredient as Wegovy. Prescribed by board-certified physicians. All-inclusive pricing.",
-          },
-          {
-            locale: "es",
-            name: "Semaglutida Compuesta",
-            descriptionShort: "Medicamento GLP-1 asequible para bajar de peso — el mismo ingrediente activo que Ozempic y Wegovy.",
-            descriptionLong: "La semaglutida compuesta es un agonista del receptor GLP-1 que ayuda a regular el apetito y el azúcar en sangre. Nuestra versión compuesta contiene el mismo ingrediente activo que Ozempic y Wegovy de marca, preparada por farmacias de composición con licencia en EE.UU. a una fracción del costo. Incluye inyecciones subcutáneas semanales, monitoreo del proveedor y soporte continuo.",
-            seoTitle: "Semaglutida Compuesta para Bajar de Peso | Body Good Studio",
-            seoDescription: "Semaglutida compuesta asequible desde $139/mes. Mismo ingrediente activo que Wegovy. Recetada por médicos certificados.",
-          },
-        ],
-      },
-      variants: {
-        create: [
-          { sku: "SEM-1MO", doseLevel: "All doses", supplyDuration: "1-month", price: 17900, compareAtPrice: null, sortOrder: 1 },
-          { sku: "SEM-3MO", doseLevel: "All doses", supplyDuration: "3-month", price: 14900, compareAtPrice: 17900, sortOrder: 2 },
-          { sku: "SEM-6MO", doseLevel: "All doses", supplyDuration: "6-month", price: 13900, compareAtPrice: 17900, sortOrder: 3 },
-        ],
-      },
-    },
+  await upsertProduct({
+    slug: "compounded-semaglutide",
+    sku: "WM-SEM",
+    category: "compounded",
+    programTag: "weight-management, glp-1, semaglutide, injectable",
+    fulfillment: "direct_ship",
+    dosageForm: "Injectable",
+    fccMedicationName: "Semaglutide / B6 (Pyridoxine)",
+    isFeatured: true,
+    sortOrder: 1,
+    nameEn: "Compounded Semaglutide",
+    nameEs: "Semaglutida Compuesta",
+    shortEn: "Same active ingredient as Ozempic & Wegovy. Monthly, 3-month, or 6-month supply.",
+    shortEs: "Mismo ingrediente activo que Ozempic y Wegovy. Suministro mensual, 3 o 6 meses.",
+    variants: [
+      { sku: "SEM-1MO", label: "1 Month Supply", doseLevel: "All doses", supplyDuration: "1-month", price: 17900, sortOrder: 1 },
+      { sku: "SEM-3MO", label: "3 Month Supply", doseLevel: "All doses", supplyDuration: "3-month", price: 14900, compareAtPrice: 17900, sortOrder: 2 },
+      { sku: "SEM-6MO", label: "6 Month Supply", doseLevel: "All doses", supplyDuration: "6-month", price: 13900, compareAtPrice: 17900, sortOrder: 3 },
+    ],
   });
 
-  // 2. Compounded Tirzepatide (Starter)
-  const tirzepatideStarter = await prisma.product.create({
-    data: {
-      slug: "compounded-tirzepatide-starter",
-      category: "compounded",
-      requiresPrescription: true,
-      isActive: true,
-      isFeatured: true,
-      sortOrder: 2,
-      translations: {
-        create: [
-          {
-            locale: "en",
-            name: "Compounded Tirzepatide — Starter",
-            descriptionShort: "Dual-action GLP-1/GIP weight loss medication for doses 2.25–9mg.",
-            descriptionLong: "Compounded tirzepatide targets both GLP-1 and GIP receptors for enhanced weight loss results. The starter tier covers doses from 2.25mg to 9mg, ideal for patients beginning their weight loss journey. Clinical studies show 20-25% average weight loss. Includes weekly injections, dose titration guidance, and provider support.",
-            seoTitle: "Compounded Tirzepatide Starter (2.25-9mg) | Body Good Studio",
-            seoDescription: "Compounded tirzepatide starting at $259/mo. Dual-action GLP-1/GIP for enhanced weight loss. Doses 2.25-9mg.",
-          },
-          {
-            locale: "es",
-            name: "Tirzepatida Compuesta — Inicio",
-            descriptionShort: "Medicamento de doble acción GLP-1/GIP para dosis de 2.25–9mg.",
-            descriptionLong: "La tirzepatida compuesta actúa sobre los receptores GLP-1 y GIP para resultados mejorados de pérdida de peso. El nivel de inicio cubre dosis de 2.25mg a 9mg, ideal para pacientes que comienzan su viaje de pérdida de peso. Estudios clínicos muestran 20-25% de pérdida de peso promedio.",
-            seoTitle: "Tirzepatida Compuesta Inicio (2.25-9mg) | Body Good Studio",
-            seoDescription: "Tirzepatida compuesta desde $259/mes. Doble acción GLP-1/GIP para pérdida de peso mejorada.",
-          },
-        ],
-      },
-      variants: {
-        create: [
-          { sku: "TRZ-S-1MO", doseLevel: "2.25-9mg", supplyDuration: "1-month", price: 29900, compareAtPrice: null, sortOrder: 1 },
-          { sku: "TRZ-S-3MO", doseLevel: "2.25-9mg", supplyDuration: "3-month", price: 27900, compareAtPrice: 29900, sortOrder: 2 },
-          { sku: "TRZ-S-6MO", doseLevel: "2.25-9mg", supplyDuration: "6-month", price: 25900, compareAtPrice: 29900, sortOrder: 3 },
-        ],
-      },
-    },
+  await upsertProduct({
+    slug: "compounded-tirzepatide-starter",
+    sku: "WM-TIR-S",
+    category: "compounded",
+    programTag: "weight-management, glp-1, tirzepatide, injectable, starter",
+    fulfillment: "direct_ship",
+    dosageForm: "Injectable",
+    fccMedicationName: "Tirzepatide / B6 (Pyridoxine)",
+    fccConcentration: "12.5mg/10mg/mL",
+    isFeatured: true,
+    sortOrder: 2,
+    nameEn: "Compounded Tirzepatide — Starter",
+    nameEs: "Tirzepatida Compuesta — Inicio",
+    shortEn: "Same active ingredient as Mounjaro & Zepbound. Starter doses (2.5–7.5mg/week).",
+    shortEs: "Mismo ingrediente activo que Mounjaro y Zepbound. Dosis iniciales (2.5–7.5mg/semana).",
+    variants: [
+      { sku: "TRZ-S-1MO", label: "1 Month Supply", doseLevel: "2.5–7.5mg", supplyDuration: "1-month", price: 29900, sortOrder: 1 },
+      { sku: "TRZ-S-3MO", label: "3 Month Supply", doseLevel: "2.5–7.5mg", supplyDuration: "3-month", price: 27900, compareAtPrice: 29900, sortOrder: 2 },
+      { sku: "TRZ-S-6MO", label: "6 Month Supply", doseLevel: "2.5–7.5mg", supplyDuration: "6-month", price: 25900, compareAtPrice: 29900, sortOrder: 3 },
+    ],
   });
 
-  // 3. Compounded Tirzepatide (Maintenance)
-  const tirzepatideMaint = await prisma.product.create({
-    data: {
-      slug: "compounded-tirzepatide-maintenance",
-      category: "compounded",
-      requiresPrescription: true,
-      isActive: true,
-      sortOrder: 3,
-      translations: {
-        create: [
-          {
-            locale: "en",
-            name: "Compounded Tirzepatide — Maintenance",
-            descriptionShort: "Higher-dose tirzepatide for patients on 11.25mg+ maintenance doses.",
-            descriptionLong: "For patients who have titrated up to maintenance doses of 11.25mg or higher. Continuation of the dual-action GLP-1/GIP therapy with ongoing provider monitoring and support.",
-            seoTitle: "Compounded Tirzepatide Maintenance (11.25mg+) | Body Good Studio",
-            seoDescription: "Compounded tirzepatide maintenance from $319/mo. For patients on 11.25mg+ doses.",
-          },
-          {
-            locale: "es",
-            name: "Tirzepatida Compuesta — Mantenimiento",
-            descriptionShort: "Tirzepatida de dosis más alta para pacientes en dosis de mantenimiento de 11.25mg+.",
-            descriptionLong: "Para pacientes que han titulado hasta dosis de mantenimiento de 11.25mg o más. Continuación de la terapia de doble acción GLP-1/GIP con monitoreo y soporte continuo del proveedor.",
-            seoTitle: "Tirzepatida Compuesta Mantenimiento (11.25mg+) | Body Good Studio",
-            seoDescription: "Tirzepatida compuesta mantenimiento desde $319/mes. Para pacientes en dosis de 11.25mg+.",
-          },
-        ],
-      },
-      variants: {
-        create: [
-          { sku: "TRZ-M-1MO", doseLevel: "11.25mg+", supplyDuration: "1-month", price: 34900, compareAtPrice: null, sortOrder: 1 },
-          { sku: "TRZ-M-3MO", doseLevel: "11.25mg+", supplyDuration: "3-month", price: 32900, compareAtPrice: 34900, sortOrder: 2 },
-          { sku: "TRZ-M-6MO", doseLevel: "11.25mg+", supplyDuration: "6-month", price: 31900, compareAtPrice: 34900, sortOrder: 3 },
-        ],
-      },
-    },
+  await upsertProduct({
+    slug: "compounded-tirzepatide-maintenance",
+    sku: "WM-TIR-M",
+    category: "compounded",
+    programTag: "weight-management, glp-1, tirzepatide, injectable, maintenance",
+    fulfillment: "direct_ship",
+    dosageForm: "Injectable",
+    fccMedicationName: "Tirzepatide / B6 (Pyridoxine)",
+    fccConcentration: "12.5mg/10mg/mL",
+    sortOrder: 3,
+    nameEn: "Compounded Tirzepatide — Maintenance",
+    nameEs: "Tirzepatida Compuesta — Mantenimiento",
+    shortEn: "Higher maintenance doses (10–15mg/week) for sustained weight management.",
+    shortEs: "Dosis de mantenimiento más altas (10–15mg/semana) para control de peso sostenido.",
+    variants: [
+      { sku: "TRZ-M-1MO", label: "1 Month Supply", doseLevel: "10–15mg", supplyDuration: "1-month", price: 34900, sortOrder: 1 },
+      { sku: "TRZ-M-3MO", label: "3 Month Supply", doseLevel: "10–15mg", supplyDuration: "3-month", price: 32900, compareAtPrice: 34900, sortOrder: 2 },
+      { sku: "TRZ-M-6MO", label: "6 Month Supply", doseLevel: "10–15mg", supplyDuration: "6-month", price: 31900, compareAtPrice: 34900, sortOrder: 3 },
+    ],
   });
 
-  // 4. Tirzepatide One-Time
-  await prisma.product.create({
-    data: {
-      slug: "tirzepatide-one-time",
-      category: "compounded",
-      requiresPrescription: true,
-      isActive: true,
-      sortOrder: 4,
-      translations: {
-        create: [
-          {
-            locale: "en",
-            name: "Tirzepatide — One-Time Purchase",
-            descriptionShort: "Single month of compounded tirzepatide at any dose level.",
-            descriptionLong: "Try compounded tirzepatide without a subscription commitment. One-time purchase at a flat rate for any dose level. Perfect for patients wanting to try before committing to a plan.",
-            seoTitle: "Tirzepatide One-Time Purchase | Body Good Studio",
-            seoDescription: "One-time compounded tirzepatide for $315. Any dose. No subscription required.",
-          },
-          {
-            locale: "es",
-            name: "Tirzepatida — Compra Única",
-            descriptionShort: "Un mes de tirzepatida compuesta a cualquier nivel de dosis.",
-            descriptionLong: "Prueba tirzepatida compuesta sin compromiso de suscripción. Compra única a tarifa plana para cualquier nivel de dosis.",
-            seoTitle: "Tirzepatida Compra Única | Body Good Studio",
-            seoDescription: "Tirzepatida compuesta por $315. Cualquier dosis. Sin suscripción.",
-          },
-        ],
-      },
-      variants: {
-        create: [
-          { sku: "TRZ-OT", doseLevel: "All doses", supplyDuration: "one-time", price: 31500, sortOrder: 1 },
-        ],
-      },
-    },
+  await upsertProduct({
+    slug: "tirzepatide-one-time",
+    sku: "WM-TIR-OT",
+    category: "compounded",
+    programTag: "weight-management, glp-1, tirzepatide, injectable",
+    fulfillment: "direct_ship",
+    dosageForm: "Injectable",
+    fccMedicationName: "Tirzepatide / B6 (Pyridoxine)",
+    sortOrder: 4,
+    nameEn: "Tirzepatide — One-Time Purchase",
+    nameEs: "Tirzepatida — Compra Única",
+    shortEn: "Single month of compounded tirzepatide at any dose level. No subscription required.",
+    shortEs: "Un mes de tirzepatida compuesta a cualquier nivel de dosis. Sin suscripción.",
+    variants: [
+      { sku: "TRZ-OT", label: "All Doses", doseLevel: "All doses", supplyDuration: "one-time", price: 31500, sortOrder: 1 },
+    ],
   });
 
-  // 5. Oral GLP-1
-  await prisma.product.create({
-    data: {
-      slug: "oral-glp1",
-      category: "oral",
-      requiresPrescription: true,
-      isActive: true,
-      isFeatured: true,
-      sortOrder: 5,
-      translations: {
-        create: [
-          {
-            locale: "en",
-            name: "Oral GLP-1",
-            descriptionShort: "No needles — oral weight loss medication you take daily.",
-            descriptionLong: "For patients who prefer no injections. Our oral GLP-1 option provides effective weight loss in a convenient daily pill format. Same appetite-suppressing benefits without needles. Includes provider monitoring and support.",
-            seoTitle: "Oral GLP-1 Weight Loss Medication | Body Good Studio",
-            seoDescription: "Oral GLP-1 weight loss medication from $109/mo. No needles required. Daily pill format.",
-          },
-          {
-            locale: "es",
-            name: "GLP-1 Oral",
-            descriptionShort: "Sin agujas — medicamento oral para bajar de peso que tomas diariamente.",
-            descriptionLong: "Para pacientes que prefieren no inyectarse. Nuestra opción de GLP-1 oral proporciona pérdida de peso efectiva en un formato conveniente de pastilla diaria. Los mismos beneficios de supresión del apetito sin agujas.",
-            seoTitle: "Medicamento Oral GLP-1 para Bajar de Peso | Body Good Studio",
-            seoDescription: "Medicamento oral GLP-1 desde $109/mes. Sin agujas. Formato de pastilla diaria.",
-          },
-        ],
-      },
-      variants: {
-        create: [
-          { sku: "ORAL-OT", doseLevel: null, supplyDuration: "one-time", price: 14900, sortOrder: 1 },
-          { sku: "ORAL-1MO", doseLevel: null, supplyDuration: "1-month", price: 12900, sortOrder: 2 },
-          { sku: "ORAL-3MO", doseLevel: null, supplyDuration: "3-month", price: 11900, compareAtPrice: 12900, sortOrder: 3 },
-          { sku: "ORAL-6MO", doseLevel: null, supplyDuration: "6-month", price: 10900, compareAtPrice: 12900, sortOrder: 4 },
-        ],
-      },
-    },
-  });
-
-  // 6. Branded GLP-1 Rx
-  await prisma.product.create({
-    data: {
-      slug: "branded-glp1-rx",
-      category: "branded_rx",
-      requiresPrescription: true,
-      isActive: true,
-      isFeatured: true,
-      sortOrder: 6,
-      translations: {
-        create: [
-          {
-            locale: "en",
-            name: "Branded GLP-1 Prescription",
-            descriptionShort: "$45 for your prescription — Wegovy or Zepbound. You fill at the pharmacy.",
-            descriptionLong: "Get a legitimate prescription for FDA-approved branded GLP-1 medications from a board-certified provider for a flat $45 fee. Choose from Wegovy (pill or injection) or Zepbound (KwikPen or vial). You fill the prescription at your pharmacy or through the manufacturer (NovoCare for Wegovy, LillyDirect for Zepbound) and pay them directly. No subscription. No membership.",
-            seoTitle: "Branded GLP-1 Prescription — Wegovy & Zepbound | Body Good Studio",
-            seoDescription: "$45 for a Wegovy or Zepbound prescription. Board-certified providers. Fill at your pharmacy. No subscription fees.",
-          },
-          {
-            locale: "es",
-            name: "Receta de GLP-1 de Marca",
-            descriptionShort: "$45 por tu receta — Wegovy o Zepbound. Tú la surtes en la farmacia.",
-            descriptionLong: "Obtén una receta legítima para medicamentos GLP-1 de marca aprobados por la FDA de un proveedor certificado por $45. Elige entre Wegovy (pastilla o inyección) o Zepbound (KwikPen o vial). Surtes la receta en tu farmacia o a través del fabricante y pagas directamente. Sin suscripción. Sin membresía.",
-            seoTitle: "Receta GLP-1 de Marca — Wegovy y Zepbound | Body Good Studio",
-            seoDescription: "$45 por receta de Wegovy o Zepbound. Proveedores certificados. Sin cuotas de suscripción.",
-          },
-        ],
-      },
-      variants: {
-        create: [
-          { sku: "BRX-RX", doseLevel: null, supplyDuration: "one-time", price: 4500, sortOrder: 1 },
-        ],
-      },
-    },
-  });
-
-  // 7. Branded Rx Management
-  await prisma.product.create({
-    data: {
-      slug: "branded-rx-management",
-      category: "branded_mgmt",
-      requiresPrescription: false,
-      isActive: true,
-      sortOrder: 7,
-      translations: {
-        create: [
-          {
-            locale: "en",
-            name: "Branded Rx Management",
-            descriptionShort: "Ongoing provider support for patients on branded GLP-1 medications.",
-            descriptionLong: "Monthly management service for patients already on branded GLP-1 medications (Wegovy, Zepbound, Ozempic, Mounjaro). Includes dose titration guidance, side effect management, refill coordination, and ongoing provider access.",
-            seoTitle: "Branded Rx Management | Body Good Studio",
-            seoDescription: "Ongoing branded GLP-1 management from $25/mo. Dose guidance, refill coordination, provider access.",
-          },
-          {
-            locale: "es",
-            name: "Manejo de Rx de Marca",
-            descriptionShort: "Soporte continuo del proveedor para pacientes con medicamentos GLP-1 de marca.",
-            descriptionLong: "Servicio de manejo mensual para pacientes que ya toman medicamentos GLP-1 de marca. Incluye guía de titulación de dosis, manejo de efectos secundarios, coordinación de resurtidos y acceso continuo al proveedor.",
-            seoTitle: "Manejo de Rx de Marca | Body Good Studio",
-            seoDescription: "Manejo continuo de GLP-1 de marca desde $25/mes. Guía de dosis, coordinación de resurtidos.",
-          },
-        ],
-      },
-      variants: {
-        create: [
-          { sku: "BMGMT-1MO", doseLevel: null, supplyDuration: "1-month", price: 5500, sortOrder: 1 },
-          { sku: "BMGMT-3MO", doseLevel: null, supplyDuration: "3-month", price: 4500, compareAtPrice: 5500, sortOrder: 2 },
-          { sku: "BMGMT-6MO", doseLevel: null, supplyDuration: "6-month", price: 2500, compareAtPrice: 5500, sortOrder: 3 },
-        ],
-      },
-    },
-  });
-
-  // 8-11. Insurance products
-  const insuranceProducts = [
-    { slug: "insurance-eligibility-check", sku: "INS-ELIG", name: "Insurance Eligibility Check", nameEs: "Verificación de Elegibilidad de Seguro", short: "Find out if your insurance covers GLP-1 medications.", shortEs: "Descubre si tu seguro cubre medicamentos GLP-1.", price: 2500 },
-    { slug: "insurance-prior-auth", sku: "INS-PA", name: "Insurance Prior Authorization", nameEs: "Autorización Previa de Seguro", short: "We handle the prior authorization paperwork with your insurer.", shortEs: "Nos encargamos del papeleo de autorización previa con tu aseguradora.", price: 5000 },
-    { slug: "insurance-approval", sku: "INS-APPR", name: "Insurance Approval", nameEs: "Aprobación de Seguro", short: "Full approval process to get your GLP-1 covered by insurance.", shortEs: "Proceso completo de aprobación para que tu GLP-1 sea cubierto por el seguro.", price: 8500 },
-    { slug: "insurance-ongoing-mgmt", sku: "INS-MGMT", name: "Insurance Ongoing Management", nameEs: "Manejo Continuo de Seguro", short: "Monthly management of your insurance-covered GLP-1 prescription.", shortEs: "Manejo mensual de tu receta GLP-1 cubierta por seguro.", price: 7500 },
+  // Individual dose-level SKUs from catalog
+  const semaDoses = [
+    { sku: "WM-SEM-025", slug: "semaglutide-025mg", name: "Semaglutide 0.25mg/week", dose: "0.25mg/week", fill: "1mL", conc: "2.5mg/10mg/mL", order: 5 },
+    { sku: "WM-SEM-050", slug: "semaglutide-050mg", name: "Semaglutide 0.5mg/week", dose: "0.5mg/week", fill: "2mL", conc: "2.5mg/10mg/mL", order: 6 },
+    { sku: "WM-SEM-100", slug: "semaglutide-100mg", name: "Semaglutide 1mg/week", dose: "1mg/week", fill: "4mL (2x2mL)", conc: "2.5mg/10mg/mL", order: 7 },
+    { sku: "WM-SEM-150", slug: "semaglutide-150mg", name: "Semaglutide 1.5mg/week", dose: "1.5mg/week", fill: "6mL (3x2mL)", conc: "2.5mg/10mg/mL", order: 8 },
+    { sku: "WM-SEM-200", slug: "semaglutide-200mg", name: "Semaglutide 2mg/week", dose: "2mg/week", fill: "8mL (4x2mL)", conc: "2.5mg/10mg/mL", order: 9 },
   ];
-
-  for (const ins of insuranceProducts) {
-    await prisma.product.create({
-      data: {
-        slug: ins.slug,
-        category: "insurance",
-        requiresPrescription: false,
-        isActive: true,
-        sortOrder: 8,
-        translations: {
-          create: [
-            { locale: "en", name: ins.name, descriptionShort: ins.short, descriptionLong: ins.short },
-            { locale: "es", name: ins.nameEs, descriptionShort: ins.shortEs, descriptionLong: ins.shortEs },
-          ],
-        },
-        variants: {
-          create: [
-            { sku: ins.sku, supplyDuration: ins.sku === "INS-MGMT" ? "1-month" : "one-time", price: ins.price, sortOrder: 1 },
-          ],
-        },
-      },
+  for (const d of semaDoses) {
+    await upsertProduct({
+      slug: d.slug, sku: d.sku, category: "compounded",
+      programTag: "weight-management, glp-1, semaglutide, injectable",
+      fulfillment: "direct_ship", dosageForm: "Injectable",
+      fccMedicationName: "Semaglutide / B6 (Pyridoxine)", fccConcentration: d.conc,
+      sortOrder: d.order,
+      nameEn: d.name, shortEn: `${d.dose} weekly. ${d.fill} vial, monthly supply.`,
+      variants: [{ sku: `${d.sku}-1MO`, label: `1 Month — ${d.dose}`, doseLevel: d.dose, supplyDuration: "1-month", price: 17900, sortOrder: 1 }],
     });
   }
 
-  // ─── FAQ Items ──────────────────────────────────────
-
-  const faqs = [
-    { cat: "general", q: "What are GLP-1 medications?", a: "GLP-1 medications (like semaglutide and tirzepatide) are FDA-approved treatments that help regulate appetite and blood sugar. They work by mimicking a natural hormone that signals fullness to your brain, helping you eat less and lose weight effectively.", qEs: "¿Qué son los medicamentos GLP-1?", aEs: "Los medicamentos GLP-1 (como semaglutida y tirzepatida) son tratamientos aprobados por la FDA que ayudan a regular el apetito y el azúcar en sangre." },
-    { cat: "general", q: "How much weight can I expect to lose?", a: "Clinical studies show patients lose 15-20% of their body weight on average with GLP-1 medications. Individual results vary based on medication type, dosage, diet, and activity level.", qEs: "¿Cuánto peso puedo esperar perder?", aEs: "Los estudios clínicos muestran que los pacientes pierden 15-20% de su peso corporal en promedio con medicamentos GLP-1." },
-    { cat: "insurance", q: "Do you accept insurance?", a: "Yes! We offer an Insurance Navigation Program that helps determine if your insurance covers GLP-1 medications. Start with our free coverage probability check, or purchase a full eligibility verification for $25.", qEs: "¿Aceptan seguro?", aEs: "¡Sí! Ofrecemos un Programa de Navegación de Seguros que ayuda a determinar si tu seguro cubre medicamentos GLP-1." },
-    { cat: "glp1", q: "What's the difference between compounded and branded medications?", a: "Branded medications (Wegovy, Zepbound) are manufactured by pharmaceutical companies and are FDA-approved. Compounded medications contain the same active ingredients but are prepared by licensed compounding pharmacies at lower cost. Both are prescribed by our licensed providers.", qEs: "¿Cuál es la diferencia entre medicamentos compuestos y de marca?", aEs: "Los medicamentos de marca (Wegovy, Zepbound) son fabricados por compañías farmacéuticas y están aprobados por la FDA. Los medicamentos compuestos contienen los mismos ingredientes activos pero son preparados por farmacias de composición con licencia a menor costo." },
-    { cat: "glp1", q: "How does the $45 branded prescription work?", a: "For $45, one of our board-certified providers writes you a prescription for Wegovy or Zepbound. You then fill the prescription at your pharmacy or through the manufacturer (NovoCare for Wegovy, LillyDirect for Zepbound) and pay them directly for the medication.", qEs: "¿Cómo funciona la receta de marca de $45?", aEs: "Por $45, uno de nuestros proveedores certificados te escribe una receta para Wegovy o Zepbound. Luego surtes la receta en tu farmacia o a través del fabricante y pagas directamente por el medicamento." },
-    { cat: "billing", q: "What payment methods do you accept?", a: "We accept PayPal (wallet and credit/debit cards through PayPal). Commitment plans (3-month and 6-month) offer lower monthly rates.", qEs: "¿Qué métodos de pago aceptan?", aEs: "Aceptamos PayPal (billetera y tarjetas de crédito/débito a través de PayPal). Los planes de compromiso (3 meses y 6 meses) ofrecen tarifas mensuales más bajas." },
-    { cat: "billing", q: "Can I cancel my subscription?", a: "Yes, you can pause (up to 30 days) or cancel your subscription anytime from your account. We'll walk you through options that might work better before you cancel.", qEs: "¿Puedo cancelar mi suscripción?", aEs: "Sí, puedes pausar (hasta 30 días) o cancelar tu suscripción en cualquier momento desde tu cuenta." },
+  const tirzDoses = [
+    { sku: "WM-TIR-250", slug: "tirzepatide-250mg", name: "Tirzepatide 2.5mg/week", dose: "2.5mg/week", price: 29900, order: 10 },
+    { sku: "WM-TIR-500", slug: "tirzepatide-500mg", name: "Tirzepatide 5mg/week", dose: "5mg/week", price: 29900, order: 11 },
+    { sku: "WM-TIR-750", slug: "tirzepatide-750mg", name: "Tirzepatide 7.5mg/week", dose: "7.5mg/week", price: 29900, order: 12 },
+    { sku: "WM-TIR-1000", slug: "tirzepatide-1000mg", name: "Tirzepatide 10mg/week", dose: "10mg/week", price: 34900, order: 13 },
+    { sku: "WM-TIR-1250", slug: "tirzepatide-1250mg", name: "Tirzepatide 12.5mg/week", dose: "12.5mg/week", price: 34900, order: 14 },
+    { sku: "WM-TIR-1500", slug: "tirzepatide-1500mg", name: "Tirzepatide 15mg/week", dose: "15mg/week", price: 34900, order: 15 },
   ];
-
-  for (let i = 0; i < faqs.length; i++) {
-    const f = faqs[i];
-    await prisma.faqItem.create({
-      data: {
-        category: f.cat,
-        sortOrder: i + 1,
-        isActive: true,
-        translations: {
-          create: [
-            { locale: "en", question: f.q, answer: f.a },
-            { locale: "es", question: f.qEs, answer: f.aEs },
-          ],
-        },
-      },
+  for (const t of tirzDoses) {
+    await upsertProduct({
+      slug: t.slug, sku: t.sku, category: "compounded",
+      programTag: "weight-management, glp-1, tirzepatide, injectable",
+      fulfillment: "direct_ship", dosageForm: "Injectable",
+      fccMedicationName: "Tirzepatide / B6 (Pyridoxine)", fccConcentration: "12.5mg/10mg/mL",
+      sortOrder: t.order,
+      nameEn: t.name, shortEn: `${t.dose} weekly. Same active ingredient as Mounjaro & Zepbound.`,
+      variants: [{ sku: `${t.sku}-1MO`, label: `1 Month — ${t.dose}`, doseLevel: t.dose, supplyDuration: "1-month", price: t.price, sortOrder: 1 }],
     });
   }
 
-  // ─── Discount Codes ─────────────────────────────────
-  await prisma.discountCode.deleteMany();
-
-  await prisma.discountCode.create({
-    data: { code: "WELCOME25", type: "fixed", value: 2500, minOrderValue: 10000, isActive: true },
-  });
-  await prisma.discountCode.create({
-    data: { code: "SAVE10", type: "percentage", value: 10, isActive: true },
-  });
-  await prisma.discountCode.create({
-    data: { code: "FRIEND25", type: "fixed", value: 2500, isActive: true },
+  await upsertProduct({
+    slug: "anti-nausea-ondansetron",
+    sku: "SUP-ONDAN",
+    category: "compounded",
+    programTag: "weight-management, add-on, anti-nausea",
+    fulfillment: "direct_ship", dosageForm: "Oral",
+    sortOrder: 20,
+    nameEn: "Anti-Nausea (Ondansetron)",
+    nameEs: "Antináusea (Ondansetron)",
+    shortEn: "Ondansetron 4mg 10ct — weight management add-on for nausea relief.",
+    shortEs: "Ondansetron 4mg 10ct — complemento para náuseas durante el tratamiento.",
+    variants: [{ sku: "SUP-ONDAN-10CT", label: "10ct", supplyDuration: "one-time", price: 2000, sortOrder: 1 }],
   });
 
-  console.log(`Discount codes: ${await prisma.discountCode.count()}`);
+  // ═══════════════════════════════════════════════════════════════════════
+  // 2. ORAL GlowRx
+  // ═══════════════════════════════════════════════════════════════════════
+  console.log("\n💊 Oral GlowRx...");
 
-  // ─── Reviews ────────────────────────────────────────
-  await prisma.review.deleteMany();
+  await upsertProduct({
+    slug: "oral-glp1",
+    sku: "WM-GLOWRX",
+    category: "oral",
+    programTag: "weight-management, oral, glow-rx",
+    fulfillment: "direct_ship", dosageForm: "Capsule",
+    isFeatured: true, sortOrder: 1,
+    nameEn: "GlowRx Oral Weight Management",
+    nameEs: "Manejo de Peso Oral GlowRx",
+    shortEn: "Non-injection oral weight management. Monthly or multi-month supply.",
+    shortEs: "Manejo de peso oral sin inyecciones. Suministro mensual o de varios meses.",
+    variants: [
+      { sku: "ORAL-OT", label: "One-Time Purchase", supplyDuration: "one-time", price: 14900, sortOrder: 1 },
+      { sku: "ORAL-1MO", label: "1 Month Supply", supplyDuration: "1-month", price: 12900, sortOrder: 2 },
+      { sku: "ORAL-3MO", label: "3 Month Supply", supplyDuration: "3-month", price: 11900, compareAtPrice: 12900, sortOrder: 3 },
+      { sku: "ORAL-6MO", label: "6 Month Supply", supplyDuration: "6-month", price: 10900, compareAtPrice: 12900, sortOrder: 4 },
+    ],
+  });
 
-  const reviews = [
-    { name: "Maria G.", rating: 5, title: "Life changing!", body: "I've lost 35 lbs in 4 months on semaglutide. The team at Body Good made everything so easy. Dr. Linda is amazing!", productSlug: "compounded-semaglutide", isVerified: true, isApproved: true },
-    { name: "Jessica R.", rating: 5, title: "Finally something that works", body: "After years of trying everything, tirzepatide has been the answer. Down 42 lbs and feeling incredible. The bilingual support was a huge plus for my mom who joined too.", productSlug: "compounded-tirzepatide-starter", isVerified: true, isApproved: true },
-    { name: "Ana L.", rating: 5, title: "Excelente servicio", body: "Me encanta que todo está en español. La Dra. Linda es muy atenta y el proceso fue muy fácil. Ya perdí 20 libras!", productSlug: "compounded-semaglutide", isVerified: true, isApproved: true, locale: "es" },
-    { name: "David M.", rating: 4, title: "Great experience overall", body: "The oral GLP-1 option was perfect for me since I hate needles. Lost 18 lbs in 3 months. Only giving 4 stars because shipping took a bit longer than expected.", productSlug: "oral-glp1", isVerified: true, isApproved: true },
-    { name: "Sarah K.", rating: 5, title: "Insurance program saved me thousands", body: "Body Good helped me get my Wegovy covered by insurance. I was paying $350/month out of pocket before. Now I pay my $30 copay. The $25 eligibility check was the best money I ever spent.", productSlug: "insurance-eligibility-check", isVerified: true, isApproved: true },
-    { name: "Carmen V.", rating: 5, title: "Muy profesional", body: "El programa de receta de marca por $45 fue increíble. Obtuve mi receta de Zepbound rápidamente y la surté en LillyDirect. Muy transparente y profesional.", productSlug: "branded-glp1-rx", isVerified: true, isApproved: true, locale: "es" },
+  await upsertProduct({
+    slug: "glowrx-appetite-control",
+    sku: "WM-GLOWRX-ACC",
+    category: "oral",
+    programTag: "weight-management, oral, glow-rx, appetite-control",
+    fulfillment: "direct_ship", dosageForm: "Capsule",
+    fccMedicationName: "Bupropion/Naltrexone/Chromium", fccConcentration: "90mg/8mg/200mcg",
+    sortOrder: 2,
+    nameEn: "GlowRx Appetite & Craving Control",
+    nameEs: "GlowRx Control de Apetito y Antojos",
+    shortEn: "Bupropion/Naltrexone/Chromium SR — reduces cravings and appetite. 30ct capsules.",
+    shortEs: "Bupropion/Naltrexona/Cromo — reduce los antojos y el apetito. 30 cápsulas.",
+    variants: [
+      { sku: "WM-GLOWRX-ACC-1MO", label: "30ct — 1 Month", doseLevel: "90mg/8mg/200mcg", supplyDuration: "1-month", price: 12900, compareAtPrice: 15900, sortOrder: 1 },
+      { sku: "WM-GLOWRX-ACC-3MO", label: "30ct × 3 Months", doseLevel: "90mg/8mg/200mcg", supplyDuration: "3-month", price: 11900, compareAtPrice: 15900, sortOrder: 2 },
+      { sku: "WM-GLOWRX-ACC-6MO", label: "70ct — Extended Supply", doseLevel: "90mg/8mg/200mcg", supplyDuration: "6-month", price: 10900, compareAtPrice: 15900, sortOrder: 3 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "glowrx-metabolic-reset",
+    sku: "WM-GLOWRX-MR",
+    category: "oral",
+    programTag: "weight-management, oral, glow-rx, metabolic-reset",
+    fulfillment: "direct_ship", dosageForm: "Capsule",
+    fccMedicationName: "Metformin / Topiramate", fccConcentration: "250mg/5mg",
+    sortOrder: 3,
+    nameEn: "GlowRx Metabolic Reset",
+    nameEs: "GlowRx Reinicio Metabólico",
+    shortEn: "Metformin/Topiramate — metabolic support for blood sugar and weight. 30ct capsules.",
+    shortEs: "Metformina/Topiramato — soporte metabólico para azúcar en sangre y peso. 30 cápsulas.",
+    variants: [
+      { sku: "WM-GLOWRX-MR-1MO", label: "30ct — 5mg Standard", doseLevel: "250mg/5mg", supplyDuration: "1-month", price: 12900, compareAtPrice: 15900, sortOrder: 1 },
+      { sku: "WM-GLOWRX-MR-3MO", label: "30ct × 3 Months", doseLevel: "250mg/5mg", supplyDuration: "3-month", price: 11900, compareAtPrice: 15900, sortOrder: 2 },
+      { sku: "WM-GLOWRX-MR-10MG", label: "30ct — 10mg Higher Dose", doseLevel: "250mg/10mg", supplyDuration: "1-month", price: 12900, sortOrder: 3 },
+    ],
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // 3. BRANDED RX (Insurance & Self-Pay)
+  // ═══════════════════════════════════════════════════════════════════════
+  console.log("\n🏷️  Branded Rx...");
+
+  await upsertProduct({
+    slug: "branded-glp1-rx",
+    sku: "BRX-RX-FEE",
+    category: "branded_rx",
+    programTag: "branded-rx, self-pay",
+    fulfillment: "pharmacy_rx", dosageForm: "Injectable",
+    isFeatured: true, sortOrder: 1,
+    nameEn: "Branded GLP-1 Prescription",
+    nameEs: "Receta de GLP-1 de Marca",
+    shortEn: "$45 for your prescription — Wegovy or Zepbound. You fill at the pharmacy.",
+    shortEs: "$45 por tu receta — Wegovy o Zepbound. Tú la surtes en la farmacia.",
+    variants: [
+      { sku: "BRX-RX", label: "Rx Fee (one-time)", supplyDuration: "one-time", price: 4500, sortOrder: 1 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "branded-rx-management",
+    sku: "BMGMT-MGT",
+    category: "branded_rx",
+    programTag: "branded-rx, management",
+    fulfillment: "pharmacy_rx", dosageForm: "Injectable",
+    requiresPrescription: false, sortOrder: 2,
+    nameEn: "Branded Rx Management",
+    nameEs: "Gestión de Rx de Marca",
+    shortEn: "Ongoing clinical management for patients on branded GLP-1 medications.",
+    shortEs: "Gestión clínica continua para pacientes con medicamentos GLP-1 de marca.",
+    variants: [
+      { sku: "BMGMT-1MO", label: "1 Month", supplyDuration: "1-month", price: 5500, sortOrder: 1 },
+      { sku: "BMGMT-3MO", label: "3 Months", supplyDuration: "3-month", price: 4500, compareAtPrice: 5500, sortOrder: 2 },
+      { sku: "BMGMT-6MO", label: "6 Months", supplyDuration: "6-month", price: 2500, compareAtPrice: 5500, sortOrder: 3 },
+    ],
+  });
+
+  // Insurance branded
+  await upsertProduct({
+    slug: "ins-wegovy-injection",
+    sku: "INS-WEGOVY-INJ",
+    category: "branded_rx",
+    programTag: "insurance-branded, semaglutide, wegovy",
+    fulfillment: "pharmacy_rx", dosageForm: "Injectable",
+    pathBOngoingPrice: 7500, sortOrder: 3,
+    nameEn: "Wegovy Injection (Insurance)",
+    nameEs: "Inyección Wegovy (Seguro)",
+    shortEn: "Wegovy (semaglutide) injection through insurance. Ongoing program management $75/mo.",
+    shortEs: "Inyección Wegovy (semaglutida) por seguro. Gestión del programa $75/mes.",
+    variants: [
+      { sku: "INS-WEGOVY-INJ-025", label: "0.25mg", doseLevel: "0.25mg", price: 7500, sortOrder: 1 },
+      { sku: "INS-WEGOVY-INJ-050", label: "0.5mg", doseLevel: "0.5mg", price: 7500, sortOrder: 2 },
+      { sku: "INS-WEGOVY-INJ-100", label: "1mg", doseLevel: "1mg", price: 7500, sortOrder: 3 },
+      { sku: "INS-WEGOVY-INJ-170", label: "1.7mg", doseLevel: "1.7mg", price: 7500, sortOrder: 4 },
+      { sku: "INS-WEGOVY-INJ-240", label: "2.4mg", doseLevel: "2.4mg", price: 7500, sortOrder: 5 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "ins-wegovy-pill",
+    sku: "INS-WEGOVY-PILL",
+    category: "branded_rx",
+    programTag: "insurance-branded, semaglutide, wegovy, oral",
+    fulfillment: "pharmacy_rx", dosageForm: "Oral",
+    pathBOngoingPrice: 7500, sortOrder: 4,
+    nameEn: "Wegovy Pill (Insurance)",
+    nameEs: "Pastilla Wegovy (Seguro)",
+    shortEn: "Wegovy oral tablet through insurance. Program management $75/mo.",
+    shortEs: "Tableta oral Wegovy por seguro. Gestión del programa $75/mes.",
+    variants: [{ sku: "INS-WEGOVY-PILL-STD", label: "All doses", price: 7500, sortOrder: 1 }],
+  });
+
+  await upsertProduct({
+    slug: "ins-ozempic",
+    sku: "INS-OZEMPIC",
+    category: "branded_rx",
+    programTag: "insurance-branded, semaglutide, ozempic",
+    fulfillment: "pharmacy_rx", dosageForm: "Injectable",
+    pathBOngoingPrice: 7500, sortOrder: 5,
+    nameEn: "Ozempic Injection (Insurance)",
+    nameEs: "Inyección Ozempic (Seguro)",
+    shortEn: "Ozempic (semaglutide) injection through insurance. Program management $75/mo.",
+    shortEs: "Inyección Ozempic (semaglutida) por seguro. Gestión del programa $75/mes.",
+    variants: [
+      { sku: "INS-OZEMPIC-025", label: "0.25mg", doseLevel: "0.25mg", price: 7500, sortOrder: 1 },
+      { sku: "INS-OZEMPIC-050", label: "0.5mg", doseLevel: "0.5mg", price: 7500, sortOrder: 2 },
+      { sku: "INS-OZEMPIC-100", label: "1mg", doseLevel: "1mg", price: 7500, sortOrder: 3 },
+      { sku: "INS-OZEMPIC-200", label: "2mg", doseLevel: "2mg", price: 7500, sortOrder: 4 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "ins-mounjaro",
+    sku: "INS-MOUNJARO",
+    category: "branded_rx",
+    programTag: "insurance-branded, tirzepatide, mounjaro",
+    fulfillment: "pharmacy_rx", dosageForm: "Injectable",
+    pathBOngoingPrice: 7500, sortOrder: 6,
+    nameEn: "Mounjaro Injection (Insurance)",
+    nameEs: "Inyección Mounjaro (Seguro)",
+    shortEn: "Mounjaro (tirzepatide) injection through insurance. Program management $75/mo.",
+    shortEs: "Inyección Mounjaro (tirzepatida) por seguro. Gestión del programa $75/mes.",
+    variants: [
+      { sku: "INS-MOUNJARO-250", label: "2.5mg", doseLevel: "2.5mg", price: 7500, sortOrder: 1 },
+      { sku: "INS-MOUNJARO-500", label: "5mg", doseLevel: "5mg", price: 7500, sortOrder: 2 },
+      { sku: "INS-MOUNJARO-750", label: "7.5mg", doseLevel: "7.5mg", price: 7500, sortOrder: 3 },
+      { sku: "INS-MOUNJARO-1000", label: "10mg", doseLevel: "10mg", price: 7500, sortOrder: 4 },
+      { sku: "INS-MOUNJARO-1250", label: "12.5mg", doseLevel: "12.5mg", price: 7500, sortOrder: 5 },
+      { sku: "INS-MOUNJARO-1500", label: "15mg", doseLevel: "15mg", price: 7500, sortOrder: 6 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "ins-zepbound",
+    sku: "INS-ZEPBOUND",
+    category: "branded_rx",
+    programTag: "insurance-branded, tirzepatide, zepbound",
+    fulfillment: "pharmacy_rx", dosageForm: "Injectable",
+    pathBOngoingPrice: 7500, sortOrder: 7,
+    nameEn: "Zepbound Injection (Insurance)",
+    nameEs: "Inyección Zepbound (Seguro)",
+    shortEn: "Zepbound (tirzepatide) injection through insurance. Program management $75/mo.",
+    shortEs: "Inyección Zepbound (tirzepatida) por seguro. Gestión del programa $75/mes.",
+    variants: [
+      { sku: "INS-ZEPBOUND-250", label: "2.5mg", doseLevel: "2.5mg", price: 7500, sortOrder: 1 },
+      { sku: "INS-ZEPBOUND-500", label: "5mg", doseLevel: "5mg", price: 7500, sortOrder: 2 },
+      { sku: "INS-ZEPBOUND-750", label: "7.5mg", doseLevel: "7.5mg", price: 7500, sortOrder: 3 },
+      { sku: "INS-ZEPBOUND-1000", label: "10mg", doseLevel: "10mg", price: 7500, sortOrder: 4 },
+      { sku: "INS-ZEPBOUND-1250", label: "12.5mg", doseLevel: "12.5mg", price: 7500, sortOrder: 5 },
+      { sku: "INS-ZEPBOUND-1500", label: "15mg", doseLevel: "15mg", price: 7500, sortOrder: 6 },
+    ],
+  });
+
+  // Self-Pay Branded
+  const selfPayItems = [
+    { slug: "sp-wegovy-injection", sku: "SP-WEGOVY-INJ", name: "Wegovy Injection (Self-Pay)", nameEs: "Inyección Wegovy (Pago Propio)", dosageForm: "Injectable", order: 8 },
+    { slug: "sp-wegovy-pill", sku: "SP-WEGOVY-PILL", name: "Wegovy Pill (Self-Pay)", nameEs: "Pastilla Wegovy (Pago Propio)", dosageForm: "Oral", order: 9 },
+    { slug: "sp-zepbound-pen", sku: "SP-ZEPBOUND-PEN", name: "Zepbound Qwik Pen (Self-Pay)", nameEs: "Pluma Zepbound (Pago Propio)", dosageForm: "Injectable", order: 10 },
+    { slug: "sp-zepbound-vial", sku: "SP-ZEPBOUND-VIAL", name: "Zepbound Vial (Self-Pay)", nameEs: "Vial Zepbound (Pago Propio)", dosageForm: "Injectable", order: 11 },
   ];
-
-  for (const r of reviews) {
-    await prisma.review.create({
-      data: {
-        email: `${r.name.toLowerCase().replace(/[^a-z]/g, "")}@example.com`,
-        ...r,
-      },
+  for (const sp of selfPayItems) {
+    await upsertProduct({
+      slug: sp.slug, sku: sp.sku, category: "branded_rx",
+      programTag: "branded-rx, self-pay", fulfillment: "pharmacy_rx", dosageForm: sp.dosageForm,
+      sortOrder: sp.order,
+      nameEn: sp.name, nameEs: sp.nameEs,
+      shortEn: "Patient pays pharmacy cash price. Body Good charges management fee only.",
+      shortEs: "El paciente paga en farmacia. Body Good cobra solo la tarifa de gestión.",
+      variants: [{ sku: `${sp.sku}-MGT`, label: "Management Fee", supplyDuration: "1-month", price: 4900, sortOrder: 1 }],
     });
   }
 
-  console.log(`Reviews: ${await prisma.review.count()}`);
+  // ═══════════════════════════════════════════════════════════════════════
+  // 4. INSURANCE NAVIGATION SERVICES
+  // ═══════════════════════════════════════════════════════════════════════
+  console.log("\n🏥 Insurance services...");
 
-  // ─── Blog Posts ─────────────────────────────────────
-  await prisma.blogPostTranslation.deleteMany();
-  await prisma.blogPost.deleteMany();
+  await upsertProduct({
+    slug: "insurance-eligibility-check",
+    sku: "INS-ELIG-SVC",
+    category: "insurance",
+    programTag: "insurance, eligibility",
+    fulfillment: "direct_ship", requiresPrescription: false, sortOrder: 1,
+    nameEn: "Insurance Eligibility Check",
+    nameEs: "Verificación de Elegibilidad de Seguro",
+    shortEn: "Comprehensive insurance eligibility verification for GLP-1 coverage.",
+    shortEs: "Verificación completa de elegibilidad de seguro para cobertura GLP-1.",
+    variants: [{ sku: "INS-ELIG", label: "One-Time Check", supplyDuration: "one-time", price: 2500, sortOrder: 1 }],
+  });
 
-  const posts = [
-    {
-      slug: "what-are-glp1-medications",
-      category: "glp1-education",
-      en: {
-        title: "What Are GLP-1 Medications and How Do They Work?",
-        excerpt: "Everything you need to know about semaglutide, tirzepatide, and how GLP-1 receptor agonists help you lose weight.",
-        body: "## What Are GLP-1 Medications?\n\nGLP-1 (glucagon-like peptide-1) receptor agonists are a class of medications originally developed for type 2 diabetes that have shown remarkable results for weight loss.\n\n### How They Work\n\nGLP-1 medications mimic a natural hormone your body produces after eating. This hormone:\n\n- **Signals fullness** to your brain, reducing appetite\n- **Slows stomach emptying**, helping you feel satisfied longer\n- **Regulates blood sugar**, reducing cravings\n\n### Types of GLP-1 Medications\n\n**Semaglutide** (Ozempic/Wegovy class) targets GLP-1 receptors and produces an average of 15% body weight loss.\n\n**Tirzepatide** (Mounjaro/Zepbound class) targets both GLP-1 AND GIP receptors, producing 20-25% average weight loss — the strongest results in clinical trials.\n\n### Is It Right for You?\n\nGLP-1 medications are typically prescribed for adults with a BMI of 27+ (with weight-related conditions) or 30+. Take our quiz to find out which option is right for you.",
-      },
-      es: {
-        title: "¿Qué Son los Medicamentos GLP-1 y Cómo Funcionan?",
-        excerpt: "Todo lo que necesitas saber sobre semaglutida, tirzepatida y cómo los agonistas del receptor GLP-1 te ayudan a bajar de peso.",
-        body: "## ¿Qué Son los Medicamentos GLP-1?\n\nLos agonistas del receptor GLP-1 son una clase de medicamentos originalmente desarrollados para la diabetes tipo 2 que han mostrado resultados notables para la pérdida de peso.\n\n### Cómo Funcionan\n\nLos medicamentos GLP-1 imitan una hormona natural que tu cuerpo produce después de comer. Esta hormona:\n\n- **Señala saciedad** a tu cerebro, reduciendo el apetito\n- **Retrasa el vaciamiento del estómago**, ayudándote a sentirte satisfecho por más tiempo\n- **Regula el azúcar en sangre**, reduciendo los antojos\n\n### ¿Es Adecuado Para Ti?\n\nLos medicamentos GLP-1 se recetan típicamente para adultos con un BMI de 27+ o 30+. Toma nuestro cuestionario para descubrir cuál opción es la correcta para ti.",
-      },
-    },
-    {
-      slug: "compounded-vs-branded-glp1",
-      category: "glp1-education",
-      en: {
-        title: "Compounded vs. Branded GLP-1: What's the Difference?",
-        excerpt: "Understanding the differences between compounded semaglutide/tirzepatide and brand-name Wegovy/Zepbound.",
-        body: "## Compounded vs. Branded: Understanding Your Options\n\n### Branded Medications\n\nBranded GLP-1 medications like **Wegovy** (semaglutide) and **Zepbound** (tirzepatide) are manufactured by pharmaceutical companies (Novo Nordisk and Eli Lilly) and are FDA-approved.\n\n**Pros:** FDA-approved manufacturing, extensive clinical trial data, manufacturer support programs\n**Cons:** Higher cost ($299-449/month through manufacturer programs)\n\n### Compounded Medications\n\nCompounded GLP-1 medications contain the **same active ingredients** but are prepared by licensed US compounding pharmacies.\n\n**Pros:** Significantly lower cost ($139-349/month), all-inclusive pricing\n**Cons:** Not individually FDA-approved (pharmacies are state-regulated)\n\n### Which Should You Choose?\n\nBoth are prescribed by licensed providers. The choice often comes down to budget and preference. At Body Good, we offer both options with transparent pricing.",
-      },
-      es: {
-        title: "GLP-1 Compuesto vs. de Marca: ¿Cuál es la Diferencia?",
-        excerpt: "Entendiendo las diferencias entre semaglutida/tirzepatida compuesta y Wegovy/Zepbound de marca.",
-        body: "## Compuesto vs. de Marca: Entendiendo Tus Opciones\n\n### Medicamentos de Marca\n\nLos medicamentos GLP-1 de marca como **Wegovy** y **Zepbound** son fabricados por compañías farmacéuticas y están aprobados por la FDA.\n\n### Medicamentos Compuestos\n\nLos medicamentos GLP-1 compuestos contienen los **mismos ingredientes activos** pero son preparados por farmacias de composición con licencia en EE.UU.\n\n### ¿Cuál Deberías Elegir?\n\nAmbos son recetados por proveedores licenciados. La elección a menudo se reduce al presupuesto y preferencia. En Body Good, ofrecemos ambas opciones con precios transparentes.",
-      },
-    },
-    {
-      slug: "does-insurance-cover-glp1",
-      category: "insurance-guides",
-      en: {
-        title: "Does Insurance Cover GLP-1 Weight Loss Medications?",
-        excerpt: "A complete guide to getting your insurance to cover Wegovy, Zepbound, and other GLP-1 medications.",
-        body: "## Insurance Coverage for GLP-1 Medications\n\nOne of the most common questions we hear: **\"Will my insurance cover GLP-1 medications?\"**\n\nThe answer depends on your carrier, plan type, and state.\n\n### Who Typically Gets Coverage\n\n- PPO plans from major carriers (UnitedHealthcare, BCBS, Aetna) have the highest approval rates\n- Patients with a BMI of 30+ or 27+ with comorbidities\n- Plans that cover \"anti-obesity medications\" in their formulary\n\n### Our Insurance Navigation Program\n\nBody Good offers a step-by-step insurance navigation program:\n\n1. **Free Coverage Check** — instant probability score\n2. **Eligibility Verification ($25)** — definitive answer\n3. **Prior Authorization ($50)** — we handle the paperwork\n4. **Approval ($85)** — full process management\n5. **Ongoing Management ($75/mo)** — monthly prescription support\n\nStart with our free insurance coverage probability checker to see your odds.",
-      },
-      es: {
-        title: "¿El Seguro Cubre Medicamentos GLP-1 para Bajar de Peso?",
-        excerpt: "Una guía completa para lograr que tu seguro cubra Wegovy, Zepbound y otros medicamentos GLP-1.",
-        body: "## Cobertura de Seguro para Medicamentos GLP-1\n\nUna de las preguntas más comunes que escuchamos: **\"¿Mi seguro cubrirá medicamentos GLP-1?\"**\n\nLa respuesta depende de tu aseguradora, tipo de plan y estado.\n\n### Nuestro Programa de Navegación de Seguros\n\nBody Good ofrece un programa paso a paso:\n\n1. **Verificación Gratuita** — puntuación de probabilidad instantánea\n2. **Verificación de Elegibilidad ($25)**\n3. **Autorización Previa ($50)**\n4. **Aprobación ($85)**\n5. **Manejo Continuo ($75/mes)**\n\nComienza con nuestra verificación gratuita de probabilidad de cobertura.",
-      },
-    },
+  await upsertProduct({
+    slug: "insurance-prior-auth",
+    sku: "INS-PA-SVC",
+    category: "insurance",
+    programTag: "insurance, prior-auth",
+    fulfillment: "direct_ship", requiresPrescription: false, sortOrder: 2,
+    nameEn: "Insurance Prior Authorization",
+    nameEs: "Preautorización de Seguro",
+    shortEn: "PA submission and advocacy for GLP-1 insurance approval.",
+    shortEs: "Envío de PA y defensa para aprobación de GLP-1 por seguro.",
+    variants: [{ sku: "INS-PA", label: "Prior Authorization", supplyDuration: "one-time", price: 5000, sortOrder: 1 }],
+  });
+
+  await upsertProduct({
+    slug: "insurance-approval",
+    sku: "INS-APPROVAL-SVC",
+    category: "insurance",
+    programTag: "insurance, approval",
+    fulfillment: "direct_ship", requiresPrescription: false, sortOrder: 3,
+    nameEn: "Insurance Approval Management",
+    nameEs: "Gestión de Aprobación de Seguro",
+    shortEn: "Post-approval management and pharmacy coordination.",
+    shortEs: "Gestión post-aprobación y coordinación con farmacia.",
+    variants: [{ sku: "INS-APPR", label: "Approval Management", supplyDuration: "one-time", price: 8500, sortOrder: 1 }],
+  });
+
+  await upsertProduct({
+    slug: "insurance-ongoing-mgmt",
+    sku: "INS-ONGOING-SVC",
+    category: "insurance",
+    programTag: "insurance, ongoing",
+    fulfillment: "direct_ship", requiresPrescription: false, sortOrder: 4,
+    nameEn: "Insurance Ongoing Management",
+    nameEs: "Gestión Continua de Seguro",
+    shortEn: "Monthly refill management, re-authorization, coverage maintenance.",
+    shortEs: "Gestión mensual de reabastecimiento, re-autorización y mantenimiento de cobertura.",
+    variants: [{ sku: "INS-MGMT", label: "Monthly Management", supplyDuration: "1-month", price: 7500, sortOrder: 1 }],
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // 5. WELLNESS INJECTIONS
+  // ═══════════════════════════════════════════════════════════════════════
+  console.log("\n✨ Wellness injections...");
+
+  await upsertProduct({
+    slug: "wellness-b12", sku: "WI-B12", category: "wellness",
+    programTag: "wellness-injection, b12, energy",
+    fulfillment: "direct_ship", dosageForm: "Injectable",
+    fccMedicationName: "Methylcobalamin", fccConcentration: "1mg/mL",
+    requiresPrescription: false, sortOrder: 1,
+    nameEn: "Vitamin B12 Injection", nameEs: "Inyección de Vitamina B12",
+    shortEn: "Methylcobalamin 1mg/mL, 10mL vial. 10+ doses. Energy and metabolism support.",
+    shortEs: "Metilcobalamina 1mg/mL, vial de 10mL. Más de 10 dosis. Energía y metabolismo.",
+    variants: [{ sku: "WI-B12-10ML", label: "10mL Vial", supplyDuration: "one-time", price: 7500, sortOrder: 1 }],
+  });
+
+  await upsertProduct({
+    slug: "wellness-mic", sku: "WI-MIC", category: "wellness",
+    programTag: "wellness-injection, mic, fat-burner",
+    fulfillment: "direct_ship", dosageForm: "Injectable",
+    fccMedicationName: "Methionine/Inositol/Choline", fccConcentration: "25mg/50mg/50mg/mL",
+    requiresPrescription: false, sortOrder: 2,
+    nameEn: "MIC Fat Burning Injection", nameEs: "Inyección Quemadora de Grasa MIC",
+    shortEn: "Lipotropic MIC 10mL, 10–20 doses. Fat metabolism and energy support.",
+    shortEs: "Mezcla lipotrófica MIC 10mL. 10–20 dosis. Metabolismo de grasas y energía.",
+    variants: [{ sku: "WI-MIC-10ML", label: "10mL Vial", supplyDuration: "one-time", price: 9900, sortOrder: 1 }],
+  });
+
+  await upsertProduct({
+    slug: "wellness-bioboost", sku: "WI-BIOBOOST", category: "wellness",
+    programTag: "wellness-injection, bioboost, all-in-one",
+    fulfillment: "direct_ship", dosageForm: "Injectable",
+    fccMedicationName: "Lipotropic Super B", fccConcentration: "Multi-compound",
+    requiresPrescription: false, sortOrder: 3,
+    nameEn: "BioBoost Plus Injection", nameEs: "Inyección BioBoost Plus",
+    shortEn: "All-in-one Lipotropic Super B complex. 30mL, 30 doses. Energy, fat burn, metabolism.",
+    shortEs: "Complejo Lipotrófico Super B todo en uno. 30mL, 30 dosis. Energía y metabolismo.",
+    variants: [{ sku: "WI-BIOBOOST-30ML", label: "30mL Vial", supplyDuration: "one-time", price: 14900, sortOrder: 1 }],
+  });
+
+  await upsertProduct({
+    slug: "wellness-nad-injection", sku: "WI-NAD-INJ", category: "wellness",
+    programTag: "wellness-injection, nad, anti-aging, energy",
+    fulfillment: "direct_ship", dosageForm: "Injectable",
+    fccMedicationName: "NAD+", fccConcentration: "50mg/mL",
+    requiresPrescription: false, sortOrder: 4,
+    nameEn: "NAD+ Injection", nameEs: "Inyección de NAD+",
+    shortEn: "NAD+ 50mg/mL, 20mL (10x2mL vials). 30-day supply. Anti-aging and energy.",
+    shortEs: "NAD+ 50mg/mL, 20mL (10x2mL viales). Suministro de 30 días. Anti-envejecimiento.",
+    variants: [{ sku: "WI-NAD-INJ-30D", label: "30-Day Supply", supplyDuration: "1-month", price: 19900, sortOrder: 1 }],
+  });
+
+  await upsertProduct({
+    slug: "wellness-nad-spray", sku: "WI-NAD-SPRAY", category: "wellness",
+    programTag: "wellness-injection, nad, anti-aging, nasal",
+    fulfillment: "direct_ship", dosageForm: "Nasal Spray",
+    fccMedicationName: "NAD+", fccConcentration: "50mg/mL",
+    requiresPrescription: false, sortOrder: 5,
+    nameEn: "NAD+ Nasal Spray", nameEs: "Spray Nasal de NAD+",
+    shortEn: "NAD+ nasal spray 50mg/mL, 30mL. 30-day supply. Non-injection anti-aging.",
+    shortEs: "Spray nasal NAD+ 50mg/mL, 30mL. 30 días. Anti-envejecimiento sin inyección.",
+    variants: [{ sku: "WI-NAD-SPRAY-30ML", label: "30mL Spray", supplyDuration: "1-month", price: 8900, sortOrder: 1 }],
+  });
+
+  await upsertProduct({
+    slug: "wellness-sermorelin", sku: "WI-SERM", category: "wellness",
+    programTag: "wellness-injection, sermorelin, hgh, anti-aging",
+    fulfillment: "direct_ship", dosageForm: "Injectable",
+    fccMedicationName: "Sermorelin",
+    sortOrder: 6,
+    nameEn: "Sermorelin Peptide Injection", nameEs: "Inyección Péptida de Sermorelina",
+    shortEn: "Sermorelin peptide — HGH secretagogue. 6mL vial, 30-day supply.",
+    shortEs: "Péptido Sermorelina — secretagogo de GH. Vial de 6mL, 30 días.",
+    variants: [
+      { sku: "WI-SERM-1MG", label: "6mL — 1mg/mL Standard", doseLevel: "1mg/mL", supplyDuration: "1-month", price: 19900, sortOrder: 1 },
+      { sku: "WI-SERM-15MG", label: "6mL — 1.5mg/mL Higher", doseLevel: "1.5mg/mL", supplyDuration: "1-month", price: 19900, sortOrder: 2 },
+    ],
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // 6. HAIR LOSS
+  // ═══════════════════════════════════════════════════════════════════════
+  console.log("\n💆 Hair loss...");
+
+  await upsertProduct({
+    slug: "hair-restore-starter-women", sku: "HL-W-ORAL-MINOX", category: "hair",
+    programTag: "hair-loss, women, oral", fulfillment: "dual_path", dosageForm: "Capsule",
+    forGender: "women", fccMedicationName: "Minoxidil", fccConcentration: "2.5mg",
+    pathBConsultPrice: 4900, pathBOngoingPrice: 2500, sortOrder: 1,
+    nameEn: "Hair Restore Starter (Women)", nameEs: "Restauración Capilar Básica (Mujeres)",
+    shortEn: "Minoxidil 2.5mg oral capsules, 30ct. Dual-path: direct purchase or with consultation.",
+    shortEs: "Cápsulas orales de Minoxidil 2.5mg, 30ct. Doble vía: compra directa o con consulta.",
+    variants: [
+      { sku: "HL-W-ORAL-MINOX-A", label: "Path A — Direct ($39/mo)", supplyDuration: "1-month", price: 3900, sortOrder: 1 },
+      { sku: "HL-W-ORAL-MINOX-B", label: "Path B — With Consultation ($49)", supplyDuration: "one-time", price: 4900, sortOrder: 2 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "hair-restore-topical-women", sku: "HL-W-TOPICAL", category: "hair",
+    programTag: "hair-loss, women, topical", fulfillment: "dual_path", dosageForm: "Topical",
+    forGender: "women", fccMedicationName: "Minoxidil, Tretinoin, Fluocinolone, VitE/Melatonin",
+    fccConcentration: "5%/0.01%/0.01%/10IU/0.7%",
+    pathBConsultPrice: 4900, pathBOngoingPrice: 2500, sortOrder: 2,
+    nameEn: "Hair Restore Topical (Women)", nameEs: "Restauración Capilar Tópica (Mujeres)",
+    shortEn: "Multi-compound topical formula for female hair loss. 30mL, dual-path.",
+    shortEs: "Fórmula tópica multicompuesto para pérdida de cabello femenina. 30mL.",
+    variants: [
+      { sku: "HL-W-TOPICAL-A", label: "Path A — Direct ($59/mo)", supplyDuration: "1-month", price: 5900, sortOrder: 1 },
+      { sku: "HL-W-TOPICAL-B", label: "Path B — With Consultation ($49)", supplyDuration: "one-time", price: 4900, sortOrder: 2 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "hair-restore-plus-women", sku: "HL-W-PLUS", category: "hair",
+    programTag: "hair-loss, women, combo", fulfillment: "dual_path", dosageForm: "Capsule",
+    forGender: "women", fccMedicationName: "Minoxidil + GHK-Cu/Biotin",
+    pathBConsultPrice: 4900, pathBOngoingPrice: 2500, sortOrder: 3,
+    nameEn: "Hair Restore Plus (Women)", nameEs: "Restauración Capilar Plus (Mujeres)",
+    shortEn: "Oral Minoxidil + Scalp Peptide combo. Best results bundle for women.",
+    shortEs: "Combo Minoxidil oral + Péptido capilar. Mejor paquete de resultados para mujeres.",
+    variants: [
+      { sku: "HL-W-PLUS-A", label: "Path A — Direct ($79/mo)", supplyDuration: "1-month", price: 7900, sortOrder: 1 },
+      { sku: "HL-W-PLUS-B", label: "Path B — With Consultation ($49)", supplyDuration: "one-time", price: 4900, sortOrder: 2 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "scalp-peptide-serum-women", sku: "HL-W-PEPTIDE", category: "hair",
+    programTag: "hair-loss, women, peptide, compounded-exclusive",
+    fulfillment: "direct_ship", dosageForm: "Topical", forGender: "women",
+    fccMedicationName: "GHK-Cu/Biotin", fccConcentration: "0.5%/1%", sortOrder: 4,
+    nameEn: "Scalp Peptide Serum (Women)", nameEs: "Suero Péptido Capilar (Mujeres)",
+    shortEn: "GHK-Cu/Biotin topical foam 30mL. Compounded-exclusive. Stimulates hair follicles.",
+    shortEs: "Espuma tópica GHK-Cu/Biotina 30mL. Solo compuesta. Estimula folículos capilares.",
+    variants: [{ sku: "HL-W-PEPTIDE-30ML", label: "30mL Foam", supplyDuration: "1-month", price: 7900, sortOrder: 1 }],
+  });
+
+  await upsertProduct({
+    slug: "hair-restore-rx-men", sku: "HL-M-FIN", category: "hair",
+    programTag: "hair-loss, men, oral, finasteride", fulfillment: "dual_path", dosageForm: "Capsule",
+    forGender: "men", fccMedicationName: "Finasteride", fccConcentration: "1mg",
+    pathBConsultPrice: 4900, pathBOngoingPrice: 2500, sortOrder: 5,
+    nameEn: "Hair Restore Rx (Men)", nameEs: "Restauración Capilar Rx (Hombres)",
+    shortEn: "Finasteride 1mg capsules, 30ct. Clinically proven for male pattern baldness.",
+    shortEs: "Cápsulas de Finasterida 1mg, 30ct. Clínicamente probado para calvicie masculina.",
+    variants: [
+      { sku: "HL-M-FIN-A", label: "Path A — Direct ($35/mo)", supplyDuration: "1-month", price: 3500, sortOrder: 1 },
+      { sku: "HL-M-FIN-B", label: "Path B — With Consultation ($49)", supplyDuration: "one-time", price: 4900, sortOrder: 2 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "hair-restore-combo-men", sku: "HL-M-COMBO", category: "hair",
+    programTag: "hair-loss, men, topical, combo", fulfillment: "dual_path", dosageForm: "Topical",
+    forGender: "men", fccMedicationName: "Minoxidil, Finasteride, Arginine, Biotin",
+    fccConcentration: "7%/0.25%/2%/0.3%",
+    pathBConsultPrice: 4900, pathBOngoingPrice: 2500, sortOrder: 6,
+    nameEn: "Hair Restore Combo Spray (Men)", nameEs: "Spray Combo Capilar (Hombres)",
+    shortEn: "Minoxidil/Finasteride/Arginine/Biotin topical spray 30mL. Dual-path.",
+    shortEs: "Spray tópico Minoxidil/Finasterida/Arginina/Biotina 30mL.",
+    variants: [
+      { sku: "HL-M-COMBO-A", label: "Path A — Direct ($59/mo)", supplyDuration: "1-month", price: 5900, sortOrder: 1 },
+      { sku: "HL-M-COMBO-B", label: "Path B — With Consultation ($49)", supplyDuration: "one-time", price: 4900, sortOrder: 2 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "hair-restore-max-men", sku: "HL-M-MAX", category: "hair",
+    programTag: "hair-loss, men, topical, max, compounded-exclusive",
+    fulfillment: "direct_ship", dosageForm: "Topical", forGender: "men",
+    fccMedicationName: "Minoxidil/Finasteride/Latanoprost/Caffeine/Azelaic/Spironolactone/Melatonin",
+    fccConcentration: "7%/0.9%/0.005%/2%/1.5%/0.52%/0.7%", sortOrder: 7,
+    nameEn: "Hair Restore Max (Men)", nameEs: "Restauración Capilar Máx (Hombres)",
+    shortEn: "7-compound max formula spray 30mL. Compounded-exclusive. Premium hair restoration.",
+    shortEs: "Spray fórmula máxima de 7 compuestos 30mL. Solo compuesto. Premium.",
+    variants: [{ sku: "HL-M-MAX-30ML", label: "30mL Spray", supplyDuration: "1-month", price: 7900, sortOrder: 1 }],
+  });
+
+  await upsertProduct({
+    slug: "dutasteride-rx-men", sku: "HL-M-DUT", category: "hair",
+    programTag: "hair-loss, men, oral, dutasteride", fulfillment: "dual_path", dosageForm: "Capsule",
+    forGender: "men", fccMedicationName: "Dutasteride", fccConcentration: "2.5mg",
+    pathBConsultPrice: 4900, pathBOngoingPrice: 2500, sortOrder: 8,
+    nameEn: "Dutasteride Rx (Men — Advanced)", nameEs: "Dutasterida Rx (Hombres — Avanzado)",
+    shortEn: "Dutasteride 2.5mg capsules, 30ct. Advanced DHT blocker for severe hair loss.",
+    shortEs: "Cápsulas de Dutasterida 2.5mg, 30ct. Bloqueador avanzado de DHT.",
+    variants: [
+      { sku: "HL-M-DUT-A", label: "Path A — Direct ($59/mo)", supplyDuration: "1-month", price: 5900, sortOrder: 1 },
+      { sku: "HL-M-DUT-B", label: "Path B — With Consultation ($49)", supplyDuration: "one-time", price: 4900, sortOrder: 2 },
+    ],
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // 7. SKINCARE
+  // ═══════════════════════════════════════════════════════════════════════
+  console.log("\n🧴 Skincare...");
+
+  await upsertProduct({
+    slug: "glow-cream", sku: "SK-GLOW", category: "skincare",
+    programTag: "skincare, anti-aging, acne, glow-cream", fulfillment: "dual_path", dosageForm: "Cream",
+    fccMedicationName: "Azelaic Acid, Tretinoin, Niacinamide", fccConcentration: "8%/0.1%/15%",
+    pathBConsultPrice: 4900, pathBOngoingPrice: 2500, sortOrder: 1,
+    nameEn: "Glow Cream", nameEs: "Crema Glow",
+    shortEn: "Azelaic Acid/Tretinoin/Niacinamide cream, 30g. Acne + anti-aging. Dual-path.",
+    shortEs: "Crema de Ácido Azelaico/Tretinoína/Niacinamida, 30g. Acné + anti-envejecimiento.",
+    variants: [
+      { sku: "SK-GLOW-A", label: "Path A — Direct ($69/mo)", supplyDuration: "1-month", price: 6900, sortOrder: 1 },
+      { sku: "SK-GLOW-B", label: "Path B — Consultation ($49)", supplyDuration: "one-time", price: 4900, sortOrder: 2 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "bright-cream", sku: "SK-BRIGHT", category: "skincare",
+    programTag: "skincare, hyperpigmentation, melasma, dark-spots", fulfillment: "dual_path", dosageForm: "Cream",
+    fccMedicationName: "Hydroquinone, Tretinoin, Azelaic Acid, Kojic Acid, Hydrocortisone",
+    fccConcentration: "8%/0.1%/15%/0.25%/1%",
+    pathBConsultPrice: 4900, pathBOngoingPrice: 2500, sortOrder: 2,
+    nameEn: "Bright Cream (Hyperpigmentation)", nameEs: "Crema Bright (Hiperpigmentación)",
+    shortEn: "Brightening cream for melasma & dark spots. Hydroquinone/Tretinoin/Kojic, 30g.",
+    shortEs: "Crema aclarante para melasma y manchas oscuras. 30g.",
+    variants: [
+      { sku: "SK-BRIGHT-A", label: "Path A — Direct ($89/mo)", supplyDuration: "1-month", price: 8900, sortOrder: 1 },
+      { sku: "SK-BRIGHT-B", label: "Path B — Consultation ($49)", supplyDuration: "one-time", price: 4900, sortOrder: 2 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "even-tone-cream", sku: "SK-EVENTONE", category: "skincare",
+    programTag: "skincare, hyperpigmentation, even-tone", fulfillment: "dual_path", dosageForm: "Cream",
+    fccMedicationName: "Hydroquinone, Kojic Acid, Tranexamic Acid, Vitamin E",
+    fccConcentration: "6%/3%/5%/1%",
+    pathBConsultPrice: 4900, pathBOngoingPrice: 2500, sortOrder: 3,
+    nameEn: "Even Tone Cream", nameEs: "Crema Even Tone",
+    shortEn: "Hydroquinone/Kojic Acid/Tranexamic Acid for skin discoloration. 30g.",
+    shortEs: "Hidroquinona/Ácido Kójico/Ácido Tranexámico para decoloración de piel. 30g.",
+    variants: [
+      { sku: "SK-EVENTONE-A", label: "Path A — Direct ($85/mo)", supplyDuration: "1-month", price: 8500, sortOrder: 1 },
+      { sku: "SK-EVENTONE-B", label: "Path B — Consultation ($49)", supplyDuration: "one-time", price: 4900, sortOrder: 2 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "rosacea-calm-cream", sku: "SK-ROSACEA", category: "skincare",
+    programTag: "skincare, rosacea, redness", fulfillment: "dual_path", dosageForm: "Cream",
+    fccMedicationName: "Niacinamide, Metronidazole", fccConcentration: "4%/1%",
+    pathBConsultPrice: 4900, pathBOngoingPrice: 2500, sortOrder: 4,
+    nameEn: "Rosacea Calm Cream", nameEs: "Crema Calmante Rosácea",
+    shortEn: "Niacinamide/Metronidazole cream for rosacea and redness. 30g.",
+    shortEs: "Crema de Niacinamida/Metronidazol para rosácea y enrojecimiento. 30g.",
+    variants: [
+      { sku: "SK-ROSACEA-A", label: "Path A — Direct ($55/mo)", supplyDuration: "1-month", price: 5500, sortOrder: 1 },
+      { sku: "SK-ROSACEA-B", label: "Path B — Consultation ($49)", supplyDuration: "one-time", price: 4900, sortOrder: 2 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "age-defying-cream", sku: "SK-AGEDEFY", category: "skincare",
+    programTag: "skincare, anti-aging, premium, compounded-exclusive",
+    fulfillment: "direct_ship", dosageForm: "Cream",
+    fccMedicationName: "Estriol / Tretinoin / Alpha Lipoic Acid / Hyaluronic Acid / Vitamin C",
+    fccConcentration: "0.3%/0.01%/0.45%/0.05%/0.5%", sortOrder: 5,
+    nameEn: "Age-Defying Cream (Premium)", nameEs: "Crema Antienvejecimiento (Premium)",
+    shortEn: "Premium estriol anti-aging cream. Compounded-exclusive. 30g.",
+    shortEs: "Crema antienvejecimiento premium de estriol. Solo compuesta. 30g.",
+    variants: [{ sku: "SK-AGEDEFY-30G", label: "30g Cream", supplyDuration: "1-month", price: 7900, sortOrder: 1 }],
+  });
+
+  await upsertProduct({
+    slug: "anti-aging-peptide-cream", sku: "SK-PEPTIDE", category: "skincare",
+    programTag: "skincare, anti-aging, peptide, compounded-exclusive",
+    fulfillment: "direct_ship", dosageForm: "Cream",
+    fccMedicationName: "DMAE/Estriol/GHK-Cu/Ascorbic Acid/Sodium Hyaluronate",
+    fccConcentration: "3%/0.3%/0.5%/1%/0.5%", sortOrder: 6,
+    nameEn: "Anti-Aging Peptide Cream", nameEs: "Crema Péptido Antienvejecimiento",
+    shortEn: "DMAE/Estriol/GHK-Cu peptide anti-aging cream. Compounded-exclusive. 30g.",
+    shortEs: "Crema de péptidos DMAE/Estriol/GHK-Cu. Solo compuesta. 30g.",
+    variants: [{ sku: "SK-PEPTIDE-30G", label: "30g Cream", supplyDuration: "1-month", price: 9500, sortOrder: 1 }],
+  });
+
+  await upsertProduct({
+    slug: "hormonal-acne-rx", sku: "SK-ACNE-SPIRO", category: "skincare",
+    programTag: "skincare, acne, hormonal, pharmacy-rx", fulfillment: "pharmacy_rx", dosageForm: "Oral",
+    pathBConsultPrice: 4900, pathBOngoingPrice: 2500, sortOrder: 7,
+    nameEn: "Hormonal Acne Rx (Spironolactone)", nameEs: "Rx Acné Hormonal (Espironolactona)",
+    shortEn: "Spironolactone Rx to pharmacy for hormonal acne. $49 consult fee.",
+    shortEs: "Receta de Espironolactona a farmacia para acné hormonal. $49 consulta.",
+    variants: [{ sku: "SK-ACNE-SPIRO-CONSULT", label: "Consultation Fee", supplyDuration: "one-time", price: 4900, sortOrder: 1 }],
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // 8. FEMININE HEALTH
+  // ═══════════════════════════════════════════════════════════════════════
+  console.log("\n🌸 Feminine health...");
+
+  await upsertProduct({
+    slug: "uti-rx", sku: "FH-UTI", category: "feminine_health",
+    programTag: "feminine-health, uti, acute, pharmacy-rx", fulfillment: "pharmacy_rx", dosageForm: "Oral",
+    pathBConsultPrice: 3500, sortOrder: 1,
+    nameEn: "UTI Rx", nameEs: "Rx IVU",
+    shortEn: "UTI treatment Rx (Nitrofurantoin or TMP-SMX) to pharmacy. $35 consult.",
+    shortEs: "Receta IVU (Nitrofurantoína o TMP-SMX) a farmacia. $35 consulta.",
+    variants: [{ sku: "FH-UTI-CONSULT", label: "Consultation Fee", supplyDuration: "one-time", price: 3500, sortOrder: 1 }],
+  });
+
+  await upsertProduct({
+    slug: "yeast-infection-rx", sku: "FH-YEAST", category: "feminine_health",
+    programTag: "feminine-health, yeast, acute, pharmacy-rx", fulfillment: "pharmacy_rx", dosageForm: "Oral",
+    pathBConsultPrice: 3500, sortOrder: 2,
+    nameEn: "Yeast Infection Rx", nameEs: "Rx Infección por Hongos",
+    shortEn: "Yeast infection Rx (Fluconazole 150mg) to pharmacy. $35 consult.",
+    shortEs: "Receta de infección por hongos (Fluconazol 150mg) a farmacia. $35 consulta.",
+    variants: [{ sku: "FH-YEAST-CONSULT", label: "Consultation Fee", supplyDuration: "one-time", price: 3500, sortOrder: 1 }],
+  });
+
+  await upsertProduct({
+    slug: "bv-rx", sku: "FH-BV", category: "feminine_health",
+    programTag: "feminine-health, bv, acute, pharmacy-rx", fulfillment: "pharmacy_rx", dosageForm: "Oral",
+    pathBConsultPrice: 3500, sortOrder: 3,
+    nameEn: "BV Rx", nameEs: "Rx VB",
+    shortEn: "Bacterial vaginosis Rx (Metronidazole 500mg) to pharmacy. $35 consult.",
+    shortEs: "Receta de vaginosis bacteriana (Metronidazol 500mg) a farmacia. $35 consulta.",
+    variants: [{ sku: "FH-BV-CONSULT", label: "Consultation Fee", supplyDuration: "one-time", price: 3500, sortOrder: 1 }],
+  });
+
+  await upsertProduct({
+    slug: "vaginal-dryness-estradiol", sku: "FH-VAGDRY", category: "feminine_health",
+    programTag: "feminine-health, vaginal-dryness, menopause", fulfillment: "dual_path", dosageForm: "Topical",
+    fccMedicationName: "Estradiol (E2) Vaginal",
+    pathBConsultPrice: 4900, pathBOngoingPrice: 2500, sortOrder: 4,
+    nameEn: "Vaginal Dryness Rx (Estradiol)", nameEs: "Rx Sequedad Vaginal (Estradiol)",
+    shortEn: "Estradiol E2 vaginal gel 30g. Dual-path — compounded or pharmacy.",
+    shortEs: "Gel vaginal Estradiol E2 30g. Doble vía — compuesto o farmacia.",
+    variants: [
+      { sku: "FH-VAGDRY-A", label: "Path A — Direct ($65/mo)", supplyDuration: "1-month", price: 6500, sortOrder: 1 },
+      { sku: "FH-VAGDRY-B", label: "Path B — Consultation ($49)", supplyDuration: "one-time", price: 4900, sortOrder: 2 },
+    ],
+  });
+
+  await upsertProduct({
+    slug: "vaginal-dryness-estriol", sku: "FH-ESTRIOL", category: "feminine_health",
+    programTag: "feminine-health, vaginal-dryness, compounded-exclusive",
+    fulfillment: "direct_ship", dosageForm: "Topical", fccMedicationName: "Estriol (E3) Vaginal", sortOrder: 5,
+    nameEn: "Vaginal Dryness Rx (Estriol)", nameEs: "Rx Sequedad Vaginal (Estriol)",
+    shortEn: "Estriol E3 vaginal gel 30g. Compounded-exclusive (estriol not commercially available).",
+    shortEs: "Gel vaginal Estriol E3 30g. Solo compuesto (estriol no disponible comercialmente).",
+    variants: [{ sku: "FH-ESTRIOL-30G", label: "30g Vaginal Gel", supplyDuration: "1-month", price: 6500, sortOrder: 1 }],
+  });
+
+  await upsertProduct({
+    slug: "intimate-wellness-cream", sku: "FH-SCREAM1", category: "feminine_health",
+    programTag: "feminine-health, sexual-wellness, arousal, compounded-exclusive",
+    fulfillment: "direct_ship", dosageForm: "Cream",
+    fccMedicationName: "Sildenafil / Arginine / Papaverine", sortOrder: 6,
+    nameEn: "Intimate Wellness Cream", nameEs: "Crema de Bienestar Íntimo",
+    shortEn: "Scream Cream 1 — Sildenafil/Arginine/Papaverine, 30g. Compounded arousal cream.",
+    shortEs: "Crema Scream 1 — Sildenafil/Arginina/Papaverina, 30g. Crema de activación compuesta.",
+    variants: [{ sku: "FH-SCREAM1-30G", label: "30g Cream", supplyDuration: "one-time", price: 6500, sortOrder: 1 }],
+  });
+
+  await upsertProduct({
+    slug: "intimate-wellness-cream-plus", sku: "FH-SCREAM2", category: "feminine_health",
+    programTag: "feminine-health, sexual-wellness, arousal, compounded-exclusive",
+    fulfillment: "direct_ship", dosageForm: "Cream",
+    fccMedicationName: "Sildenafil / Arginine / Papaverine / Testosterone", sortOrder: 7,
+    nameEn: "Intimate Wellness Cream Plus", nameEs: "Crema de Bienestar Íntimo Plus",
+    shortEn: "Scream Cream 2 — adds Testosterone for enhanced effect, 30g. Compounded.",
+    shortEs: "Crema Scream 2 — añade Testosterona para mayor efecto, 30g. Compuesta.",
+    variants: [{ sku: "FH-SCREAM2-30G", label: "30g Cream", supplyDuration: "one-time", price: 7500, sortOrder: 1 }],
+  });
+
+  await upsertProduct({
+    slug: "connection-rx-oxytocin", sku: "FH-OXYTOCIN", category: "feminine_health",
+    programTag: "feminine-health, sexual-wellness, oxytocin, compounded-exclusive",
+    fulfillment: "direct_ship", dosageForm: "Nasal Spray",
+    fccMedicationName: "Oxytocin", fccConcentration: "25 IU/0.1mL", sortOrder: 8,
+    nameEn: "Connection Rx (Oxytocin)", nameEs: "Rx Conexión (Oxitocina)",
+    shortEn: "Oxytocin 25 IU/0.1mL nasal spray, 15mL. Enhances bonding and intimacy.",
+    shortEs: "Spray nasal Oxitocina 25 IU/0.1mL, 15mL. Mejora el vínculo y la intimidad.",
+    variants: [{ sku: "FH-OXYTOCIN-15ML", label: "15mL Nasal Spray", supplyDuration: "1-month", price: 7900, sortOrder: 1 }],
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // 9. MENTAL WELLNESS
+  // ═══════════════════════════════════════════════════════════════════════
+  console.log("\n🧠 Mental wellness...");
+
+  const mwPharmacy = [
+    { slug: "calm-rx-anxiety", sku: "MW-ANXIETY", name: "Calm Rx (Anxiety)", nameEs: "Rx Calma (Ansiedad)", concern: "Generalized Anxiety", rx: "Buspirone 5–15mg", order: 1 },
+    { slug: "stage-ready-performance", sku: "MW-STAGE", name: "Stage Ready (Performance Anxiety)", nameEs: "Stage Ready (Ansiedad de Rendimiento)", concern: "Stage Fright", rx: "Propranolol 10–20mg", order: 2 },
+    { slug: "sleep-rx-trazodone", sku: "MW-SLEEP-TRAZ", name: "Sleep Rx (Trazodone)", nameEs: "Rx Sueño (Trazodona)", concern: "Insomnia", rx: "Trazodone 25–50mg", order: 3 },
+    { slug: "sleep-rx-hydroxyzine", sku: "MW-SLEEP-HYD", name: "Sleep Rx (Hydroxyzine)", nameEs: "Rx Sueño (Hidroxizina)", concern: "Insomnia + Anxiety", rx: "Hydroxyzine 25mg", order: 4 },
+    { slug: "lift-rx-ssri", sku: "MW-SSRI", name: "Lift Rx (Depression — SSRI)", nameEs: "Rx Lift (Depresión — ISRS)", concern: "Depression", rx: "Sertraline/Escitalopram/Fluoxetine", order: 5 },
+    { slug: "lift-rx-plus-snri", sku: "MW-SNRI", name: "Lift Rx Plus (Depression — SNRI)", nameEs: "Rx Lift Plus (Depresión — IRSN)", concern: "Moderate-Severe Depression", rx: "Venlafaxine or Duloxetine", order: 6 },
+    { slug: "momentum-rx-bupropion", sku: "MW-BUPROPION", name: "Momentum Rx (Low Motivation)", nameEs: "Rx Momentum (Baja Motivación)", concern: "Low Motivation", rx: "Bupropion XL 150mg", order: 7 },
   ];
-
-  for (const post of posts) {
-    await prisma.blogPost.create({
-      data: {
-        slug: post.slug,
-        category: post.category,
-        isPublished: true,
-        publishedAt: new Date(),
-        translations: {
-          create: [
-            { locale: "en", ...post.en },
-            { locale: "es", ...post.es },
-          ],
-        },
-      },
+  for (const mw of mwPharmacy) {
+    await upsertProduct({
+      slug: mw.slug, sku: mw.sku, category: "mental_wellness",
+      programTag: "mental-wellness, pharmacy-rx, non-controlled",
+      fulfillment: "pharmacy_rx", dosageForm: "Oral",
+      pathBConsultPrice: 4900, pathBOngoingPrice: 2500, sortOrder: mw.order,
+      nameEn: mw.name, nameEs: mw.nameEs,
+      shortEn: `${mw.rx} Rx to pharmacy. $49 consultation + $25/mo ongoing management.`,
+      shortEs: `Receta ${mw.rx} a farmacia. $49 consulta + $25/mes gestión continua.`,
+      variants: [
+        { sku: `${mw.sku}-CONSULT`, label: "Initial Consultation", supplyDuration: "one-time", price: 4900, sortOrder: 1 },
+        { sku: `${mw.sku}-MGMT`, label: "Ongoing Management (Monthly)", supplyDuration: "1-month", price: 2500, sortOrder: 2 },
+      ],
     });
   }
 
-  console.log(`Blog posts: ${await prisma.blogPost.count()}`);
+  await upsertProduct({
+    slug: "calm-peptide-spray", sku: "MW-SELANK", category: "mental_wellness",
+    programTag: "mental-wellness, anxiety, peptide, compounded-exclusive",
+    fulfillment: "direct_ship", dosageForm: "Nasal Spray",
+    fccMedicationName: "Selank Acetate (TP-7) Nasal Spray", sortOrder: 8,
+    nameEn: "Calm Peptide Spray (Premium)", nameEs: "Spray Péptido Calma (Premium)",
+    shortEn: "Selank Acetate (TP-7) nasal spray. Fast-acting peptide for anxiety. Compounded-exclusive.",
+    shortEs: "Spray nasal Selank Acetato (TP-7). Péptido de acción rápida. Solo compuesto.",
+    variants: [{ sku: "MW-SELANK-SPRAY", label: "Nasal Spray (30-day)", supplyDuration: "1-month", price: 12900, sortOrder: 1 }],
+  });
 
-  // ─── Insurance Probability Data ─────────────────────
-  await prisma.insuranceProbability.deleteMany();
+  // ═══════════════════════════════════════════════════════════════════════
+  // 10. SERVICES
+  // ═══════════════════════════════════════════════════════════════════════
+  console.log("\n🛎️  Services...");
 
-  const insuranceData: Array<{
-    carrier: string;
-    planType: string;
-    state: string;
-    medication: string;
-    probability: number;
-    notes: string;
-  }> = [];
+  await upsertProduct({
+    slug: "acute-care-consultation", sku: "SVC-CONSULT-ACUTE", category: "services",
+    programTag: "consultation, acute, feminine-health",
+    fulfillment: "direct_ship", requiresPrescription: false, sortOrder: 1,
+    nameEn: "Acute Care Consultation", nameEs: "Consulta de Atención Aguda",
+    shortEn: "One-time provider consult for acute conditions (UTI/Yeast/BV). Rx sent to pharmacy.",
+    shortEs: "Consulta única para condiciones agudas (IVU/Hongos/VB). Receta enviada a farmacia.",
+    variants: [{ sku: "SVC-CONSULT-ACUTE-FEE", label: "Consultation Fee", supplyDuration: "one-time", price: 3500, sortOrder: 1 }],
+  });
 
-  // Helper to push multiple states at once
-  function addInsurance(carrier: string, planType: string, states: string[], medication: string, probability: number, notes: string) {
-    for (const state of states) {
-      insuranceData.push({ carrier, planType, state, medication, probability, notes });
-    }
-  }
+  await upsertProduct({
+    slug: "new-patient-consultation", sku: "SVC-CONSULT-NEW", category: "services",
+    programTag: "consultation, new-patient",
+    fulfillment: "direct_ship", requiresPrescription: false, sortOrder: 2,
+    nameEn: "New Patient Consultation", nameEs: "Consulta de Nuevo Paciente",
+    shortEn: "Initial provider evaluation for new service lines (hair, skin, mental wellness).",
+    shortEs: "Evaluación inicial para nuevas líneas de servicio (cabello, piel, bienestar mental).",
+    variants: [{ sku: "SVC-CONSULT-NEW-FEE", label: "Consultation Fee", supplyDuration: "one-time", price: 4900, sortOrder: 1 }],
+  });
 
-  const majorStates = ["FL", "CA", "TX", "NY", "IL", "PA", "OH", "GA", "NC", "MI"];
+  await upsertProduct({
+    slug: "ongoing-care-management", sku: "SVC-MGMT-MONTHLY", category: "services",
+    programTag: "management, ongoing",
+    fulfillment: "direct_ship", requiresPrescription: false, sortOrder: 3,
+    nameEn: "Ongoing Care Management", nameEs: "Gestión de Atención Continua",
+    shortEn: "Monthly check-ins, dose adjustments, messaging access, refill management.",
+    shortEs: "Revisiones mensuales, ajustes de dosis, acceso a mensajes, gestión de resurtidos.",
+    variants: [{ sku: "SVC-MGMT-MONTHLY-FEE", label: "Monthly Fee", supplyDuration: "1-month", price: 2500, sortOrder: 1 }],
+  });
 
-  // UnitedHealthcare - generally good coverage
-  addInsurance("UnitedHealthcare", "PPO", majorStates, "wegovy", 78, "UHC PPO plans typically cover Wegovy with prior auth");
-  addInsurance("UnitedHealthcare", "PPO", majorStates, "zepbound", 72, "UHC PPO coverage for Zepbound improving in 2026");
-  addInsurance("UnitedHealthcare", "PPO", majorStates, "semaglutide", 45, "Compounded not typically covered by insurance");
-  addInsurance("UnitedHealthcare", "PPO", majorStates, "tirzepatide", 42, "Compounded not typically covered by insurance");
-  addInsurance("UnitedHealthcare", "HMO", majorStates, "wegovy", 62, "UHC HMO requires step therapy before Wegovy");
-  addInsurance("UnitedHealthcare", "HMO", majorStates, "zepbound", 58, "UHC HMO Zepbound coverage varies by region");
-
-  // Blue Cross Blue Shield - varies by state
-  addInsurance("Blue Cross Blue Shield", "PPO", ["FL", "CA", "TX", "NY"], "wegovy", 82, "BCBS PPO strong coverage for Wegovy in major states");
-  addInsurance("Blue Cross Blue Shield", "PPO", ["FL", "CA", "TX", "NY"], "zepbound", 75, "BCBS PPO Zepbound coverage expanding");
-  addInsurance("Blue Cross Blue Shield", "HMO", ["FL", "CA", "TX", "NY"], "wegovy", 65, "BCBS HMO requires prior authorization");
-  addInsurance("Blue Cross Blue Shield", "HMO", ["FL", "CA", "TX", "NY"], "zepbound", 60, "BCBS HMO Zepbound prior auth required");
-  addInsurance("Blue Cross Blue Shield", "EPO", ["FL", "CA", "TX", "NY"], "wegovy", 55, "BCBS EPO limited formulary for weight loss");
-
-  // Aetna - moderate coverage
-  addInsurance("Aetna", "PPO", majorStates, "wegovy", 70, "Aetna PPO covers Wegovy with BMI 30+ or 27+ with comorbidities");
-  addInsurance("Aetna", "PPO", majorStates, "zepbound", 65, "Aetna PPO Zepbound added to formulary mid-2025");
-  addInsurance("Aetna", "HMO", majorStates, "wegovy", 52, "Aetna HMO restrictive for weight loss medications");
-  addInsurance("Aetna", "HMO", majorStates, "zepbound", 48, "Aetna HMO Zepbound approval rates lower");
-
-  // Cigna - good for branded
-  addInsurance("Cigna", "PPO", majorStates, "wegovy", 75, "Cigna PPO favorable for Wegovy coverage");
-  addInsurance("Cigna", "PPO", majorStates, "zepbound", 70, "Cigna PPO Zepbound covered with prior auth");
-  addInsurance("Cigna", "HMO", majorStates, "wegovy", 58, "Cigna HMO requires step therapy");
-  addInsurance("Cigna", "EPO", majorStates, "wegovy", 50, "Cigna EPO limited weight loss coverage");
-
-  // Humana - moderate
-  addInsurance("Humana", "PPO", ["FL", "TX", "GA", "OH"], "wegovy", 68, "Humana PPO covers Wegovy in most plans");
-  addInsurance("Humana", "PPO", ["FL", "TX", "GA", "OH"], "zepbound", 62, "Humana PPO Zepbound coverage varies");
-  addInsurance("Humana", "HMO", ["FL", "TX", "GA", "OH"], "wegovy", 50, "Humana HMO restrictive for GLP-1");
-
-  // Kaiser - West Coast focus
-  addInsurance("Kaiser Permanente", "HMO", ["CA"], "wegovy", 72, "Kaiser CA has strong GLP-1 coverage");
-  addInsurance("Kaiser Permanente", "HMO", ["CA"], "zepbound", 68, "Kaiser CA added Zepbound to formulary");
-
-  // Anthem - varies
-  addInsurance("Anthem", "PPO", ["CA", "NY", "OH", "IN", "GA"], "wegovy", 73, "Anthem PPO generally covers Wegovy");
-  addInsurance("Anthem", "PPO", ["CA", "NY", "OH", "IN", "GA"], "zepbound", 67, "Anthem PPO Zepbound with prior auth");
-  addInsurance("Anthem", "HMO", ["CA", "NY", "OH"], "wegovy", 55, "Anthem HMO requires step therapy first");
-
-  // Florida Blue - FL specific
-  addInsurance("Florida Blue", "PPO", ["FL"], "wegovy", 80, "Florida Blue PPO strong GLP-1 coverage");
-  addInsurance("Florida Blue", "PPO", ["FL"], "zepbound", 74, "Florida Blue PPO covers Zepbound with PA");
-  addInsurance("Florida Blue", "HMO", ["FL"], "wegovy", 63, "Florida Blue HMO requires prior authorization");
-  addInsurance("Florida Blue", "HMO", ["FL"], "zepbound", 58, "Florida Blue HMO Zepbound review required");
-
-  // Ambetter / Centene - lower coverage
-  addInsurance("Ambetter", "HMO", majorStates, "wegovy", 38, "Ambetter marketplace plans limited GLP-1 coverage");
-  addInsurance("Ambetter", "HMO", majorStates, "zepbound", 35, "Ambetter Zepbound rarely covered");
-  addInsurance("Centene", "HMO", majorStates, "wegovy", 40, "Centene managed care limited weight loss coverage");
-
-  // Oscar Health - marketplace
-  addInsurance("Oscar Health", "EPO", ["FL", "CA", "TX", "NY", "NJ"], "wegovy", 45, "Oscar marketplace plans variable GLP-1 coverage");
-  addInsurance("Oscar Health", "EPO", ["FL", "CA", "TX", "NY", "NJ"], "zepbound", 42, "Oscar Zepbound limited coverage");
-
-  // For all carriers, compounded meds have low/no coverage
-  for (const carrier of ["Blue Cross Blue Shield", "Aetna", "Cigna", "Humana", "Anthem", "Florida Blue", "Ambetter", "Centene", "Oscar Health", "Kaiser Permanente"]) {
-    addInsurance(carrier, "PPO", ["FL"], "semaglutide", 15, "Compounded medications rarely covered by insurance");
-    addInsurance(carrier, "PPO", ["FL"], "tirzepatide", 12, "Compounded medications rarely covered by insurance");
-  }
-
-  for (const entry of insuranceData) {
-    await prisma.insuranceProbability.upsert({
-      where: {
-        carrier_planType_state_medication: {
-          carrier: entry.carrier,
-          planType: entry.planType,
-          state: entry.state,
-          medication: entry.medication,
-        },
-      },
-      update: { probability: entry.probability, notes: entry.notes },
-      create: entry,
-    });
-  }
-
-  console.log(`Insurance probability entries: ${await prisma.insuranceProbability.count()}`);
-
-  console.log("Seed complete!");
-  console.log(`Products: ${await prisma.product.count()}`);
-  console.log(`Variants: ${await prisma.productVariant.count()}`);
-  console.log(`Translations: ${await prisma.productTranslation.count()}`);
-  console.log(`FAQs: ${await prisma.faqItem.count()}`);
+  const finalCount = await prisma.product.count();
+  const variantCount = await prisma.productVariant.count();
+  console.log(`\n✅ Seed complete! ${finalCount} products, ${variantCount} variants in database.`);
 }
 
 main()

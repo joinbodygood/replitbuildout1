@@ -30,7 +30,7 @@ export default async function AdminPage({ params }: Props) {
 
   const stats = [
     { label: "Orders", value: orderCount, href: `/${locale}/admin/orders` },
-    { label: "Products", value: productCount, href: `/${locale}/admin` },
+    { label: "Products", value: productCount, href: `/${locale}/admin/products` },
     { label: "Quiz Leads", value: leadCount, href: `/${locale}/admin` },
     { label: "Reviews", value: reviewCount, sub: pendingReviews > 0 ? `${pendingReviews} pending` : null, href: `/${locale}/admin` },
     { label: "Blog Posts", value: blogCount, href: `/${locale}/admin` },

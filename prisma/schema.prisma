@@ -10,7 +10,16 @@ datasource db {
 model Product {
   id                  String              @id @default(cuid())
   slug                String              @unique
+  sku                 String?             @unique
   category            String
+  programTag          String?
+  fulfillment         String              @default("direct_ship")
+  dosageForm          String?
+  forGender           String              @default("all")
+  pathBConsultPrice   Int?
+  pathBOngoingPrice   Int?
+  fccMedicationName   String?
+  fccConcentration    String?
   requiresPrescription Boolean            @default(true)
   isActive            Boolean             @default(true)
   isFeatured          Boolean             @default(false)
@@ -45,6 +54,7 @@ model ProductVariant {
   id              String   @id @default(cuid())
   productId       String
   sku             String   @unique
+  label           String?
   doseLevel       String?
   supplyDuration  String?
   price           Int

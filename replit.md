@@ -59,7 +59,7 @@ A custom telehealth e-commerce platform for Body Good Studio, a physician-led we
 | Dashboard | `/admin` | ✅ KPIs + Revenue chart + Recent orders |
 | Orders | `/admin/orders` | ✅ List + Detail + Status edit |
 | Patients | `/admin/patients` | ✅ List with LTV + Order data |
-| Products | `/admin/products` | ✅ List with pricing |
+| Products | `/admin/products` | ✅ Full catalog — 74 products, 125 variants, category filters, Active/Featured toggles, expandable detail rows |
 | Discounts | `/admin/discounts` | ✅ List + Create codes |
 | Team | `/admin/settings/team` | ✅ Member list |
 | Subscriptions | `/admin/subscriptions` | 🔄 Stub — awaiting PayPal recurring |
