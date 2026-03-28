@@ -6,6 +6,7 @@ import { useLocale } from "next-intl";
 import { useCart } from "@/context/CartContext";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
+import { PayPalButton } from "@/components/checkout/PayPalButton";
 
 type CheckoutStep = "info" | "shipping" | "payment" | "confirmation";
 
@@ -341,27 +342,55 @@ export default function CheckoutPage() {
                     )}
                   </div>
 
-                  {/* PayPal placeholder */}
-                  <div className="p-6 rounded-card border-2 border-dashed border-border text-center mb-6">
-                    <p className="text-body-muted text-sm mb-4">
-                      {isEs
-                        ? "Integración de PayPal se conectará aquí"
-                        : "PayPal integration will connect here"}
-                    </p>
-                    <button
-                      onClick={handlePlaceOrder}
+                  {/* PayPal Payment */}
+                  <div className="mb-6">
+                    <PayPalButton
+                      amount={finalTotal}
                       disabled={processing}
-                      className="bg-[#FFC439] text-[#003087] font-bold px-10 py-4 rounded-card hover:bg-[#f0b829] transition-colors disabled:opacity-50 text-lg"
-                    >
-                      {processing
-                        ? (isEs ? "Procesando..." : "Processing...")
-                        : (isEs ? "Pagar con PayPal" : "Pay with PayPal")}
-                    </button>
-                    <p className="text-body-muted text-xs mt-3">
-                      {isEs
-                        ? "Serás redirigido a PayPal para completar tu pago."
-                        : "You'll be redirected to PayPal to complete your payment."}
-                    </p>
+                      onApprove={async (paypalOrderId) => {
+                        setProcessing(true);
+                        try {
+                          const res = await fetch("/api/orders", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              email,
+                              phone: phone || null,
+                              subtotal: total,
+                              discount: discountAmount,
+                              total: finalTotal,
+                              discountCode: discountApplied?.code || null,
+                              paypalOrderId,
+                              shippingName,
+                              shippingAddress,
+                              shippingCity,
+                              shippingState,
+                              shippingZip,
+                              locale,
+                              items: items.map((item) => ({
+                                name: item.name,
+                                variantLabel: item.variantLabel,
+                                price: item.price,
+                                quantity: item.quantity,
+                              })),
+                            }),
+                          });
+                          const data = await res.json();
+                          if (data.success) {
+                            setOrderId(data.orderId);
+                            setStep("confirmation");
+                            clearCart();
+                          }
+                        } catch (error) {
+                          console.error(error);
+                        } finally {
+                          setProcessing(false);
+                        }
+                      }}
+                      onError={() => {
+                        alert(isEs ? "Error con PayPal. Intenta de nuevo." : "PayPal error. Please try again.");
+                      }}
+                    />
                   </div>
 
                   <button
