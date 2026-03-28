@@ -1,8 +1,12 @@
 import { setRequestLocale } from "next-intl/server";
 import { Hero } from "@/components/sections/Hero";
-import { HomeCTAs } from "@/components/sections/HomeCTAs";
-import { StatsBar } from "@/components/sections/StatsBar";
-import { TrustBar } from "@/components/sections/TrustBar";
+import { TrustMarquee } from "@/components/sections/TrustMarquee";
+import { WhatBringsYou } from "@/components/sections/WhatBringsYou";
+import { PainPoints } from "@/components/sections/PainPoints";
+import { HowItWorks } from "@/components/sections/HowItWorks";
+import { Testimonials } from "@/components/sections/Testimonials";
+import { Providers } from "@/components/sections/Providers";
+import { BottomCTA } from "@/components/sections/BottomCTA";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -15,9 +19,13 @@ export default async function HomePage({ params }: Props) {
   return (
     <>
       <Hero />
-      <HomeCTAs />
-      <StatsBar />
-      <TrustBar />
+      <TrustMarquee />
+      <WhatBringsYou />
+      <PainPoints />
+      <HowItWorks />
+      <Testimonials />
+      <Providers />
+      <BottomCTA />
     </>
   );
 }

@@ -98,7 +98,7 @@ Redirect to Zoho/GLOW for medical intake
 - Bilingual i18n with next-intl (EN/ES routing at /en/... and /es/...)
 - UI component library (Button, Card, Container, Badge, Accordion)
 - Header (nav, mobile hamburger, cart badge, language toggle), Footer
-- Homepage (Hero, 3 CTAs, StatsBar, TrustBar)
+- Homepage (Hero, TrustMarquee, WhatBringsYou, PainPoints, HowItWorks, Testimonials, Providers, BottomCTA) — modeled after joinbodygood.com
 - About, How It Works, FAQ pages
 - 5 legal pages (Privacy, Terms, Telehealth Consent, HIPAA Notice, Refund Policy)
 - GA4 + Meta Pixel (production-only, env-driven), Sitemap + robots.txt
