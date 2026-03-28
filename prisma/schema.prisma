@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -32,7 +32,7 @@ model ProductTranslation {
   locale          String
   name            String
   descriptionShort String
-  descriptionLong  String   @db.Text
+  descriptionLong  String
   seoTitle        String?
   seoDescription  String?
 
@@ -116,7 +116,7 @@ model FaqTranslation {
   faqId    String
   locale   String
   question String
-  answer   String  @db.Text
+  answer   String
 
   faq      FaqItem @relation(fields: [faqId], references: [id], onDelete: Cascade)
 

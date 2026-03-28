@@ -1,0 +1,357 @@
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+async function main() {
+  // Clear existing data
+  await prisma.productImage.deleteMany();
+  await prisma.productVariant.deleteMany();
+  await prisma.productTranslation.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.faqTranslation.deleteMany();
+  await prisma.faqItem.deleteMany();
+
+  // ─── Products ───────────────────────────────────────
+
+  // 1. Compounded Semaglutide
+  const semaglutide = await prisma.product.create({
+    data: {
+      slug: "compounded-semaglutide",
+      category: "compounded",
+      requiresPrescription: true,
+      isActive: true,
+      isFeatured: true,
+      sortOrder: 1,
+      translations: {
+        create: [
+          {
+            locale: "en",
+            name: "Compounded Semaglutide",
+            descriptionShort: "Affordable GLP-1 weight loss medication — same active ingredient as Ozempic & Wegovy.",
+            descriptionLong: "Compounded semaglutide is a GLP-1 receptor agonist that helps regulate appetite and blood sugar. Our compounded version contains the same active ingredient as brand-name Ozempic and Wegovy, prepared by licensed US compounding pharmacies at a fraction of the cost. Includes weekly subcutaneous injections, provider monitoring, and ongoing support.",
+            seoTitle: "Compounded Semaglutide for Weight Loss | Body Good Studio",
+            seoDescription: "Affordable compounded semaglutide starting at $139/mo. Same active ingredient as Wegovy. Prescribed by board-certified physicians. All-inclusive pricing.",
+          },
+          {
+            locale: "es",
+            name: "Semaglutida Compuesta",
+            descriptionShort: "Medicamento GLP-1 asequible para bajar de peso — el mismo ingrediente activo que Ozempic y Wegovy.",
+            descriptionLong: "La semaglutida compuesta es un agonista del receptor GLP-1 que ayuda a regular el apetito y el azúcar en sangre. Nuestra versión compuesta contiene el mismo ingrediente activo que Ozempic y Wegovy de marca, preparada por farmacias de composición con licencia en EE.UU. a una fracción del costo. Incluye inyecciones subcutáneas semanales, monitoreo del proveedor y soporte continuo.",
+            seoTitle: "Semaglutida Compuesta para Bajar de Peso | Body Good Studio",
+            seoDescription: "Semaglutida compuesta asequible desde $139/mes. Mismo ingrediente activo que Wegovy. Recetada por médicos certificados.",
+          },
+        ],
+      },
+      variants: {
+        create: [
+          { sku: "SEM-1MO", doseLevel: "All doses", supplyDuration: "1-month", price: 17900, compareAtPrice: null, sortOrder: 1 },
+          { sku: "SEM-3MO", doseLevel: "All doses", supplyDuration: "3-month", price: 14900, compareAtPrice: 17900, sortOrder: 2 },
+          { sku: "SEM-6MO", doseLevel: "All doses", supplyDuration: "6-month", price: 13900, compareAtPrice: 17900, sortOrder: 3 },
+        ],
+      },
+    },
+  });
+
+  // 2. Compounded Tirzepatide (Starter)
+  const tirzepatideStarter = await prisma.product.create({
+    data: {
+      slug: "compounded-tirzepatide-starter",
+      category: "compounded",
+      requiresPrescription: true,
+      isActive: true,
+      isFeatured: true,
+      sortOrder: 2,
+      translations: {
+        create: [
+          {
+            locale: "en",
+            name: "Compounded Tirzepatide — Starter",
+            descriptionShort: "Dual-action GLP-1/GIP weight loss medication for doses 2.25–9mg.",
+            descriptionLong: "Compounded tirzepatide targets both GLP-1 and GIP receptors for enhanced weight loss results. The starter tier covers doses from 2.25mg to 9mg, ideal for patients beginning their weight loss journey. Clinical studies show 20-25% average weight loss. Includes weekly injections, dose titration guidance, and provider support.",
+            seoTitle: "Compounded Tirzepatide Starter (2.25-9mg) | Body Good Studio",
+            seoDescription: "Compounded tirzepatide starting at $259/mo. Dual-action GLP-1/GIP for enhanced weight loss. Doses 2.25-9mg.",
+          },
+          {
+            locale: "es",
+            name: "Tirzepatida Compuesta — Inicio",
+            descriptionShort: "Medicamento de doble acción GLP-1/GIP para dosis de 2.25–9mg.",
+            descriptionLong: "La tirzepatida compuesta actúa sobre los receptores GLP-1 y GIP para resultados mejorados de pérdida de peso. El nivel de inicio cubre dosis de 2.25mg a 9mg, ideal para pacientes que comienzan su viaje de pérdida de peso. Estudios clínicos muestran 20-25% de pérdida de peso promedio.",
+            seoTitle: "Tirzepatida Compuesta Inicio (2.25-9mg) | Body Good Studio",
+            seoDescription: "Tirzepatida compuesta desde $259/mes. Doble acción GLP-1/GIP para pérdida de peso mejorada.",
+          },
+        ],
+      },
+      variants: {
+        create: [
+          { sku: "TRZ-S-1MO", doseLevel: "2.25-9mg", supplyDuration: "1-month", price: 29900, compareAtPrice: null, sortOrder: 1 },
+          { sku: "TRZ-S-3MO", doseLevel: "2.25-9mg", supplyDuration: "3-month", price: 27900, compareAtPrice: 29900, sortOrder: 2 },
+          { sku: "TRZ-S-6MO", doseLevel: "2.25-9mg", supplyDuration: "6-month", price: 25900, compareAtPrice: 29900, sortOrder: 3 },
+        ],
+      },
+    },
+  });
+
+  // 3. Compounded Tirzepatide (Maintenance)
+  const tirzepatideMaint = await prisma.product.create({
+    data: {
+      slug: "compounded-tirzepatide-maintenance",
+      category: "compounded",
+      requiresPrescription: true,
+      isActive: true,
+      sortOrder: 3,
+      translations: {
+        create: [
+          {
+            locale: "en",
+            name: "Compounded Tirzepatide — Maintenance",
+            descriptionShort: "Higher-dose tirzepatide for patients on 11.25mg+ maintenance doses.",
+            descriptionLong: "For patients who have titrated up to maintenance doses of 11.25mg or higher. Continuation of the dual-action GLP-1/GIP therapy with ongoing provider monitoring and support.",
+            seoTitle: "Compounded Tirzepatide Maintenance (11.25mg+) | Body Good Studio",
+            seoDescription: "Compounded tirzepatide maintenance from $319/mo. For patients on 11.25mg+ doses.",
+          },
+          {
+            locale: "es",
+            name: "Tirzepatida Compuesta — Mantenimiento",
+            descriptionShort: "Tirzepatida de dosis más alta para pacientes en dosis de mantenimiento de 11.25mg+.",
+            descriptionLong: "Para pacientes que han titulado hasta dosis de mantenimiento de 11.25mg o más. Continuación de la terapia de doble acción GLP-1/GIP con monitoreo y soporte continuo del proveedor.",
+            seoTitle: "Tirzepatida Compuesta Mantenimiento (11.25mg+) | Body Good Studio",
+            seoDescription: "Tirzepatida compuesta mantenimiento desde $319/mes. Para pacientes en dosis de 11.25mg+.",
+          },
+        ],
+      },
+      variants: {
+        create: [
+          { sku: "TRZ-M-1MO", doseLevel: "11.25mg+", supplyDuration: "1-month", price: 34900, compareAtPrice: null, sortOrder: 1 },
+          { sku: "TRZ-M-3MO", doseLevel: "11.25mg+", supplyDuration: "3-month", price: 32900, compareAtPrice: 34900, sortOrder: 2 },
+          { sku: "TRZ-M-6MO", doseLevel: "11.25mg+", supplyDuration: "6-month", price: 31900, compareAtPrice: 34900, sortOrder: 3 },
+        ],
+      },
+    },
+  });
+
+  // 4. Tirzepatide One-Time
+  await prisma.product.create({
+    data: {
+      slug: "tirzepatide-one-time",
+      category: "compounded",
+      requiresPrescription: true,
+      isActive: true,
+      sortOrder: 4,
+      translations: {
+        create: [
+          {
+            locale: "en",
+            name: "Tirzepatide — One-Time Purchase",
+            descriptionShort: "Single month of compounded tirzepatide at any dose level.",
+            descriptionLong: "Try compounded tirzepatide without a subscription commitment. One-time purchase at a flat rate for any dose level. Perfect for patients wanting to try before committing to a plan.",
+            seoTitle: "Tirzepatide One-Time Purchase | Body Good Studio",
+            seoDescription: "One-time compounded tirzepatide for $315. Any dose. No subscription required.",
+          },
+          {
+            locale: "es",
+            name: "Tirzepatida — Compra Única",
+            descriptionShort: "Un mes de tirzepatida compuesta a cualquier nivel de dosis.",
+            descriptionLong: "Prueba tirzepatida compuesta sin compromiso de suscripción. Compra única a tarifa plana para cualquier nivel de dosis.",
+            seoTitle: "Tirzepatida Compra Única | Body Good Studio",
+            seoDescription: "Tirzepatida compuesta por $315. Cualquier dosis. Sin suscripción.",
+          },
+        ],
+      },
+      variants: {
+        create: [
+          { sku: "TRZ-OT", doseLevel: "All doses", supplyDuration: "one-time", price: 31500, sortOrder: 1 },
+        ],
+      },
+    },
+  });
+
+  // 5. Oral GLP-1
+  await prisma.product.create({
+    data: {
+      slug: "oral-glp1",
+      category: "oral",
+      requiresPrescription: true,
+      isActive: true,
+      isFeatured: true,
+      sortOrder: 5,
+      translations: {
+        create: [
+          {
+            locale: "en",
+            name: "Oral GLP-1",
+            descriptionShort: "No needles — oral weight loss medication you take daily.",
+            descriptionLong: "For patients who prefer no injections. Our oral GLP-1 option provides effective weight loss in a convenient daily pill format. Same appetite-suppressing benefits without needles. Includes provider monitoring and support.",
+            seoTitle: "Oral GLP-1 Weight Loss Medication | Body Good Studio",
+            seoDescription: "Oral GLP-1 weight loss medication from $109/mo. No needles required. Daily pill format.",
+          },
+          {
+            locale: "es",
+            name: "GLP-1 Oral",
+            descriptionShort: "Sin agujas — medicamento oral para bajar de peso que tomas diariamente.",
+            descriptionLong: "Para pacientes que prefieren no inyectarse. Nuestra opción de GLP-1 oral proporciona pérdida de peso efectiva en un formato conveniente de pastilla diaria. Los mismos beneficios de supresión del apetito sin agujas.",
+            seoTitle: "Medicamento Oral GLP-1 para Bajar de Peso | Body Good Studio",
+            seoDescription: "Medicamento oral GLP-1 desde $109/mes. Sin agujas. Formato de pastilla diaria.",
+          },
+        ],
+      },
+      variants: {
+        create: [
+          { sku: "ORAL-OT", doseLevel: null, supplyDuration: "one-time", price: 14900, sortOrder: 1 },
+          { sku: "ORAL-1MO", doseLevel: null, supplyDuration: "1-month", price: 12900, sortOrder: 2 },
+          { sku: "ORAL-3MO", doseLevel: null, supplyDuration: "3-month", price: 11900, compareAtPrice: 12900, sortOrder: 3 },
+          { sku: "ORAL-6MO", doseLevel: null, supplyDuration: "6-month", price: 10900, compareAtPrice: 12900, sortOrder: 4 },
+        ],
+      },
+    },
+  });
+
+  // 6. Branded GLP-1 Rx
+  await prisma.product.create({
+    data: {
+      slug: "branded-glp1-rx",
+      category: "branded_rx",
+      requiresPrescription: true,
+      isActive: true,
+      isFeatured: true,
+      sortOrder: 6,
+      translations: {
+        create: [
+          {
+            locale: "en",
+            name: "Branded GLP-1 Prescription",
+            descriptionShort: "$45 for your prescription — Wegovy or Zepbound. You fill at the pharmacy.",
+            descriptionLong: "Get a legitimate prescription for FDA-approved branded GLP-1 medications from a board-certified provider for a flat $45 fee. Choose from Wegovy (pill or injection) or Zepbound (KwikPen or vial). You fill the prescription at your pharmacy or through the manufacturer (NovoCare for Wegovy, LillyDirect for Zepbound) and pay them directly. No subscription. No membership.",
+            seoTitle: "Branded GLP-1 Prescription — Wegovy & Zepbound | Body Good Studio",
+            seoDescription: "$45 for a Wegovy or Zepbound prescription. Board-certified providers. Fill at your pharmacy. No subscription fees.",
+          },
+          {
+            locale: "es",
+            name: "Receta de GLP-1 de Marca",
+            descriptionShort: "$45 por tu receta — Wegovy o Zepbound. Tú la surtes en la farmacia.",
+            descriptionLong: "Obtén una receta legítima para medicamentos GLP-1 de marca aprobados por la FDA de un proveedor certificado por $45. Elige entre Wegovy (pastilla o inyección) o Zepbound (KwikPen o vial). Surtes la receta en tu farmacia o a través del fabricante y pagas directamente. Sin suscripción. Sin membresía.",
+            seoTitle: "Receta GLP-1 de Marca — Wegovy y Zepbound | Body Good Studio",
+            seoDescription: "$45 por receta de Wegovy o Zepbound. Proveedores certificados. Sin cuotas de suscripción.",
+          },
+        ],
+      },
+      variants: {
+        create: [
+          { sku: "BRX-RX", doseLevel: null, supplyDuration: "one-time", price: 4500, sortOrder: 1 },
+        ],
+      },
+    },
+  });
+
+  // 7. Branded Rx Management
+  await prisma.product.create({
+    data: {
+      slug: "branded-rx-management",
+      category: "branded_mgmt",
+      requiresPrescription: false,
+      isActive: true,
+      sortOrder: 7,
+      translations: {
+        create: [
+          {
+            locale: "en",
+            name: "Branded Rx Management",
+            descriptionShort: "Ongoing provider support for patients on branded GLP-1 medications.",
+            descriptionLong: "Monthly management service for patients already on branded GLP-1 medications (Wegovy, Zepbound, Ozempic, Mounjaro). Includes dose titration guidance, side effect management, refill coordination, and ongoing provider access.",
+            seoTitle: "Branded Rx Management | Body Good Studio",
+            seoDescription: "Ongoing branded GLP-1 management from $25/mo. Dose guidance, refill coordination, provider access.",
+          },
+          {
+            locale: "es",
+            name: "Manejo de Rx de Marca",
+            descriptionShort: "Soporte continuo del proveedor para pacientes con medicamentos GLP-1 de marca.",
+            descriptionLong: "Servicio de manejo mensual para pacientes que ya toman medicamentos GLP-1 de marca. Incluye guía de titulación de dosis, manejo de efectos secundarios, coordinación de resurtidos y acceso continuo al proveedor.",
+            seoTitle: "Manejo de Rx de Marca | Body Good Studio",
+            seoDescription: "Manejo continuo de GLP-1 de marca desde $25/mes. Guía de dosis, coordinación de resurtidos.",
+          },
+        ],
+      },
+      variants: {
+        create: [
+          { sku: "BMGMT-1MO", doseLevel: null, supplyDuration: "1-month", price: 5500, sortOrder: 1 },
+          { sku: "BMGMT-3MO", doseLevel: null, supplyDuration: "3-month", price: 4500, compareAtPrice: 5500, sortOrder: 2 },
+          { sku: "BMGMT-6MO", doseLevel: null, supplyDuration: "6-month", price: 2500, compareAtPrice: 5500, sortOrder: 3 },
+        ],
+      },
+    },
+  });
+
+  // 8-11. Insurance products
+  const insuranceProducts = [
+    { slug: "insurance-eligibility-check", sku: "INS-ELIG", name: "Insurance Eligibility Check", nameEs: "Verificación de Elegibilidad de Seguro", short: "Find out if your insurance covers GLP-1 medications.", shortEs: "Descubre si tu seguro cubre medicamentos GLP-1.", price: 2500 },
+    { slug: "insurance-prior-auth", sku: "INS-PA", name: "Insurance Prior Authorization", nameEs: "Autorización Previa de Seguro", short: "We handle the prior authorization paperwork with your insurer.", shortEs: "Nos encargamos del papeleo de autorización previa con tu aseguradora.", price: 5000 },
+    { slug: "insurance-approval", sku: "INS-APPR", name: "Insurance Approval", nameEs: "Aprobación de Seguro", short: "Full approval process to get your GLP-1 covered by insurance.", shortEs: "Proceso completo de aprobación para que tu GLP-1 sea cubierto por el seguro.", price: 8500 },
+    { slug: "insurance-ongoing-mgmt", sku: "INS-MGMT", name: "Insurance Ongoing Management", nameEs: "Manejo Continuo de Seguro", short: "Monthly management of your insurance-covered GLP-1 prescription.", shortEs: "Manejo mensual de tu receta GLP-1 cubierta por seguro.", price: 7500 },
+  ];
+
+  for (const ins of insuranceProducts) {
+    await prisma.product.create({
+      data: {
+        slug: ins.slug,
+        category: "insurance",
+        requiresPrescription: false,
+        isActive: true,
+        sortOrder: 8,
+        translations: {
+          create: [
+            { locale: "en", name: ins.name, descriptionShort: ins.short, descriptionLong: ins.short },
+            { locale: "es", name: ins.nameEs, descriptionShort: ins.shortEs, descriptionLong: ins.shortEs },
+          ],
+        },
+        variants: {
+          create: [
+            { sku: ins.sku, supplyDuration: ins.sku === "INS-MGMT" ? "1-month" : "one-time", price: ins.price, sortOrder: 1 },
+          ],
+        },
+      },
+    });
+  }
+
+  // ─── FAQ Items ──────────────────────────────────────
+
+  const faqs = [
+    { cat: "general", q: "What are GLP-1 medications?", a: "GLP-1 medications (like semaglutide and tirzepatide) are FDA-approved treatments that help regulate appetite and blood sugar. They work by mimicking a natural hormone that signals fullness to your brain, helping you eat less and lose weight effectively.", qEs: "¿Qué son los medicamentos GLP-1?", aEs: "Los medicamentos GLP-1 (como semaglutida y tirzepatida) son tratamientos aprobados por la FDA que ayudan a regular el apetito y el azúcar en sangre." },
+    { cat: "general", q: "How much weight can I expect to lose?", a: "Clinical studies show patients lose 15-20% of their body weight on average with GLP-1 medications. Individual results vary based on medication type, dosage, diet, and activity level.", qEs: "¿Cuánto peso puedo esperar perder?", aEs: "Los estudios clínicos muestran que los pacientes pierden 15-20% de su peso corporal en promedio con medicamentos GLP-1." },
+    { cat: "insurance", q: "Do you accept insurance?", a: "Yes! We offer an Insurance Navigation Program that helps determine if your insurance covers GLP-1 medications. Start with our free coverage probability check, or purchase a full eligibility verification for $25.", qEs: "¿Aceptan seguro?", aEs: "¡Sí! Ofrecemos un Programa de Navegación de Seguros que ayuda a determinar si tu seguro cubre medicamentos GLP-1." },
+    { cat: "glp1", q: "What's the difference between compounded and branded medications?", a: "Branded medications (Wegovy, Zepbound) are manufactured by pharmaceutical companies and are FDA-approved. Compounded medications contain the same active ingredients but are prepared by licensed compounding pharmacies at lower cost. Both are prescribed by our licensed providers.", qEs: "¿Cuál es la diferencia entre medicamentos compuestos y de marca?", aEs: "Los medicamentos de marca (Wegovy, Zepbound) son fabricados por compañías farmacéuticas y están aprobados por la FDA. Los medicamentos compuestos contienen los mismos ingredientes activos pero son preparados por farmacias de composición con licencia a menor costo." },
+    { cat: "glp1", q: "How does the $45 branded prescription work?", a: "For $45, one of our board-certified providers writes you a prescription for Wegovy or Zepbound. You then fill the prescription at your pharmacy or through the manufacturer (NovoCare for Wegovy, LillyDirect for Zepbound) and pay them directly for the medication.", qEs: "¿Cómo funciona la receta de marca de $45?", aEs: "Por $45, uno de nuestros proveedores certificados te escribe una receta para Wegovy o Zepbound. Luego surtes la receta en tu farmacia o a través del fabricante y pagas directamente por el medicamento." },
+    { cat: "billing", q: "What payment methods do you accept?", a: "We accept PayPal (wallet and credit/debit cards through PayPal). Commitment plans (3-month and 6-month) offer lower monthly rates.", qEs: "¿Qué métodos de pago aceptan?", aEs: "Aceptamos PayPal (billetera y tarjetas de crédito/débito a través de PayPal). Los planes de compromiso (3 meses y 6 meses) ofrecen tarifas mensuales más bajas." },
+    { cat: "billing", q: "Can I cancel my subscription?", a: "Yes, you can pause (up to 30 days) or cancel your subscription anytime from your account. We'll walk you through options that might work better before you cancel.", qEs: "¿Puedo cancelar mi suscripción?", aEs: "Sí, puedes pausar (hasta 30 días) o cancelar tu suscripción en cualquier momento desde tu cuenta." },
+  ];
+
+  for (let i = 0; i < faqs.length; i++) {
+    const f = faqs[i];
+    await prisma.faqItem.create({
+      data: {
+        category: f.cat,
+        sortOrder: i + 1,
+        isActive: true,
+        translations: {
+          create: [
+            { locale: "en", question: f.q, answer: f.a },
+            { locale: "es", question: f.qEs, answer: f.aEs },
+          ],
+        },
+      },
+    });
+  }
+
+  console.log("Seed complete!");
+  console.log(`Products: ${await prisma.product.count()}`);
+  console.log(`Variants: ${await prisma.productVariant.count()}`);
+  console.log(`Translations: ${await prisma.productTranslation.count()}`);
+  console.log(`FAQs: ${await prisma.faqItem.count()}`);
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
