@@ -355,6 +355,97 @@ async function main() {
 
   console.log(`Discount codes: ${await prisma.discountCode.count()}`);
 
+  // ─── Reviews ────────────────────────────────────────
+  await prisma.review.deleteMany();
+
+  const reviews = [
+    { name: "Maria G.", rating: 5, title: "Life changing!", body: "I've lost 35 lbs in 4 months on semaglutide. The team at Body Good made everything so easy. Dr. Linda is amazing!", productSlug: "compounded-semaglutide", isVerified: true, isApproved: true },
+    { name: "Jessica R.", rating: 5, title: "Finally something that works", body: "After years of trying everything, tirzepatide has been the answer. Down 42 lbs and feeling incredible. The bilingual support was a huge plus for my mom who joined too.", productSlug: "compounded-tirzepatide-starter", isVerified: true, isApproved: true },
+    { name: "Ana L.", rating: 5, title: "Excelente servicio", body: "Me encanta que todo está en español. La Dra. Linda es muy atenta y el proceso fue muy fácil. Ya perdí 20 libras!", productSlug: "compounded-semaglutide", isVerified: true, isApproved: true, locale: "es" },
+    { name: "David M.", rating: 4, title: "Great experience overall", body: "The oral GLP-1 option was perfect for me since I hate needles. Lost 18 lbs in 3 months. Only giving 4 stars because shipping took a bit longer than expected.", productSlug: "oral-glp1", isVerified: true, isApproved: true },
+    { name: "Sarah K.", rating: 5, title: "Insurance program saved me thousands", body: "Body Good helped me get my Wegovy covered by insurance. I was paying $350/month out of pocket before. Now I pay my $30 copay. The $25 eligibility check was the best money I ever spent.", productSlug: "insurance-eligibility-check", isVerified: true, isApproved: true },
+    { name: "Carmen V.", rating: 5, title: "Muy profesional", body: "El programa de receta de marca por $45 fue increíble. Obtuve mi receta de Zepbound rápidamente y la surté en LillyDirect. Muy transparente y profesional.", productSlug: "branded-glp1-rx", isVerified: true, isApproved: true, locale: "es" },
+  ];
+
+  for (const r of reviews) {
+    await prisma.review.create({
+      data: {
+        email: `${r.name.toLowerCase().replace(/[^a-z]/g, "")}@example.com`,
+        ...r,
+      },
+    });
+  }
+
+  console.log(`Reviews: ${await prisma.review.count()}`);
+
+  // ─── Blog Posts ─────────────────────────────────────
+  await prisma.blogPostTranslation.deleteMany();
+  await prisma.blogPost.deleteMany();
+
+  const posts = [
+    {
+      slug: "what-are-glp1-medications",
+      category: "glp1-education",
+      en: {
+        title: "What Are GLP-1 Medications and How Do They Work?",
+        excerpt: "Everything you need to know about semaglutide, tirzepatide, and how GLP-1 receptor agonists help you lose weight.",
+        body: "## What Are GLP-1 Medications?\n\nGLP-1 (glucagon-like peptide-1) receptor agonists are a class of medications originally developed for type 2 diabetes that have shown remarkable results for weight loss.\n\n### How They Work\n\nGLP-1 medications mimic a natural hormone your body produces after eating. This hormone:\n\n- **Signals fullness** to your brain, reducing appetite\n- **Slows stomach emptying**, helping you feel satisfied longer\n- **Regulates blood sugar**, reducing cravings\n\n### Types of GLP-1 Medications\n\n**Semaglutide** (Ozempic/Wegovy class) targets GLP-1 receptors and produces an average of 15% body weight loss.\n\n**Tirzepatide** (Mounjaro/Zepbound class) targets both GLP-1 AND GIP receptors, producing 20-25% average weight loss — the strongest results in clinical trials.\n\n### Is It Right for You?\n\nGLP-1 medications are typically prescribed for adults with a BMI of 27+ (with weight-related conditions) or 30+. Take our quiz to find out which option is right for you.",
+      },
+      es: {
+        title: "¿Qué Son los Medicamentos GLP-1 y Cómo Funcionan?",
+        excerpt: "Todo lo que necesitas saber sobre semaglutida, tirzepatida y cómo los agonistas del receptor GLP-1 te ayudan a bajar de peso.",
+        body: "## ¿Qué Son los Medicamentos GLP-1?\n\nLos agonistas del receptor GLP-1 son una clase de medicamentos originalmente desarrollados para la diabetes tipo 2 que han mostrado resultados notables para la pérdida de peso.\n\n### Cómo Funcionan\n\nLos medicamentos GLP-1 imitan una hormona natural que tu cuerpo produce después de comer. Esta hormona:\n\n- **Señala saciedad** a tu cerebro, reduciendo el apetito\n- **Retrasa el vaciamiento del estómago**, ayudándote a sentirte satisfecho por más tiempo\n- **Regula el azúcar en sangre**, reduciendo los antojos\n\n### ¿Es Adecuado Para Ti?\n\nLos medicamentos GLP-1 se recetan típicamente para adultos con un BMI de 27+ o 30+. Toma nuestro cuestionario para descubrir cuál opción es la correcta para ti.",
+      },
+    },
+    {
+      slug: "compounded-vs-branded-glp1",
+      category: "glp1-education",
+      en: {
+        title: "Compounded vs. Branded GLP-1: What's the Difference?",
+        excerpt: "Understanding the differences between compounded semaglutide/tirzepatide and brand-name Wegovy/Zepbound.",
+        body: "## Compounded vs. Branded: Understanding Your Options\n\n### Branded Medications\n\nBranded GLP-1 medications like **Wegovy** (semaglutide) and **Zepbound** (tirzepatide) are manufactured by pharmaceutical companies (Novo Nordisk and Eli Lilly) and are FDA-approved.\n\n**Pros:** FDA-approved manufacturing, extensive clinical trial data, manufacturer support programs\n**Cons:** Higher cost ($299-449/month through manufacturer programs)\n\n### Compounded Medications\n\nCompounded GLP-1 medications contain the **same active ingredients** but are prepared by licensed US compounding pharmacies.\n\n**Pros:** Significantly lower cost ($139-349/month), all-inclusive pricing\n**Cons:** Not individually FDA-approved (pharmacies are state-regulated)\n\n### Which Should You Choose?\n\nBoth are prescribed by licensed providers. The choice often comes down to budget and preference. At Body Good, we offer both options with transparent pricing.",
+      },
+      es: {
+        title: "GLP-1 Compuesto vs. de Marca: ¿Cuál es la Diferencia?",
+        excerpt: "Entendiendo las diferencias entre semaglutida/tirzepatida compuesta y Wegovy/Zepbound de marca.",
+        body: "## Compuesto vs. de Marca: Entendiendo Tus Opciones\n\n### Medicamentos de Marca\n\nLos medicamentos GLP-1 de marca como **Wegovy** y **Zepbound** son fabricados por compañías farmacéuticas y están aprobados por la FDA.\n\n### Medicamentos Compuestos\n\nLos medicamentos GLP-1 compuestos contienen los **mismos ingredientes activos** pero son preparados por farmacias de composición con licencia en EE.UU.\n\n### ¿Cuál Deberías Elegir?\n\nAmbos son recetados por proveedores licenciados. La elección a menudo se reduce al presupuesto y preferencia. En Body Good, ofrecemos ambas opciones con precios transparentes.",
+      },
+    },
+    {
+      slug: "does-insurance-cover-glp1",
+      category: "insurance-guides",
+      en: {
+        title: "Does Insurance Cover GLP-1 Weight Loss Medications?",
+        excerpt: "A complete guide to getting your insurance to cover Wegovy, Zepbound, and other GLP-1 medications.",
+        body: "## Insurance Coverage for GLP-1 Medications\n\nOne of the most common questions we hear: **\"Will my insurance cover GLP-1 medications?\"**\n\nThe answer depends on your carrier, plan type, and state.\n\n### Who Typically Gets Coverage\n\n- PPO plans from major carriers (UnitedHealthcare, BCBS, Aetna) have the highest approval rates\n- Patients with a BMI of 30+ or 27+ with comorbidities\n- Plans that cover \"anti-obesity medications\" in their formulary\n\n### Our Insurance Navigation Program\n\nBody Good offers a step-by-step insurance navigation program:\n\n1. **Free Coverage Check** — instant probability score\n2. **Eligibility Verification ($25)** — definitive answer\n3. **Prior Authorization ($50)** — we handle the paperwork\n4. **Approval ($85)** — full process management\n5. **Ongoing Management ($75/mo)** — monthly prescription support\n\nStart with our free insurance coverage probability checker to see your odds.",
+      },
+      es: {
+        title: "¿El Seguro Cubre Medicamentos GLP-1 para Bajar de Peso?",
+        excerpt: "Una guía completa para lograr que tu seguro cubra Wegovy, Zepbound y otros medicamentos GLP-1.",
+        body: "## Cobertura de Seguro para Medicamentos GLP-1\n\nUna de las preguntas más comunes que escuchamos: **\"¿Mi seguro cubrirá medicamentos GLP-1?\"**\n\nLa respuesta depende de tu aseguradora, tipo de plan y estado.\n\n### Nuestro Programa de Navegación de Seguros\n\nBody Good ofrece un programa paso a paso:\n\n1. **Verificación Gratuita** — puntuación de probabilidad instantánea\n2. **Verificación de Elegibilidad ($25)**\n3. **Autorización Previa ($50)**\n4. **Aprobación ($85)**\n5. **Manejo Continuo ($75/mes)**\n\nComienza con nuestra verificación gratuita de probabilidad de cobertura.",
+      },
+    },
+  ];
+
+  for (const post of posts) {
+    await prisma.blogPost.create({
+      data: {
+        slug: post.slug,
+        category: post.category,
+        isPublished: true,
+        publishedAt: new Date(),
+        translations: {
+          create: [
+            { locale: "en", ...post.en },
+            { locale: "es", ...post.es },
+          ],
+        },
+      },
+    });
+  }
+
+  console.log(`Blog posts: ${await prisma.blogPost.count()}`);
+
   console.log("Seed complete!");
   console.log(`Products: ${await prisma.product.count()}`);
   console.log(`Variants: ${await prisma.productVariant.count()}`);

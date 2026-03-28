@@ -183,3 +183,74 @@ model DiscountCode {
 
   @@index([code, isActive])
 }
+
+// ─── Referrals ──────────────────────────────────────
+
+model Referral {
+  id              String   @id @default(cuid())
+  referrerEmail   String
+  referrerCode    String   @unique
+  referredEmail   String?
+  referredOrderId String?
+  creditAmount    Int      @default(2500) // cents ($25)
+  referrerCredited Boolean @default(false)
+  referredCredited Boolean @default(false)
+  status          String   @default("pending") // pending, completed, expired
+  createdAt       DateTime @default(now())
+
+  @@index([referrerEmail])
+  @@index([referrerCode])
+}
+
+// ─── Reviews ────────────────────────────────────────
+
+model Review {
+  id          String   @id @default(cuid())
+  productSlug String?
+  email       String
+  name        String
+  rating      Int      // 1-5
+  title       String?
+  body        String
+  photoUrl    String?
+  isVerified  Boolean  @default(false)
+  isApproved  Boolean  @default(false) // admin must approve before display
+  locale      String   @default("en")
+  createdAt   DateTime @default(now())
+
+  @@index([productSlug, isApproved])
+  @@index([isApproved, createdAt])
+}
+
+// ─── Blog ───────────────────────────────────────────
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  category    String   // "glp1-education", "weight-loss-tips", "insurance-guides", "patient-stories"
+  authorName  String   @default("Dr. Linda Moleon, MD")
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  translations BlogPostTranslation[]
+
+  @@index([isPublished, publishedAt])
+  @@index([category])
+}
+
+model BlogPostTranslation {
+  id          String @id @default(cuid())
+  postId      String
+  locale      String // "en" or "es"
+  title       String
+  excerpt     String
+  body        String // markdown/rich text
+  seoTitle    String?
+  seoDescription String?
+
+  post        BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, locale])
+}
