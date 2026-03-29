@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { fireWebhook } from "@/lib/webhooks";
-import { upsertContact, openConversation } from "@/lib/chatwoot";
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,38 +37,6 @@ export async function POST(req: NextRequest) {
       locale: body.locale,
       utmSource: body.utmSource,
     });
-
-    // ── Chatwoot: create/update contact and open a welcome conversation ──────
-    // Fire-and-forget — don't block the API response
-    void (async () => {
-      const firstName = body.firstName as string | null;
-      const locale    = (body.locale as string) || "en";
-
-      const contactId = await upsertContact({
-        email:  body.email,
-        name:   firstName || undefined,
-        phone:  body.phone || undefined,
-        attributes: {
-          quiz_outcome: body.quizOutcome || "",
-          preferred_language: locale,
-          source: "quiz",
-        },
-      });
-
-      if (contactId) {
-        const name = firstName || "there";
-        const isEs = locale === "es";
-        const msg = isEs
-          ? `¡Hola ${name}! Gracias por completar el cuestionario en Body Good Studio 🩺 Tus resultados están listos. ¿Tienes alguna pregunta sobre tu programa recomendado? Estamos aquí para ayudarte.`
-          : `Hi ${name}! Thanks for completing the quiz at Body Good Studio 🩺 Your results are ready — let us know if you have any questions about your recommended program. We're here to help!`;
-
-        await openConversation({
-          contactId,
-          message: msg,
-          label: "quiz-lead",
-        });
-      }
-    })();
 
     return NextResponse.json({ success: true });
   } catch (error) {

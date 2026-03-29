@@ -15,7 +15,7 @@ export default function AdminMessagingPage() {
             <MessageSquare size={24} className="text-[#ED1B1B]" />
           </div>
           <h2 className="text-lg font-semibold text-[#0C0D0F] mb-2" style={{ fontFamily: "Poppins, sans-serif" }}>Messaging</h2>
-          <p className="text-sm text-[#55575A]">Unified inbox pulling from Chatwoot. Connect your Chatwoot instance via Settings → Integrations to enable clinical and support messaging here.</p>
+          <p className="text-sm text-[#55575A]">Unified patient inbox coming soon. A new chat integration will be wired up here.</p>
         </div>
       </div>
     </div>

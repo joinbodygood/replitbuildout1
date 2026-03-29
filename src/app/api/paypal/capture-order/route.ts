@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { capturePayPalOrder, getPayPalOrder } from "@/lib/paypal";
 import { db } from "@/lib/db";
 import { fireWebhook } from "@/lib/webhooks";
-import { upsertContact, openConversation } from "@/lib/chatwoot";
 
 export async function POST(req: NextRequest) {
   try {
@@ -144,37 +143,6 @@ export async function POST(req: NextRequest) {
       items,
       locale,
     });
-
-    // ── Chatwoot: upsert patient contact + send personalised welcome ─────────
-    void (async () => {
-      const isEs        = (locale as string) === "es";
-      const firstName   = (shippingName as string | null)?.split(" ")[0] ?? null;
-      const productList = (items as { name: string }[]).map((i) => i.name).join(", ");
-
-      const contactId = await upsertContact({
-        email,
-        name:  shippingName || undefined,
-        phone: phone || undefined,
-        attributes: {
-          order_id:           order.id,
-          preferred_language: locale || "en",
-          source:             "purchase",
-        },
-      });
-
-      if (contactId) {
-        const name = firstName || (isEs ? "paciente" : "there");
-        const msg = isEs
-          ? `¡Bienvenida a Body Good Studio, ${name}! 🎉 Tu pedido ha sido recibido (${productList}). La Dra. Moleon y nuestro equipo se comunicarán contigo en las próximas 24 horas para iniciar tu proceso de admisión. ¡Estamos emocionadas de comenzar este camino contigo!`
-          : `Welcome to Body Good Studio, ${name}! 🎉 Your order has been received (${productList}). Dr. Moleon and our team will reach out within 24 hours to complete your patient intake. We're so excited to start this journey with you!`;
-
-        await openConversation({
-          contactId,
-          message: msg,
-          label: "new-patient",
-        });
-      }
-    })();
 
     return NextResponse.json({ success: true, orderId: order.id });
   } catch (error) {

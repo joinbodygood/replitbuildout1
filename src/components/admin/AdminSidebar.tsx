@@ -21,18 +21,18 @@ import {
 } from "lucide-react";
 
 const NAV = [
-  { label: "Dashboard",     href: "/admin",                icon: LayoutDashboard, badge: false },
-  { label: "Orders",        href: "/admin/orders",         icon: ShoppingBag,     badge: false },
-  { label: "Products",      href: "/admin/products",       icon: Package,         badge: false },
-  { label: "Patients",      href: "/admin/patients",       icon: Users,           badge: false },
-  { label: "Subscriptions", href: "/admin/subscriptions",  icon: RefreshCw,       badge: false },
-  { label: "Discounts",     href: "/admin/discounts",      icon: Tag,             badge: false },
-  { label: "Content",       href: "/admin/content",        icon: FileText,        badge: false },
-  { label: "Messaging",     href: "/admin/messaging",      icon: MessageSquare,   badge: false },
-  { label: "Helpdesk",      href: "/admin/helpdesk",       icon: Headphones,      badge: true  },
-  { label: "Marketing",     href: "/admin/marketing",      icon: Megaphone,       badge: false },
-  { label: "Analytics",     href: "/admin/analytics",      icon: BarChart2,       badge: false },
-  { label: "Settings",      href: "/admin/settings",       icon: Settings,        badge: false },
+  { label: "Dashboard",     href: "/admin",                icon: LayoutDashboard },
+  { label: "Orders",        href: "/admin/orders",         icon: ShoppingBag     },
+  { label: "Products",      href: "/admin/products",       icon: Package         },
+  { label: "Patients",      href: "/admin/patients",       icon: Users           },
+  { label: "Subscriptions", href: "/admin/subscriptions",  icon: RefreshCw       },
+  { label: "Discounts",     href: "/admin/discounts",      icon: Tag             },
+  { label: "Content",       href: "/admin/content",        icon: FileText        },
+  { label: "Messaging",     href: "/admin/messaging",      icon: MessageSquare   },
+  { label: "Helpdesk",      href: "/admin/helpdesk",       icon: Headphones      },
+  { label: "Marketing",     href: "/admin/marketing",      icon: Megaphone       },
+  { label: "Analytics",     href: "/admin/analytics",      icon: BarChart2       },
+  { label: "Settings",      href: "/admin/settings",       icon: Settings        },
 ];
 
 type Props = { user: { name: string; email: string; role: string } };
@@ -40,25 +40,6 @@ type Props = { user: { name: string; email: string; role: string } };
 export function AdminSidebar({ user }: Props) {
   const pathname = usePathname();
   const router   = useRouter();
-  const [openCount, setOpenCount] = useState<number>(0);
-
-  // Poll Chatwoot open conversation count every 60 s
-  useEffect(() => {
-    let cancelled = false;
-    async function fetchCount() {
-      try {
-        const res  = await fetch("/api/admin/chatwoot");
-        if (!res.ok) return;
-        const data = await res.json() as { openCount: number };
-        if (!cancelled) setOpenCount(data.openCount ?? 0);
-      } catch {
-        // silently ignore network errors
-      }
-    }
-    fetchCount();
-    const interval = setInterval(fetchCount, 60_000);
-    return () => { cancelled = true; clearInterval(interval); };
-  }, []);
 
   async function handleLogout() {
     await fetch("/api/admin/auth/logout", { method: "POST" });
@@ -82,9 +63,8 @@ export function AdminSidebar({ user }: Props) {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-4 px-3">
-        {NAV.map(({ label, href, icon: Icon, badge }) => {
-          const active      = isActive(href);
-          const showBadge   = badge && openCount > 0;
+        {NAV.map(({ label, href, icon: Icon }) => {
+          const active = isActive(href);
           return (
             <Link
               key={href}
@@ -97,11 +77,6 @@ export function AdminSidebar({ user }: Props) {
             >
               <Icon size={17} className="shrink-0" />
               <span className="flex-1">{label}</span>
-              {showBadge && !active && (
-                <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#ED1B1B] text-white text-[10px] font-bold flex items-center justify-center">
-                  {openCount > 99 ? "99+" : openCount}
-                </span>
-              )}
               {active && <ChevronRight size={14} />}
             </Link>
           );
