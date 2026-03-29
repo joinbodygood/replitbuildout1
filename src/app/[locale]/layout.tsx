@@ -7,6 +7,7 @@ import { Footer } from "@/components/layout/Footer";
 import { AnnouncementBar } from "@/components/sections/AnnouncementBar";
 import { Analytics } from "@/components/analytics/Analytics";
 import { CartProvider } from "@/context/CartContext";
+import { ChatwootWidget } from "@/components/ChatwootWidget";
 
 type Props = {
   children: React.ReactNode;
@@ -35,6 +36,12 @@ export default async function LocaleLayout({ children, params }: Props) {
         <main>{children}</main>
         <Footer />
         <Analytics />
+        {process.env.NEXT_PUBLIC_CHATWOOT_URL && process.env.NEXT_PUBLIC_CHATWOOT_TOKEN && (
+          <ChatwootWidget
+            baseUrl={process.env.NEXT_PUBLIC_CHATWOOT_URL}
+            token={process.env.NEXT_PUBLIC_CHATWOOT_TOKEN}
+          />
+        )}
       </CartProvider>
     </NextIntlClientProvider>
   );

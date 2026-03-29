@@ -16,20 +16,22 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  Headphones,
 } from "lucide-react";
 
 const NAV = [
-  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
-  { label: "Products", href: "/admin/products", icon: Package },
-  { label: "Patients", href: "/admin/patients", icon: Users },
-  { label: "Subscriptions", href: "/admin/subscriptions", icon: RefreshCw },
-  { label: "Discounts", href: "/admin/discounts", icon: Tag },
-  { label: "Content", href: "/admin/content", icon: FileText },
-  { label: "Messaging", href: "/admin/messaging", icon: MessageSquare },
-  { label: "Marketing", href: "/admin/marketing", icon: Megaphone },
-  { label: "Analytics", href: "/admin/analytics", icon: BarChart2 },
-  { label: "Settings", href: "/admin/settings", icon: Settings },
+  { label: "Dashboard",    href: "/admin",                 icon: LayoutDashboard },
+  { label: "Orders",       href: "/admin/orders",          icon: ShoppingBag },
+  { label: "Products",     href: "/admin/products",        icon: Package },
+  { label: "Patients",     href: "/admin/patients",        icon: Users },
+  { label: "Subscriptions",href: "/admin/subscriptions",   icon: RefreshCw },
+  { label: "Discounts",    href: "/admin/discounts",       icon: Tag },
+  { label: "Content",      href: "/admin/content",         icon: FileText },
+  { label: "Messaging",    href: "/admin/messaging",       icon: MessageSquare },
+  { label: "Helpdesk",     href: "/admin/helpdesk",        icon: Headphones },
+  { label: "Marketing",    href: "/admin/marketing",       icon: Megaphone },
+  { label: "Analytics",    href: "/admin/analytics",       icon: BarChart2 },
+  { label: "Settings",     href: "/admin/settings",        icon: Settings },
 ];
 
 type Props = { user: { name: string; email: string; role: string } };
