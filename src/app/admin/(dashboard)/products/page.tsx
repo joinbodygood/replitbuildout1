@@ -13,7 +13,7 @@ export default function AdminProductsPage() {
   useEffect(() => {
     Promise.all([
       fetch("/api/admin/auth/me").then((r) => r.json()),
-      fetch("/api/products").then((r) => r.json()),
+      fetch("/api/admin/products").then((r) => r.json()),
     ]).then(([me, prod]) => {
       setUser(me.user);
       setProducts(prod.products ?? prod ?? []);
