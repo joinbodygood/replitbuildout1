@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Body Good — Your Recommended Treatment</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #ed1b1b;
+    --soft-pink: #fde7e7;
+    --heading: #0C0D0F;
+    --body: #55575A;
+    --border: #E5E5E5;
+    --white: #ffffff;
+    --green: #1B8A4A;
+    --green-light: #E8F5EE;
+    --blue: #1A6EED;
+    --blue-light: #EBF2FF;
+    --gold: #F59E0B;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Manrope', sans-serif;
+    color: var(--body);
+    background: var(--white);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── TOP BAR ── */
+  .top-bar {
+    background: var(--heading);
+    color: white;
+    text-align: center;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+
+  /* ── NAV ── */
+  .nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    background: white;
+  }
+  .logo {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--heading);
+  }
+  .logo span { color: var(--red); }
+
+  /* ── HERO SECTION ── */
+  .hero {
+    text-align: center;
+    padding: 48px 24px 16px;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--green-light);
+    color: var(--green);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 50px;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--heading);
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+  .hero p {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--body);
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* ── STEP INDICATOR ── */
+  .steps {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 24px 24px 32px;
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #B0B0B0;
+  }
+  .step.done { color: var(--green); }
+  .step.active { color: var(--red); }
+  .step-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    background: #F0F0F0;
+    color: #B0B0B0;
+  }
+  .step.done .step-dot { background: var(--green); color: white; }
+  .step.active .step-dot { background: var(--red); color: white; }
+  .step-line {
+    width: 40px;
+    height: 2px;
+    background: #E5E5E5;
+  }
+  .step.done + .step-line,
+  .step-line.done { background: var(--green); }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    text-align: center;
+    padding: 0 24px 24px;
+  }
+  .section-label h2 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--heading);
+    margin-bottom: 4px;
+  }
+  .section-label p {
+    font-size: 14px;
+    color: var(--body);
+  }
+
+  /* ── CARDS CONTAINER ── */
+  .cards-row {
+    display: flex;
+    gap: 20px;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 24px 40px;
+  }
+
+  /* ── PRODUCT CARD ── */
+  .card {
+    flex: 1;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.25s, box-shadow 0.25s;
+    position: relative;
+    background: white;
+  }
+  .card:hover {
+    border-color: var(--red);
+    box-shadow: 0 8px 32px rgba(237, 27, 27, 0.08);
+  }
+  .card.recommended {
+    border-color: var(--red);
+  }
+
+  .card-ribbon {
+    background: var(--red);
+    color: white;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    padding: 6px 0;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .card-header {
+    padding: 24px 24px 0;
+  }
+
+  .delivery-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 50px;
+    margin-bottom: 14px;
+  }
+  .delivery-badge.ship {
+    background: var(--soft-pink);
+    color: var(--red);
+  }
+  .delivery-badge.pickup {
+    background: var(--blue-light);
+    color: var(--blue);
+  }
+
+  .card-header h3 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--heading);
+    margin-bottom: 4px;
+  }
+
+  .card-subtitle {
+    font-size: 14px;
+    color: var(--body);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .best-for {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--green);
+    margin-bottom: 16px;
+  }
+
+  /* ── PRICE ── */
+  .price-block {
+    padding: 16px 24px;
+    background: #FAFAFA;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .price-amount {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 36px;
+    color: var(--heading);
+  }
+  .price-period {
+    font-size: 14px;
+    color: var(--body);
+  }
+  .price-note {
+    font-size: 12px;
+    color: var(--body);
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+
+  /* ── WHAT'S INCLUDED ── */
+  .includes {
+    padding: 20px 24px;
+  }
+  .includes-title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--heading);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+  .include-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--body);
+  }
+  .include-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .include-icon.check {
+    background: var(--green-light);
+    color: var(--green);
+  }
+  .include-icon.info {
+    background: var(--blue-light);
+    color: var(--blue);
+  }
+  .include-icon svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  /* ── CTA BUTTON ── */
+  .card-cta {
+    padding: 0 24px 24px;
+  }
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 16px 24px;
+    border: none;
+    border-radius: 50px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .btn-primary {
+    background: var(--red);
+    color: white;
+  }
+  .btn-primary:hover {
+    background: #D41818;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(237, 27, 27, 0.25);
+  }
+  .btn-secondary {
+    background: var(--heading);
+    color: white;
+  }
+  .btn-secondary:hover {
+    background: #2A2B2E;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(12, 13, 15, 0.2);
+  }
+  .btn-arrow {
+    font-size: 18px;
+    transition: transform 0.2s;
+  }
+  .btn:hover .btn-arrow { transform: translateX(3px); }
+
+  /* ── GOODRX SECTION ── */
+  .goodrx-section {
+    max-width: 880px;
+    margin: 0 auto 40px;
+    padding: 0 24px;
+  }
+  .goodrx-card {
+    background: #FFFBEB;
+    border: 2px solid #FDE68A;
+    border-radius: 12px;
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .goodrx-icon {
+    width: 56px;
+    height: 56px;
+    background: #FEF3C7;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .goodrx-icon svg { width: 28px; height: 28px; color: var(--gold); }
+  .goodrx-text h4 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--heading);
+    margin-bottom: 4px;
+  }
+  .goodrx-text p {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--body);
+    margin-bottom: 10px;
+  }
+  .goodrx-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: white;
+    border: 1.5px solid #FDE68A;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    color: #92400E;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .goodrx-btn:hover {
+    background: #FEF3C7;
+    border-color: #F59E0B;
+  }
+
+  /* ── COMPARISON TABLE ── */
+  .compare-section {
+    max-width: 880px;
+    margin: 0 auto 40px;
+    padding: 0 24px;
+  }
+  .compare-title {
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--heading);
+    margin-bottom: 20px;
+  }
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .compare-table th {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--heading);
+    padding: 14px 20px;
+    background: #FAFAFA;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .compare-table th:not(:first-child) { text-align: center; }
+  .compare-table td {
+    font-size: 14px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    color: var(--body);
+  }
+  .compare-table td:not(:first-child) { text-align: center; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .tbl-check { color: var(--green); font-weight: 700; font-size: 16px; }
+  .tbl-x { color: #D1D1D1; font-size: 16px; }
+
+  /* ── TRUST BAR ── */
+  .trust-bar {
+    background: #FAFAFA;
+    border-top: 1px solid var(--border);
+    padding: 32px 24px;
+  }
+  .trust-items {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    max-width: 800px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+  }
+  .trust-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--heading);
+  }
+  .trust-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--soft-pink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .trust-icon svg { width: 18px; height: 18px; color: var(--red); }
+
+  /* ── FAQ ── */
+  .faq-section {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+  .faq-section h2 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--heading);
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .faq-item {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .faq-q {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--heading);
+    background: white;
+    transition: background 0.2s;
+  }
+  .faq-q:hover { background: #FAFAFA; }
+  .faq-a {
+    padding: 0 20px 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--body);
+    display: none;
+  }
+  .faq-item.open .faq-a { display: block; }
+  .faq-chevron { transition: transform 0.2s; }
+  .faq-item.open .faq-chevron { transform: rotate(180deg); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 700px) {
+    .cards-row { flex-direction: column; }
+    .hero h1 { font-size: 24px; }
+    .price-amount { font-size: 30px; }
+    .goodrx-card { flex-direction: column; text-align: center; }
+    .trust-items { gap: 24px; }
+    .compare-table th, .compare-table td { padding: 10px 12px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">Board-Certified Doctors &bull; Licensed in 20 States &bull; Free Shipping on All Orders</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="logo">body<span>good</span></div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+    Quiz Complete
+  </div>
+  <h1>Great News — Here's Your Personalized Treatment Plan</h1>
+  <p>Based on your answers, our doctor recommends the options below. Choose how you'd like to get your medication.</p>
+</section>
+
+<!-- STEPS -->
+<div class="steps">
+  <div class="step done">
+    <div class="step-dot">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+    </div>
+    Quiz
+  </div>
+  <div class="step-line done"></div>
+  <div class="step done">
+    <div class="step-dot">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+    </div>
+    Review
+  </div>
+  <div class="step-line"></div>
+  <div class="step active">
+    <div class="step-dot">3</div>
+    Choose
+  </div>
+  <div class="step-line"></div>
+  <div class="step">
+    <div class="step-dot">4</div>
+    Checkout
+  </div>
+</div>
+
+<!-- SECTION LABEL -->
+<div class="section-label">
+  <h2>How do you want to get your medication?</h2>
+  <p>Pick the option that works best for you</p>
+</div>
+
+<!-- ═══════════════════ PRODUCT CARDS ═══════════════════ -->
+<div class="cards-row">
+
+  <!-- ── CARD 1: SHIP TO YOU ── -->
+  <div class="card recommended">
+    <div class="card-ribbon">Most Popular — Best Value</div>
+    <div class="card-header">
+      <div class="delivery-badge ship">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 8h14l1 8H4L5 8z"/><circle cx="8" cy="20" r="1.5"/><circle cx="16" cy="20" r="1.5"/><path d="M2 4h3l2 4"/></svg>
+        Ship To Me
+      </div>
+      <h3>Minoxidil 2%</h3>
+      <div class="card-subtitle">Topical Solution — 60mL bottle (1 month supply)</div>
+      <div class="best-for">
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-11a1 1 0 112 0v3a1 1 0 01-2 0V7zm0 6a1 1 0 112 0 1 1 0 01-2 0z"/></svg>
+        Best for: thinning hair &amp; early-stage hair loss
+      </div>
+    </div>
+
+    <div class="price-block">
+      <div class="price-row">
+        <span class="price-amount">$60</span>
+        <span class="price-period">one-time payment</span>
+      </div>
+      <div class="price-note">Medication + doctor review + free shipping — all included</div>
+    </div>
+
+    <div class="includes">
+      <div class="includes-title">Everything Included</div>
+      <div class="include-item">
+        <div class="include-icon check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <span><strong>Board-certified doctor review</strong> of your health info</span>
+      </div>
+      <div class="include-item">
+        <div class="include-icon check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <span><strong>Medication included</strong> — nothing else to pay</span>
+      </div>
+      <div class="include-item">
+        <div class="include-icon check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <span><strong>Free shipping</strong> — arrives in 3–5 business days</span>
+      </div>
+      <div class="include-item">
+        <div class="include-icon check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <span><strong>Discreet packaging</strong> — delivered right to your door</span>
+      </div>
+    </div>
+
+    <div class="card-cta">
+      <button class="btn btn-primary">
+        Add to Cart — $60
+        <span class="btn-arrow">&rarr;</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── CARD 2: PICK UP AT PHARMACY ── -->
+  <div class="card">
+    <div style="height: 32px; background: var(--blue-light); display: flex; align-items: center; justify-content: center;">
+      <span style="font-size: 12px; font-weight: 700; font-family: 'Poppins', sans-serif; color: var(--blue); letter-spacing: 0.5px; text-transform: uppercase;">Use Your Insurance</span>
+    </div>
+    <div class="card-header">
+      <div class="delivery-badge pickup">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21h18M9 8h6M9 12h6M9 16h6M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16"/></svg>
+        Pick Up at Pharmacy
+      </div>
+      <h3>Finasteride 1mg</h3>
+      <div class="card-subtitle">Oral Tablet — Prescription sent to your pharmacy</div>
+      <div class="best-for">
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-11a1 1 0 112 0v3a1 1 0 01-2 0V7zm0 6a1 1 0 112 0 1 1 0 01-2 0z"/></svg>
+        Best for: pattern hair loss &amp; receding hairline
+      </div>
+    </div>
+
+    <div class="price-block">
+      <div class="price-row">
+        <span class="price-amount">$49</span>
+        <span class="price-period">doctor review + e-prescription</span>
+      </div>
+      <div class="price-note">You pay for meds separately at the pharmacy. Insurance may cover it!</div>
+    </div>
+
+    <div class="includes">
+      <div class="includes-title">What You Get</div>
+      <div class="include-item">
+        <div class="include-icon check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <span><strong>Board-certified doctor review</strong> of your health info</span>
+      </div>
+      <div class="include-item">
+        <div class="include-icon check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <span><strong>E-prescription sent</strong> to your local pharmacy</span>
+      </div>
+      <div class="include-item">
+        <div class="include-icon check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <span><strong>Pick up as soon as today</strong> — same-day in most cases</span>
+      </div>
+      <div class="include-item">
+        <div class="include-icon info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 8v4M12 16h.01"/><circle cx="12" cy="12" r="10"/></svg></div>
+        <span><strong>Use your health insurance</strong> to pay for the medication at the pharmacy</span>
+      </div>
+    </div>
+
+    <div class="card-cta">
+      <button class="btn btn-secondary">
+        Add to Cart — $49
+        <span class="btn-arrow">&rarr;</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ GOODRX SECTION ═══════════════════ -->
+<div class="goodrx-section">
+  <div class="goodrx-card">
+    <div class="goodrx-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>
+    </div>
+    <div class="goodrx-text">
+      <h4>Picking up at the pharmacy? Check what you'll pay for meds.</h4>
+      <p>If you chose the pharmacy pickup option, the $49 covers your doctor visit and e-prescription. The medication is a separate cost at the pharmacy. Use GoodRx to check the price before you go — you might save big.</p>
+      <a href="https://www.goodrx.com/" target="_blank" class="goodrx-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+        Check Prices on GoodRx &rarr;
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ COMPARISON TABLE ═══════════════════ -->
+<div class="compare-section">
+  <h3 class="compare-title">Side-by-Side Comparison</h3>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Ship To Me</th>
+        <th>Pharmacy Pickup</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Doctor Review</td>
+        <td><span class="tbl-check">&#10003;</span></td>
+        <td><span class="tbl-check">&#10003;</span></td>
+      </tr>
+      <tr>
+        <td>Medication Included in Price</td>
+        <td><span class="tbl-check">&#10003;</span></td>
+        <td><span class="tbl-x">&#10005;</span> Paid at pharmacy</td>
+      </tr>
+      <tr>
+        <td>Free Shipping</td>
+        <td><span class="tbl-check">&#10003;</span></td>
+        <td><span class="tbl-x">—</span> You pick it up</td>
+      </tr>
+      <tr>
+        <td>Can Use Health Insurance</td>
+        <td><span class="tbl-x">&#10005;</span></td>
+        <td><span class="tbl-check">&#10003;</span> For the meds</td>
+      </tr>
+      <tr>
+        <td>Speed</td>
+        <td>3–5 business days</td>
+        <td>As soon as today</td>
+      </tr>
+      <tr>
+        <td>You Pay Body Good</td>
+        <td><strong>$60 total</strong></td>
+        <td><strong>$49</strong> (meds separate)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════ TRUST BAR ═══════════════════ -->
+<div class="trust-bar">
+  <div class="trust-items">
+    <div class="trust-item">
+      <div class="trust-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      HIPAA Compliant
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      </div>
+      Board-Certified Doctors
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+      </div>
+      FSA / HSA Eligible
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      </div>
+      Ongoing Support
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ FAQ ═══════════════════ -->
+<section class="faq-section">
+  <h2>Common Questions</h2>
+
+  <div class="faq-item open">
+    <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+      What's the difference between "Ship To Me" and "Pharmacy Pickup"?
+      <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="faq-a">
+      <strong>Ship To Me:</strong> You pay one price and we handle everything — the doctor reviews your info, writes your prescription, and the medication is shipped to your door for free. Nothing else to pay.<br><br>
+      <strong>Pharmacy Pickup:</strong> You pay $49 for the doctor to review your info and send a prescription to your local pharmacy. Then you pick up the meds at the pharmacy and pay for them there. The perk? You can use your health insurance to cover the meds, and you can get them as soon as the same day.
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+      Can I use my health insurance?
+      <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="faq-a">
+      Yes — but only with the Pharmacy Pickup option. When you pick up your meds at a local pharmacy, you can hand them your insurance card and they'll run it. If your plan covers the medication, you could pay very little (or even $0) for the meds. The $49 doctor visit fee is always out-of-pocket.
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+      How fast will I get my medication?
+      <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="faq-a">
+      <strong>Ship To Me:</strong> Your medication ships after the doctor approves your treatment. Most orders arrive in 3–5 business days with free shipping.<br><br>
+      <strong>Pharmacy Pickup:</strong> Once the doctor sends the prescription to your pharmacy, it's usually ready within a few hours — sometimes the same day.
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+      What if I'm not approved for treatment?
+      <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="faq-a">
+      If our doctor determines that the medication isn't right for you based on your health information, you won't be charged. We only charge after a doctor has reviewed and approved your treatment.
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

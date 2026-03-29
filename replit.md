@@ -13,6 +13,14 @@ A custom telehealth e-commerce platform for Body Good Studio, a physician-led we
 - Clean-sheet Next.js gives full control over the funnel UX — the core competitive asset
 - Built with Claude Code on Replit for rapid iteration
 
+## Key Components
+
+| Component | Path | Purpose |
+|---|---|---|
+| `SplitRecommendationPage` | `src/components/quiz/SplitRecommendationPage.tsx` | Post-quiz dual-path recommendation page (Ship To Me vs Pharmacy Pickup) per implementation guide |
+| `DualPathCard` | `src/components/quiz/DualPathCard.tsx` | Legacy dual-path card (kept for other quiz types) |
+| `GoodRxPriceCheck` | `src/components/product/GoodRxPriceCheck.tsx` | GoodRx deep-link widget for product pages |
+
 ## Competitive Advantages
 
 1. **Bilingual (EN/ES) from day one** — no competitor in telehealth weight loss offers Spanish
