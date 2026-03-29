@@ -5,6 +5,7 @@ import { Container } from "@/components/ui/Container";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ProductVariantSelector } from "@/components/product/ProductVariantSelector";
+import { GoodRxPriceCheck } from "@/components/product/GoodRxPriceCheck";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
@@ -60,6 +61,13 @@ export default async function ProductPage({ params }: Props) {
             variants={product.variants}
             locale={locale}
           />
+          {(product.fulfillment === "pharmacy_rx" || product.fulfillment === "dual_path") && (
+            <GoodRxPriceCheck
+              productSlug={product.slug}
+              fccMedicationName={product.fccMedicationName}
+              locale={locale}
+            />
+          )}
         </Container>
       </section>
 
