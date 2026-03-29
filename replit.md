@@ -17,9 +17,10 @@ A custom telehealth e-commerce platform for Body Good Studio, a physician-led we
 
 | Component | Path | Purpose |
 |---|---|---|
-| `SplitRecommendationPage` | `src/components/quiz/SplitRecommendationPage.tsx` | Post-quiz dual-path recommendation page (Ship To Me vs Pharmacy Pickup) per implementation guide |
-| `DualPathCard` | `src/components/quiz/DualPathCard.tsx` | Legacy dual-path card (kept for other quiz types) |
+| `RecommendationConfigurator` | `src/components/quiz/RecommendationConfigurator.tsx` | Universal post-quiz configurator for all 4 product types (compounded/pharmacy_only/both/service). 3-step flow: fulfillment toggle → shipping frequency → per-month dose selection. Real-time tier-aware pricing. Pharmacy modal + GoodRx banner. |
+| `BGS_PRODUCTS` | `src/lib/bgs-products.ts` | Complete product catalog — all 48 products across all programs with fulfillment types, prices, dose arrays, tier pricing, pharmacy fees |
 | `GoodRxPriceCheck` | `src/components/product/GoodRxPriceCheck.tsx` | GoodRx deep-link widget for product pages |
+| `SplitRecommendationPage` | `src/components/quiz/SplitRecommendationPage.tsx` | Legacy two-card layout (kept, not used by hair quiz) |
 
 ## Competitive Advantages
 
