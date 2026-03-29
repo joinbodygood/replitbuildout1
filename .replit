@@ -38,4 +38,4 @@ externalPort = 80
 [userenv.shared]
 PAYPAL_SANDBOX = "true"
 NEXT_PUBLIC_CHATWOOT_URL = "https://app.chatwoot.com"
-NEXT_PUBLIC_CHATWOOT_TOKEN = "6FwoHqf1aCfUtwRAAVB14rKr"
+NEXT_PUBLIC_CHATWOOT_TOKEN = "nodt2qSp9TBKaNx1BihWQxF8"
