@@ -9,7 +9,7 @@ import {
   X, Menu, ChevronDown, ChevronRight,
   Scale, Syringe, Sparkles, Heart, Brain,
   FileText, User, Shield, Pill, Tag, FlaskConical,
-  ShoppingCart, DollarSign, HelpCircle,
+  ShoppingCart, DollarSign, HelpCircle, Gift,
 } from "lucide-react";
 
 // ─── Desktop dropdown definitions ────────────────────────────────────────────
@@ -83,6 +83,13 @@ const MORE_ITEMS = [
     icon: HelpCircle,
     iconColor: "#0ea5e9",
   },
+  {
+    label: { en: "Refer & Earn $25", es: "Recomendar y Ganar $25" },
+    desc:  { en: "Share BGS with a friend and earn $25 credit", es: "Comparte BGS con una amiga y gana $25 de crédito" },
+    href:  { en: "/en/refer", es: "/es/refer" },
+    icon: Gift,
+    iconColor: "#10b981",
+  },
 ];
 
 // ─── Burger menu items (full list for slide-in panel) ────────────────────────
@@ -128,6 +135,13 @@ const NAV_ITEMS = [
     icon: Brain, iconColor: "#6366f1", hasChildren: false,
     href: { en: "/en/quiz/mental-wellness", es: "/es/quiz/mental-wellness" },
     desc: { en: "Anxiety, sleep, mood & motivation — non-addictive", es: "Ansiedad, sueño y motivación — sin medicamentos adictivos" },
+  },
+  {
+    id: "refer",
+    label: { en: "Refer & Earn $25", es: "Recomendar y Ganar $25" },
+    icon: Gift, iconColor: "#10b981", hasChildren: false,
+    href: { en: "/en/refer", es: "/es/refer" },
+    desc: { en: "Share BGS with a friend and earn $25 BGS credit", es: "Comparte BGS con una amiga y gana $25 de crédito BGS" },
   },
   {
     id: "blog",

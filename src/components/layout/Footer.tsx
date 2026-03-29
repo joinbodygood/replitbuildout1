@@ -20,6 +20,7 @@ export function Footer() {
       links: [
         { label: t("contact"), href: `/${locale}/contact` },
         { label: t("faq"), href: `/${locale}/faq` },
+        { label: locale === "es" ? "Recomendar y Ganar $25" : "Refer & Earn $25", href: `/${locale}/refer` },
       ],
     },
     {

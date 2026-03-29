@@ -25,6 +25,8 @@ export default function CheckoutPage() {
   const [discountCode, setDiscountCode] = useState("");
   const [discountApplied, setDiscountApplied] = useState<{ type: string; value: number; code: string } | null>(null);
   const [discountError, setDiscountError] = useState("");
+  const [referralCode, setReferralCode] = useState("");
+  const [referralValid, setReferralValid] = useState<boolean | null>(null);
   const [processing, setProcessing] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
 
@@ -53,6 +55,19 @@ export default function CheckoutPage() {
         </Container>
       </section>
     );
+  }
+
+  async function validateReferral() {
+    const code = referralCode.trim().toUpperCase();
+    if (!code) return;
+    try {
+      const res = await fetch(`/api/referrals/validate?code=${encodeURIComponent(code)}`);
+      const data = await res.json();
+      setReferralValid(data.valid);
+      if (data.valid) setReferralCode(data.code);
+    } catch {
+      setReferralValid(false);
+    }
   }
 
   async function applyDiscount() {
@@ -340,6 +355,43 @@ export default function CheckoutPage() {
                     )}
                   </div>
 
+                  {/* Referral Code */}
+                  <div className="mb-6 p-4 rounded-card border border-border">
+                    <label className="block text-sm font-medium text-heading mb-2">
+                      {isEs ? "Código de Referido (opcional)" : "Friend's Referral Code (optional)"}
+                    </label>
+                    <p className="text-xs text-body-muted mb-3">
+                      {isEs
+                        ? "¿Un amigo te recomendó BGS? Ingresa su código para que gane $25 de crédito."
+                        : "Did a friend refer you to BGS? Enter their code so they earn $25 credit."}
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={referralCode}
+                        onChange={(e) => { setReferralCode(e.target.value.toUpperCase()); setReferralValid(null); }}
+                        placeholder={isEs ? "Ej: MARIA25" : "e.g. JANE25"}
+                        className="flex-grow px-4 py-3 rounded-card border border-border focus:border-brand-red focus:outline-none transition-colors font-mono"
+                      />
+                      <button
+                        onClick={validateReferral}
+                        className="px-5 py-3 rounded-card border border-brand-red text-brand-red font-semibold hover:bg-brand-red hover:text-white transition-all text-sm"
+                      >
+                        {isEs ? "Verificar" : "Check"}
+                      </button>
+                    </div>
+                    {referralValid === true && (
+                      <p className="text-success text-sm mt-1">
+                        ✓ {isEs ? "Código válido — ¡tu amigo recibirá $25 de crédito!" : "Valid code — your friend will earn $25 credit!"}
+                      </p>
+                    )}
+                    {referralValid === false && (
+                      <p className="text-error text-sm mt-1">
+                        {isEs ? "Código no encontrado o ya utilizado." : "Code not found or already used."}
+                      </p>
+                    )}
+                  </div>
+
                   {/* PayPal Payment */}
                   <div className="mb-6">
                     <PayPalButton
@@ -360,6 +412,7 @@ export default function CheckoutPage() {
                               discountAmount,
                               finalTotal,
                               discountCode: discountApplied?.code || null,
+                              referralCode: referralCode.trim() || null,
                               shippingName,
                               shippingAddress,
                               shippingCity,

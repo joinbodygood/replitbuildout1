@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
       discountAmount,
       finalTotal,
       discountCode,
+      referralCode,
       shippingName,
       shippingAddress,
       shippingCity,
@@ -81,6 +82,58 @@ export async function POST(req: NextRequest) {
         where: { code: discountCode },
         data: { usedCount: { increment: 1 } },
       });
+    }
+
+    // ── Referral reward: credit the referrer with a $25 discount code ─────────
+    if (referralCode) {
+      const cleanCode = (referralCode as string).trim().toUpperCase();
+      const referral = await db.referral.findFirst({
+        where: { referrerCode: cleanCode, status: "pending", referredEmail: null },
+      });
+
+      if (referral) {
+        // Mark the referral as completed
+        await db.referral.update({
+          where: { id: referral.id },
+          data: {
+            referredEmail: email,
+            referredOrderId: order.id,
+            status: "completed",
+            referrerCredited: true,
+          },
+        });
+
+        // Create a unique $25 credit code for the referrer
+        const creditCode =
+          "BGS25-" +
+          Math.random().toString(36).slice(2, 6).toUpperCase() +
+          Math.random().toString(36).slice(2, 6).toUpperCase();
+
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 90);
+
+        await db.discountCode.create({
+          data: {
+            code: creditCode,
+            type: "fixed",
+            value: 2500,
+            maxUses: 1,
+            usedCount: 0,
+            isActive: true,
+            expiresAt,
+          },
+        });
+
+        // Notify referrer via webhook (triggers email send)
+        void fireWebhook("referral.credited", {
+          referrerEmail: referral.referrerEmail,
+          referredEmail: email,
+          creditCode,
+          creditAmount: 25,
+          orderId: order.id,
+          expiresAt: expiresAt.toISOString(),
+        });
+      }
     }
 
     await fireWebhook("order.created", {
