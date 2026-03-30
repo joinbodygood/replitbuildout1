@@ -47,6 +47,9 @@ export default function CheckoutPage() {
     if (cartItems.find((i) => i.productId === "WM-BRAND-MGMT")) {
       return `/${locale}/intake/branded-rx`;
     }
+    if (cartItems.find((i) => i.productId === "INS-ELIG")) {
+      return `/${locale}/intake/insurance-eligibility`;
+    }
     if (cartItems.find((i) => i.productId.startsWith("INS-"))) {
       return `/${locale}/intake/insurance`;
     }
