@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ConfidenceEngine } from '@/lib/insurance/confidence-engine';
 import type { PatientInput } from '@/lib/insurance/confidence-engine';
-import { runStediCheck } from '@/lib/insurance/stedi';
 import { runWebSearch } from '@/lib/insurance/web-search';
 import { fireWebhook } from '@/lib/webhooks';
 
@@ -46,23 +45,15 @@ export async function POST(req: NextRequest) {
       planType: mapPlanType(planType || ''),
     };
 
-    const [stediData, webSearchData] = await Promise.allSettled([
-      runStediCheck({ insurerName, memberId, groupNumber, firstName, lastName, dob: subscriberDob }),
-      runWebSearch({ insurerName, state, diagnoses, employerSize }),
-    ]);
-
-    const stedi = stediData.status === 'fulfilled' ? stediData.value : null;
-    const webSearch = webSearchData.status === 'fulfilled' ? webSearchData.value : null;
-
-    if (stediData.status === 'rejected') {
-      console.warn('[coverage-check] Stedi check failed:', (stediData.reason as Error)?.message);
-    }
-    if (webSearchData.status === 'rejected') {
-      console.warn('[coverage-check] Web search failed:', (webSearchData.reason as Error)?.message);
-    }
+    const webSearchResult = await Promise.resolve(
+      runWebSearch({ insurerName, state, diagnoses, employerSize })
+    ).catch((err: Error) => {
+      console.warn('[coverage-check] Web search failed:', err?.message);
+      return null;
+    });
 
     const engine = new ConfidenceEngine();
-    const results = await engine.calculateCoverage(patient, stedi, webSearch);
+    const results = await engine.calculateCoverage(patient, null, webSearchResult);
 
     fireWebhook('coverage_check.completed', {
       intakeRef: body.intakeRef,

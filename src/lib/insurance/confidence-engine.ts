@@ -363,11 +363,9 @@ export class ConfidenceEngine {
     }
 
     const weights: Record<string, number> = {
-      stedi: 15,
-      historical: 25,
-      pharmaChecker: 30,
-      webSearch: 15,
-      probabilityDB: 15,
+      probabilityDB: 40,
+      historical: 30,
+      webSearch: 30,
     };
 
     let totalWeight = 0;
@@ -415,9 +413,6 @@ export class ConfidenceEngine {
   ): MedicationResult['status'] {
     const highConfDenials = verdicts.filter(v => v.verdict === 'not_covered' && v.confidence >= 80);
     if (highConfDenials.length > 0) return 'not_covered';
-
-    const stedi = verdicts.find(v => v.source === 'stedi');
-    if (stedi && stedi.verdict === 'not_covered') return 'not_covered';
 
     if (combinedScore.probability === 0) return 'not_covered';
 

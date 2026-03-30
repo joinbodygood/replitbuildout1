@@ -222,15 +222,17 @@ Redirect to Zoho/GLOW for medical intake
 
 Patients who purchase the $25 Insurance Eligibility Check ($SKU: INS-ELIG) complete the intake form and immediately receive AI-powered coverage probability results.
 
-### Architecture — 5 Data Sources
+### Architecture — 3 Active Data Sources
 
 | Source | Weight | File |
 |--------|--------|------|
-| Stedi 270/271 real-time eligibility | 15% | `src/lib/insurance/stedi.ts` |
-| Body Good historical outcomes (Zoho stub) | 25% | `src/lib/insurance/confidence-engine.ts` |
-| Pharma checkers (NovoCare / Lilly — stub) | 30% | (future) |
-| Claude API web search (real-time formulary) | 15% | `src/lib/insurance/web-search.ts` |
-| Probability DB (carrier/state/indication matrix) | 15% | `src/lib/insurance/glp1-probability-database.json` |
+| Probability DB (73 carriers, state/indication matrix) | 40% | `src/lib/insurance/glp1-probability-database.json` |
+| Body Good historical outcomes | 30% | `src/lib/insurance/confidence-engine.ts` |
+| Claude API web search (real-time formulary) | 30% | `src/lib/insurance/web-search.ts` |
+
+**Real-time eligibility (future upgrade):**
+- **Eligible.com** — ~$0.20/check, no monthly minimum. Same 270/271 transactions as Stedi. Add `ELIGIBLE_API_KEY` secret + implement in `src/lib/insurance/stedi.ts`.
+- Stedi ($500/mo) was evaluated and removed. The stub file remains with upgrade instructions.
 
 ### Flow
 
