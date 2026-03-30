@@ -32,7 +32,11 @@ import { runPortalEligibilityCheck, portalCredentialsAvailable } from './stedi-p
 import { resolveStediPayerId } from './stedi-payer-ids';
 
 const STEDI_API_KEY = process.env.STEDI_API_KEY;
-const STEDI_ENDPOINT = 'https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/eligibility/v3';
+const STEDI_RELAY_URL = process.env.STEDI_RELAY_URL;
+const STEDI_BASE = STEDI_RELAY_URL
+  ? STEDI_RELAY_URL.replace(/\/$/, '')
+  : 'https://healthcare.us.stedi.com';
+const STEDI_ENDPOINT = `${STEDI_BASE}/2024-04-01/change/medicalnetwork/eligibility/v3`;
 const PROVIDER_NPI = process.env.PROVIDER_NPI || '1558788851';
 const PROVIDER_NAME = process.env.PROVIDER_NAME || 'Body Good Studio';
 

@@ -237,13 +237,17 @@ OPTION 1 — Stedi Test Key (free, validates integration, returns mock data):
 - Add `STEDI_API_KEY = test_0dqzhy0...` to Replit Secrets
 - Upgrade to Developer plan for a production key (pay-as-you-go)
 
-OPTION 2 — Portal automation (FREE, real production data, ~15s/check):
-- Automates portal.stedi.com headlessly using your existing Basic plan
-- Add 3 secrets: `STEDI_EMAIL`, `STEDI_PASSWORD`, `STEDI_ACCOUNT_ID=1b621bea-6ae4-4cc4-a870-7e6df38c4b26`
-- Chromium installed at `/nix/store/.../chromium`; Playwright installed
+KNOWN ISSUE — Stedi API returns 403 from Replit (GCP IPs blocked by AWS WAF):
+- Stedi's WAF blocks requests from Google Cloud IPs (Replit runs on GCP)
+- STEDI_API_KEY is saved but calls will 403 until the relay is set up
 
-Priority order (automatic): API key → portal automation → skip gracefully
-Files: `stedi.ts` (API), `stedi-portal.ts` (automation), `stedi-payer-ids.ts` (payer map)
+OPTION 2 — Cloudflare Worker relay (fix for GCP block):
+- Deploy `cloudflare-worker-stedi-relay.js` to workers.cloudflare.com (free, 100k req/day)
+- Add to Replit Secrets: `STEDI_RELAY_URL = https://your-worker.workers.dev`
+- The Worker forwards the request from Cloudflare's non-GCP IPs → Stedi accepts it
+
+Priority order (automatic): API key + relay → API key (may 403 from Replit) → skip gracefully
+Files: `stedi.ts` (API), `stedi-portal.ts` (portal automation stub), `stedi-payer-ids.ts`, `cloudflare-worker-stedi-relay.js`
 
 ### Flow
 
