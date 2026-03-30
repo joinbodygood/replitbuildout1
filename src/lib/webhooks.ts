@@ -9,7 +9,8 @@ type WebhookEvent =
   | "referral.created"
   | "review.submitted"
   | "lead.captured"
-  | "intake.submitted";
+  | "intake.submitted"
+  | "coverage_check.completed";
 
 type WebhookPayload = {
   event: WebhookEvent;

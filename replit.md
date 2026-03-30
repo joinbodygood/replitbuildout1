@@ -218,6 +218,61 @@ Redirect to Zoho/GLOW for medical intake
 - Admin dashboard (stats grid + recent orders — read-only)
 - n8n webhook utility wired into all API routes
 
+## Coverage Check Engine (Instant Results System)
+
+Patients who purchase the $25 Insurance Eligibility Check ($SKU: INS-ELIG) complete the intake form and immediately receive AI-powered coverage probability results.
+
+### Architecture — 5 Data Sources
+
+| Source | Weight | File |
+|--------|--------|------|
+| Stedi 270/271 real-time eligibility | 15% | `src/lib/insurance/stedi.ts` |
+| Body Good historical outcomes (Zoho stub) | 25% | `src/lib/insurance/confidence-engine.ts` |
+| Pharma checkers (NovoCare / Lilly — stub) | 30% | (future) |
+| Claude API web search (real-time formulary) | 15% | `src/lib/insurance/web-search.ts` |
+| Probability DB (carrier/state/indication matrix) | 15% | `src/lib/insurance/glp1-probability-database.json` |
+
+### Flow
+
+1. Patient pays $25 → checkout → `/intake/insurance-eligibility`
+2. 4-step form: insurance info (+ state, employer size) → medical history (ICD-10 conditions) → medication pref → review/acknowledge
+3. On submit: `POST /api/coverage-check` + `POST /api/intake/submit` fired in parallel
+4. Loading screen cycles through data-source status messages
+5. Results screen shows per-medication cards (Wegovy, Zepbound, Mounjaro, Ozempic) with:
+   - Status badge: Likely Covered / PA Required / Not Covered / Needs Review
+   - Probability range (e.g., "55–70%")
+   - Confidence meter (% + X/N sources agree)
+   - Recommended coverage pathway + PA badge
+   - Diagnosis-specific note (T2D, OSA, CVD, MASH pathways)
+   - Required documentation checklist (collapsible)
+   - Next step CTA button
+6. Overall bucket banner: Green (high confidence) / Yellow (mixed signals) / Red (coverage unlikely)
+7. `coverage_check.completed` webhook fires to n8n with summary results
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `src/lib/insurance/glp1-probability-database.json` | Carrier/state/medication/indication probability matrix (14 carriers, 50 states) |
+| `src/lib/insurance/confidence-engine.ts` | Core scoring engine — orchestrates all 5 sources, calculates combined scores |
+| `src/lib/insurance/stedi.ts` | Stedi 270/271 real-time eligibility API (graceful skip if `STEDI_API_KEY` not set) |
+| `src/lib/insurance/web-search.ts` | Claude API with web_search tool for real-time formulary lookups |
+| `src/app/api/coverage-check/route.ts` | POST endpoint — orchestrates all sources, fires webhook |
+| `src/components/insurance/CoverageResults.tsx` | Results display component (medication cards, legend, PBM info, disclaimer) |
+
+### Environment Variables Required
+
+| Variable | Required | Notes |
+|----------|----------|-------|
+| `ANTHROPIC_API_KEY` | Yes (already set) | Claude API for web search source |
+| `STEDI_API_KEY` | Optional | If missing, Stedi source gracefully skipped |
+| `PROVIDER_NPI` | Optional | Defaults to `1558788851` (Dr. Linda) |
+
+### Condition ID → Engine Diagnosis Mapping
+
+Form `conditions` array IDs → engine diagnosis IDs (mapped in `/api/coverage-check/route.ts`):
+`obesity→obesity`, `type2_diabetes→t2d`, `sleep_apnea→osa`, `cardiovascular→cvd`, `nafld→mash`, `overweight_comorbid→overweight`, `prediabetes→prediabetes`, `pcos→pcos`
+
 ## What's NOT Built Yet
 
 - [ ] **PayPal server-side verification** — currently client-side only, `PAYPAL_CLIENT_SECRET` unused (security gap)

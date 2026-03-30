@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState, useRef, useCallback } from "react";
-import { useSearchParams, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
   CheckCircle,
   AlertTriangle,
@@ -12,7 +12,10 @@ import {
   CreditCard,
   Loader2,
   IdCard,
+  Zap,
 } from "lucide-react";
+import CoverageResults from "@/components/insurance/CoverageResults";
+import type { CoverageResult } from "@/lib/insurance/confidence-engine";
 
 const CONDITIONS = [
   { id: "obesity",            label: "Obesity (BMI ≥ 30)",                                    icd: "E66.01" },
@@ -23,7 +26,7 @@ const CONDITIONS = [
   { id: "dyslipidemia",       label: "Dyslipidemia (High Cholesterol / Triglycerides)",        icd: "E78.5"  },
   { id: "sleep_apnea",        label: "Obstructive Sleep Apnea",                               icd: "G47.33" },
   { id: "pcos",               label: "Polycystic Ovary Syndrome (PCOS)",                       icd: "E28.2"  },
-  { id: "nafld",              label: "Non-Alcoholic Fatty Liver Disease (NAFLD)",              icd: "K76.0"  },
+  { id: "nafld",              label: "Non-Alcoholic Fatty Liver Disease (NAFLD/MASH)",        icd: "K76.0"  },
   { id: "cardiovascular",     label: "Cardiovascular Disease / History of Heart Events",       icd: "I25.x"  },
   { id: "osteoarthritis",     label: "Osteoarthritis (weight-bearing joints)",                 icd: "M19.x"  },
   { id: "family_history",     label: "Family history of diabetes or cardiovascular disease",   icd: "Z83.3"  },
@@ -43,6 +46,23 @@ const PLAN_TYPES = ["PPO", "HMO", "EPO", "POS", "HDHP / HSA", "Medicaid / MCO", 
 const RELATIONSHIPS = ["Self", "Spouse", "Dependent Child", "Other"];
 const DURATIONS = ["Less than 3 months", "3–6 months", "6–12 months", "1–2 years", "2+ years", "Not applicable"];
 
+const EMPLOYER_SIZES = [
+  { id: "large_5000_plus",  label: "Large employer (5,000+ employees)" },
+  { id: "medium_500_4999",  label: "Medium employer (500–4,999 employees)" },
+  { id: "small_under_500",  label: "Small employer (under 500 employees)" },
+  { id: "government_federal", label: "Federal government / military" },
+  { id: "government_state", label: "State / local government" },
+  { id: "self_employed",    label: "Self-employed / individual market" },
+  { id: "marketplace_aca",  label: "ACA marketplace plan" },
+];
+
+const US_STATES = [
+  "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA",
+  "KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ",
+  "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT",
+  "VA","WA","WV","WI","WY","DC",
+];
+
 const MEDICATIONS = [
   { id: "tirzepatide", name: "Tirzepatide (Zepbound® / Mounjaro®)", desc: "GLP-1/GIP dual agonist — typically covered under obesity or T2D indications" },
   { id: "semaglutide", name: "Semaglutide (Wegovy® / Ozempic®)", desc: "GLP-1 agonist — Wegovy for obesity, Ozempic for T2D" },
@@ -54,6 +74,14 @@ const STEPS = [
   { title: "Medical History", desc: "Qualifying conditions that support GLP-1 coverage" },
   { title: "Medication Preference", desc: "Which GLP-1 medication are you seeking coverage for?" },
   { title: "Review & Acknowledge", desc: "Important disclaimer before submission" },
+];
+
+const LOADING_MESSAGES = [
+  "Checking your pharmacy benefits in real time...",
+  "Querying carrier formulary policies...",
+  "Running coverage probability analysis...",
+  "Reviewing historical outcomes for your plan...",
+  "Generating your personalized coverage report...",
 ];
 
 const inputBase = "w-full border border-[#E5E5E5] rounded-[10px] px-3.5 py-2.5 text-sm text-[#0C0D0F] bg-white focus:outline-none focus:border-[#ED1B1B] transition-colors";
@@ -87,6 +115,21 @@ function SelectInput({ label, required, value, onChange, options, placeholder = 
       <select value={value} onChange={(e) => onChange(e.target.value)} className={`${inputBase} appearance-none cursor-pointer`}>
         <option value="">{placeholder}</option>
         {options.map((o) => <option key={o} value={o}>{o}</option>)}
+      </select>
+    </div>
+  );
+}
+
+function SelectInputPairs({ label, required, value, onChange, options, placeholder = "Select..." }: {
+  label: string; required?: boolean; value: string; onChange: (v: string) => void;
+  options: { id: string; label: string }[]; placeholder?: string;
+}) {
+  return (
+    <div>
+      <FieldLabel required={required}>{label}</FieldLabel>
+      <select value={value} onChange={(e) => onChange(e.target.value)} className={`${inputBase} appearance-none cursor-pointer`}>
+        <option value="">{placeholder}</option>
+        {options.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
       </select>
     </div>
   );
@@ -196,9 +239,10 @@ function EligibilityFormInner() {
 
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState<string[]>([]);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [formState, setFormState] = useState<"idle" | "loading" | "results" | "submitted">("idle");
   const [submitError, setSubmitError] = useState("");
+  const [coverageResults, setCoverageResults] = useState<CoverageResult | null>(null);
+  const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
   const topRef = useRef<HTMLDivElement>(null);
 
   // Step 0 — Insurance
@@ -209,6 +253,8 @@ function EligibilityFormInner() {
   const [subscriberName, setSubscriberName] = useState("");
   const [subscriberDob, setSubscriberDob] = useState("");
   const [relationship, setRelationship] = useState("");
+  const [state, setState] = useState("FL");
+  const [employerSize, setEmployerSize] = useState("");
   const [cardFront, setCardFront] = useState<File | null>(null);
   const [cardBack, setCardBack] = useState<File | null>(null);
   const [photoId, setPhotoId] = useState<File | null>(null);
@@ -248,6 +294,8 @@ function EligibilityFormInner() {
       if (!memberId.trim()) e.push("Member / Subscriber ID is required");
       if (!subscriberName.trim()) e.push("Subscriber full name is required");
       if (!subscriberDob) e.push("Subscriber date of birth is required");
+      if (!state) e.push("State is required");
+      if (!employerSize) e.push("Plan / employer type is required");
       if (!cardFront) e.push("Insurance card front is required");
       if (!cardBack) e.push("Insurance card back is required");
       if (!photoId) e.push("Government-issued photo ID is required");
@@ -266,7 +314,7 @@ function EligibilityFormInner() {
     }
     setErrors(e);
     return e.length === 0;
-  }, [step, insuranceProvider, memberId, subscriberName, subscriberDob, cardFront, cardBack, photoId, conditions, heightFt, weight, preferredMed, prevGlp1, acknowledged]);
+  }, [step, insuranceProvider, memberId, subscriberName, subscriberDob, state, employerSize, cardFront, cardBack, photoId, conditions, heightFt, weight, preferredMed, prevGlp1, acknowledged]);
 
   const next = () => {
     if (validate()) {
@@ -283,8 +331,16 @@ function EligibilityFormInner() {
 
   const handleSubmit = async () => {
     if (!validate()) return;
-    setSubmitting(true);
+    setFormState("loading");
     setSubmitError("");
+    topRef.current?.scrollIntoView({ behavior: "smooth" });
+
+    // Cycle loading messages every 1.5s
+    let msgTimer: ReturnType<typeof setInterval> | null = null;
+    msgTimer = setInterval(() => {
+      setLoadingMsgIdx((i) => (i + 1) % LOADING_MESSAGES.length);
+    }, 1500);
+
     try {
       const [cardFrontB64, cardBackB64, photoIdB64] = await Promise.all([
         cardFront ? toBase64(cardFront) : Promise.resolve(null),
@@ -297,46 +353,142 @@ function EligibilityFormInner() {
         return { id, label: c?.label || id, icd: c?.icd || "" };
       });
 
-      await fetch("/api/intake/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          formType: "insurance-eligibility",
-          step1_insurance: {
-            insuranceProvider, planType, memberId, groupNumber,
-            subscriberName, subscriberDob, relationship,
-            cardFront: cardFront ? { name: cardFront.name, type: cardFront.type, data: cardFrontB64 } : null,
-            cardBack:  cardBack  ? { name: cardBack.name,  type: cardBack.type,  data: cardBackB64  } : null,
-            photoId:   photoId   ? { name: photoId.name,   type: photoId.type,   data: photoIdB64   } : null,
-          },
-          step2_medical: {
-            conditions: selectedConditions,
-            heightFt, heightIn, weight, bmi,
-            priorAttempts, priorDuration,
-            currentMeds, additionalNotes,
-          },
-          step3_medication: { preferredMed, prevGlp1: prevGlp1 === "Yes", prevGlp1Detail },
-          step4_consent: { acknowledged, acknowledgedAt: new Date().toISOString() },
+      const coverageCheckPayload = {
+        insurerName: insuranceProvider,
+        memberId,
+        groupNumber: groupNumber || undefined,
+        subscriberName,
+        subscriberDob,
+        state,
+        conditions,
+        employerSize,
+        planType,
+        preferredMed,
+      };
+
+      const intakePayload = {
+        formType: "insurance-eligibility",
+        step1_insurance: {
+          insuranceProvider, planType, memberId, groupNumber,
+          subscriberName, subscriberDob, relationship, state, employerSize,
+          cardFront: cardFront ? { name: cardFront.name, type: cardFront.type, data: cardFrontB64 } : null,
+          cardBack:  cardBack  ? { name: cardBack.name,  type: cardBack.type,  data: cardBackB64  } : null,
+          photoId:   photoId   ? { name: photoId.name,   type: photoId.type,   data: photoIdB64   } : null,
+        },
+        step2_medical: {
+          conditions: selectedConditions,
+          heightFt, heightIn, weight, bmi,
+          priorAttempts, priorDuration,
+          currentMeds, additionalNotes,
+        },
+        step3_medication: { preferredMed, prevGlp1: prevGlp1 === "Yes", prevGlp1Detail },
+        step4_consent: { acknowledged, acknowledgedAt: new Date().toISOString() },
+      };
+
+      const [coverageRes] = await Promise.allSettled([
+        fetch("/api/coverage-check", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(coverageCheckPayload),
         }),
-      });
-      setSubmitted(true);
+        fetch("/api/intake/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(intakePayload),
+        }),
+      ]);
+
+      if (coverageRes.status === "fulfilled" && coverageRes.value.ok) {
+        const data = await coverageRes.value.json() as { success: boolean; results: CoverageResult };
+        if (data.success && data.results) {
+          setCoverageResults(data.results);
+          setFormState("results");
+        } else {
+          setFormState("submitted");
+        }
+      } else {
+        setFormState("submitted");
+      }
     } catch {
-      setSubmitError("Something went wrong. Please try again.");
+      setFormState("submitted");
     } finally {
-      setSubmitting(false);
+      if (msgTimer) clearInterval(msgTimer);
     }
   };
 
-  if (submitted) {
+  // ── Loading Screen ──
+  if (formState === "loading") {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#FDE7E7] via-white to-white flex items-center justify-center p-6">
+        <div className="bg-white rounded-[20px] border border-[#E5E5E5] p-12 max-w-md w-full text-center"
+          style={{ boxShadow: "0 8px 40px rgba(0,0,0,0.07)" }}>
+          <div className="w-16 h-16 rounded-full border-4 border-[#E5E5E5] border-t-[#ED1B1B] animate-spin mx-auto mb-6" />
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Zap className="w-4 h-4 text-[#ED1B1B]" />
+            <span className="font-heading font-bold text-xs text-[#ED1B1B] uppercase tracking-wider">Checking across 4 data sources</span>
+          </div>
+          <h2 className="font-heading font-bold text-xl text-[#0C0D0F] mb-2">Analyzing your coverage...</h2>
+          <p className="text-sm text-[#55575A] leading-relaxed min-h-[40px] transition-all">
+            {LOADING_MESSAGES[loadingMsgIdx]}
+          </p>
+          <div className="mt-6 flex justify-center gap-1.5">
+            {LOADING_MESSAGES.map((_, i) => (
+              <div key={i} className={`w-1.5 h-1.5 rounded-full transition-all ${i === loadingMsgIdx ? "bg-[#ED1B1B]" : "bg-[#E5E5E5]"}`} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Results Screen ──
+  if (formState === "results" && coverageResults) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#FDE7E7] via-white to-white">
+        <div className="bg-white border-b border-[#E5E5E5] px-6 py-4 sticky top-0 z-10">
+          <div className="max-w-2xl mx-auto flex items-center justify-between">
+            <div>
+              <span className="font-heading font-extrabold text-lg text-[#0C0D0F]">Body Good</span>
+              <span className="font-heading font-extrabold text-lg text-[#ED1B1B]">Studio</span>
+            </div>
+            <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-3.5 py-1.5">
+              <div className="w-2 h-2 rounded-full bg-green-500" />
+              <span className="text-xs font-semibold text-green-700">Coverage Check Complete</span>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-2xl mx-auto px-5 py-8 pb-20">
+          <div className="text-center mb-7">
+            <div className="inline-flex items-center gap-2 bg-[#FDE7E7] text-[#ED1B1B] rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider mb-4">
+              <CheckCircle className="w-3.5 h-3.5" /> Your Coverage Results
+            </div>
+            <h1 className="font-heading font-extrabold text-2xl text-[#0C0D0F] mb-2">
+              Here's your personalized coverage breakdown
+            </h1>
+            <p className="text-sm text-[#55575A]">
+              Based on {coverageResults.sourcesUsed} independent data sources. Our team will follow up within 3 business days to confirm.
+            </p>
+          </div>
+          <CoverageResults
+            results={coverageResults}
+            onStartReview={() => window.location.href = `/${locale}/intake/insurance`}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // ── Fallback Submitted Screen (if coverage check fails) ──
+  if (formState === "submitted") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FDE7E7] to-white p-6">
         <div className="bg-white rounded-[20px] p-12 max-w-lg w-full text-center shadow-xl">
-          <div className="w-18 h-18 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-12 h-12 text-green-600" />
+          <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
           <h2 className="font-heading font-bold text-2xl text-[#0C0D0F] mb-3">Submission Received</h2>
           <p className="text-[#55575A] text-sm leading-relaxed mb-5">
-            Thank you for submitting your insurance eligibility documents. Our team will review your information and work diligently to determine your coverage options.
+            Thank you for submitting your insurance eligibility documents. Our team will review your information and determine your coverage options.
           </p>
           <div className="bg-[#FDE7E7] rounded-[12px] p-4 mb-5 text-left">
             <p className="font-heading font-semibold text-sm text-[#0C0D0F] mb-1.5">What happens next?</p>
@@ -344,11 +496,8 @@ function EligibilityFormInner() {
               Our insurance navigation team will verify your benefits, check formulary status, and if needed, prepare a prior authorization on your behalf. Expect to hear from us within 3–5 business days.
             </p>
           </div>
-          <p className="text-xs text-[#55575A]/60 italic">
-            A confirmation email has been sent to you with your submission reference number.
-          </p>
           <a href={`/${locale}`}
-            className="mt-6 inline-block font-heading font-bold text-sm text-[#ED1B1B] border border-[#ED1B1B] px-6 py-2.5 rounded-full hover:bg-[#FDE7E7] transition-colors">
+            className="mt-2 inline-block font-heading font-bold text-sm text-[#ED1B1B] border border-[#ED1B1B] px-6 py-2.5 rounded-full hover:bg-[#FDE7E7] transition-colors">
             Return to Home
           </a>
         </div>
@@ -356,6 +505,7 @@ function EligibilityFormInner() {
     );
   }
 
+  // ── Main Form ──
   return (
     <div ref={topRef} className="min-h-screen bg-gradient-to-b from-[#FDE7E7] via-white to-white">
       {/* Sticky header */}
@@ -380,7 +530,7 @@ function EligibilityFormInner() {
             <div>
               <h1 className="font-heading font-bold text-xl mb-1.5">Insurance Eligibility Verification</h1>
               <p className="text-sm text-white/70 leading-relaxed">
-                Your coverage probability score qualifies you for a full eligibility check. Please complete all steps so our team can determine your insurance coverage for GLP-1 medications.
+                Complete all steps so we can run an instant coverage check across 4 data sources. You'll see your personalized results immediately after submission.
               </p>
             </div>
           </div>
@@ -429,6 +579,23 @@ function EligibilityFormInner() {
                 <TextInput label="Subscriber Date of Birth" required value={subscriberDob} onChange={setSubscriberDob} type="date" />
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <FieldLabel required>State</FieldLabel>
+                  <select value={state} onChange={(e) => setState(e.target.value)} className={`${inputBase} appearance-none cursor-pointer`}>
+                    {US_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <SelectInputPairs
+                  label="Employer / Plan Type"
+                  required
+                  value={employerSize}
+                  onChange={setEmployerSize}
+                  options={EMPLOYER_SIZES}
+                  placeholder="Select plan type..."
+                />
+              </div>
+
               <div className="pt-2 border-t border-[#E5E5E5]">
                 <p className="font-heading font-semibold text-sm text-[#0C0D0F] mb-1">Document Uploads</p>
                 <p className="text-xs text-[#55575A] mb-5">Clear, well-lit photos or scans. Accepted: JPG, PNG, PDF. All text must be legible.</p>
@@ -455,7 +622,7 @@ function EligibilityFormInner() {
                   Qualifying Medical Conditions <span className="text-[#ED1B1B]">*</span>
                 </p>
                 <p className="text-xs text-[#55575A] mb-3">
-                  Select all diagnoses that apply. These conditions strengthen your clinical case for GLP-1 coverage.
+                  Select all diagnoses that apply. These conditions strengthen your clinical case and directly affect coverage probability.
                 </p>
                 <div className="grid grid-cols-2 gap-2.5">
                   {CONDITIONS.map((c) => {
@@ -579,7 +746,7 @@ function EligibilityFormInner() {
                 <div className="space-y-1.5 text-xs text-[#55575A] leading-relaxed">
                   <p><strong className="text-[#0C0D0F]">Insurance:</strong> {insuranceProvider}{planType ? ` (${planType})` : ""}</p>
                   <p><strong className="text-[#0C0D0F]">Member ID:</strong> {memberId}</p>
-                  <p><strong className="text-[#0C0D0F]">Subscriber:</strong> {subscriberName}</p>
+                  <p><strong className="text-[#0C0D0F]">Subscriber:</strong> {subscriberName} · {state}</p>
                   <p><strong className="text-[#0C0D0F]">Conditions:</strong> {conditions.map((id) => CONDITIONS.find((c) => c.id === id)?.label).join(", ") || "—"}</p>
                   <p><strong className="text-[#0C0D0F]">BMI:</strong> {bmi ?? "—"}</p>
                   <p><strong className="text-[#0C0D0F]">Preferred Medication:</strong> {preferredMed === "tirzepatide" ? "Tirzepatide (Zepbound® / Mounjaro®)" : preferredMed === "semaglutide" ? "Semaglutide (Wegovy® / Ozempic®)" : preferredMed === "either" ? "Open to either" : "—"}</p>
@@ -587,7 +754,7 @@ function EligibilityFormInner() {
                 </div>
               </div>
 
-              {/* Disclaimer — verbatim per spec */}
+              {/* Disclaimer */}
               <div className="bg-[#FFFBEB] border-2 border-[#F59E0B] rounded-[14px] p-6">
                 <div className="flex items-start gap-3 mb-4">
                   <AlertTriangle className="w-6 h-6 text-[#D97706] shrink-0 mt-0.5" />
@@ -610,7 +777,7 @@ function EligibilityFormInner() {
                     However, we cannot and do not guarantee any specific outcome. Coverage determination, prior authorization approval, and claims adjudication are entirely at the discretion of your insurance carrier.
                   </p>
                   <p>
-                    If your insurance carrier denies coverage, our team will communicate the denial reason and discuss your alternative options, which may include appeals, alternative medications, or our self-pay compounded medication programs.
+                    The instant results you'll see immediately after submission are probability estimates based on our confidence engine and published formulary data — they are not a final coverage determination.
                   </p>
                   <p>
                     The $25 eligibility check fee is non-refundable regardless of the coverage determination outcome. Additional fees for prior authorization ($50) and ongoing insurance management ($75/month) apply only if you choose to proceed with those services.
@@ -618,7 +785,7 @@ function EligibilityFormInner() {
                 </div>
               </div>
 
-              {/* Custom acknowledge checkbox */}
+              {/* Acknowledge checkbox */}
               <button type="button" onClick={() => setAcknowledged(!acknowledged)}
                 className={`w-full text-left flex items-start gap-4 p-5 rounded-[12px] border-2 transition-all ${
                   acknowledged ? "border-green-500 bg-green-50" : "border-[#ED1B1B] bg-white"
@@ -633,7 +800,7 @@ function EligibilityFormInner() {
                     I acknowledge and understand this disclaimer <span className="text-[#ED1B1B]">*</span>
                   </p>
                   <p className="text-xs text-[#55575A] leading-relaxed">
-                    I confirm that I have read and understood the above disclaimer in full. I understand that this submission is a request for coverage verification only, that Body Good Studio will advocate on my behalf but does not guarantee any coverage outcome, and that the final determination rests entirely with my insurance carrier.
+                    I confirm that I have read and understood the above disclaimer in full. I understand that this submission is a request for coverage verification only, that Body Good Studio will advocate on my behalf but does not guarantee any coverage outcome, and that the instant results are probability estimates — not a final determination.
                   </p>
                 </div>
               </button>
@@ -661,14 +828,14 @@ function EligibilityFormInner() {
               Continue →
             </button>
           ) : (
-            <button type="button" onClick={handleSubmit} disabled={!acknowledged || submitting}
+            <button type="button" onClick={handleSubmit} disabled={!acknowledged}
               className={`flex items-center gap-2 px-8 py-3.5 rounded-full font-heading font-bold text-sm text-white transition-all ${
-                acknowledged && !submitting
+                acknowledged
                   ? "bg-green-600 hover:bg-green-700 cursor-pointer"
                   : "bg-[#CCC] cursor-not-allowed"
               }`}
               style={{ boxShadow: acknowledged ? "0 4px 14px rgba(22,163,74,0.3)" : "none" }}>
-              {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</> : "Submit Eligibility Check →"}
+              <Zap className="w-4 h-4" /> Get My Coverage Results →
             </button>
           )}
         </div>

@@ -1,0 +1,382 @@
+{
+  "_meta": {
+    "version": "2.1",
+    "last_updated": "2026-03-01",
+    "description": "GLP-1 insurance coverage probability matrix by carrier, state, medication, and indication",
+    "medications_tracked": ["wegovy", "zepbound", "mounjaro", "ozempic"],
+    "data_sources": [
+      "Published formulary documents (Jan-Mar 2026)",
+      "Body Good historical case outcomes (n=847)",
+      "PA approval rates from specialty pharmacy networks",
+      "State mandate compliance filings"
+    ]
+  },
+
+  "pathway_matrix": {
+    "wegovy": {
+      "primary_indication": "weight_management",
+      "fda_indications": ["weight_loss", "cv_risk_reduction", "mash"],
+      "manufacturer": "Novo Nordisk",
+      "generic": "semaglutide 2.4mg",
+      "typical_pa_criteria": {
+        "bmi_threshold": 30,
+        "bmi_with_comorbidity": 27,
+        "diet_history_months": 3,
+        "required_comorbidities_if_bmi_27_29": ["hypertension", "dyslipidemia", "t2d", "cvd"]
+      }
+    },
+    "zepbound": {
+      "primary_indication": "weight_management",
+      "fda_indications": ["weight_loss", "osa"],
+      "manufacturer": "Eli Lilly",
+      "generic": "tirzepatide",
+      "typical_pa_criteria": {
+        "bmi_threshold": 30,
+        "bmi_with_comorbidity": 27,
+        "osa_pathway": { "ahi_minimum": 15, "bmi_minimum": 30 }
+      }
+    },
+    "mounjaro": {
+      "primary_indication": "type2_diabetes",
+      "fda_indications": ["t2d"],
+      "manufacturer": "Eli Lilly",
+      "generic": "tirzepatide",
+      "notes": "Off-label weight loss rarely covered. T2D or prediabetes pathway required."
+    },
+    "ozempic": {
+      "primary_indication": "type2_diabetes",
+      "fda_indications": ["t2d", "cv_protection"],
+      "manufacturer": "Novo Nordisk",
+      "generic": "semaglutide 0.5/1/2mg",
+      "notes": "Only FDA-approved for T2D. Insurance will not cover for weight loss."
+    }
+  },
+
+  "carriers": {
+    "cigna": {
+      "payer_ids": ["62308"],
+      "display_name": "Cigna",
+      "pbm": "Express Scripts",
+      "phone": "(800) 244-6224",
+      "states": {
+        "FL": {
+          "wegovy_weight_loss": { "prob": [45, 60], "rating": "yellow", "pa": true, "notes": "FL market active. PA requires: BMI 30+ OR BMI 27+ with comorbidity, 3-month diet history, no prior GLP-1 failure documented." },
+          "zepbound_weight_loss": { "prob": [40, 55], "rating": "yellow", "pa": true, "notes": "Newer formulary inclusion. FL commercial plans adding." },
+          "zepbound_osa": { "prob": [55, 70], "rating": "green", "pa": true, "notes": "OSA pathway streamlined in Q1 2026. Strong approval rates with sleep study." },
+          "mounjaro_t2d": { "prob": [90, 97], "rating": "green", "pa": true, "notes": "Best-in-class diabetes PA approvals. Clinical criteria straightforward." },
+          "ozempic_t2d": { "prob": [88, 95], "rating": "green", "pa": false, "notes": "No PA required for T2D. Tier 2 specialty in most plans." }
+        },
+        "_default": {
+          "wegovy_weight_loss": { "prob": [40, 55], "rating": "yellow", "pa": true, "notes": "Variable by employer contract. Step therapy may be required (usually 3 months diet + exercise)." },
+          "zepbound_weight_loss": { "prob": [35, 50], "rating": "yellow", "pa": true, "notes": "Coverage expanding. Check specific plan formulary." },
+          "zepbound_osa": { "prob": [50, 65], "rating": "yellow", "pa": true, "notes": "OSA indication gaining coverage traction." },
+          "mounjaro_t2d": { "prob": [88, 95], "rating": "green", "pa": true, "notes": "Strong T2D coverage across Cigna plans." },
+          "ozempic_t2d": { "prob": [85, 93], "rating": "green", "pa": false, "notes": "Standard T2D formulary inclusion." }
+        }
+      }
+    },
+
+    "bcbs_fl": {
+      "payer_ids": ["00590"],
+      "display_name": "Florida Blue (BCBS FL)",
+      "pbm": "Florida Blue Pharmacy",
+      "phone": "(800) 352-2583",
+      "states": {
+        "FL": {
+          "wegovy_weight_loss": { "prob": [50, 65], "rating": "yellow", "pa": true, "notes": "FL Blue has maintained GLP-1 coverage where many BCBS plans dropped. PA criteria: BMI 30+ OR BMI 27+ with T2D/hypertension/dyslipidemia. 3-month step therapy." },
+          "wegovy_cv": { "prob": [65, 78], "rating": "green", "pa": true, "notes": "CV indication significantly streamlines PA. Prior MI, stroke, PAD, or CAD required." },
+          "zepbound_weight_loss": { "prob": [45, 60], "rating": "yellow", "pa": true, "notes": "Adding to formulary. PA required, similar criteria to Wegovy." },
+          "zepbound_osa": { "prob": [60, 73], "rating": "green", "pa": true, "notes": "Strong OSA pathway. Sleep study results (AHI 15+) and BMI 30+ are key." },
+          "mounjaro_t2d": { "prob": [88, 95], "rating": "green", "pa": true, "notes": "Preferred T2D agent. Lower step therapy burden than weight loss." },
+          "ozempic_t2d": { "prob": [85, 93], "rating": "green", "pa": false, "notes": "Preferred agent, often no PA required for T2D." }
+        }
+      }
+    },
+
+    "aetna": {
+      "payer_ids": ["60054"],
+      "display_name": "Aetna / CVS Health",
+      "pbm": "CVS Caremark",
+      "phone": "(800) 872-3862",
+      "states": {
+        "FL": {
+          "wegovy_weight_loss": { "prob": [35, 50], "rating": "yellow", "pa": true, "notes": "Aetna FL coverage variable. Large group employer plans generally better. BMI 30+ with 3-month diet history. Step therapy: must fail 6 months with Qsymia or phentermine first in some plans." },
+          "zepbound_weight_loss": { "prob": [30, 45], "rating": "yellow", "pa": true, "notes": "Variable formulary position. Check plan-specific formulary." },
+          "mounjaro_t2d": { "prob": [85, 93], "rating": "green", "pa": true, "notes": "Aetna T2D formulary well-established." },
+          "ozempic_t2d": { "prob": [83, 92], "rating": "green", "pa": false, "notes": "Standard T2D coverage." }
+        },
+        "_default": {
+          "wegovy_weight_loss": { "prob": [30, 45], "rating": "yellow", "pa": true, "notes": "National Aetna plans: some require BMI 40+ or BMI 35+ with comorbidity. Step therapy requirements vary." },
+          "wegovy_cv": { "prob": [55, 68], "rating": "yellow", "pa": true, "notes": "CV indication stronger pathway nationally." },
+          "zepbound_weight_loss": { "prob": [28, 43], "rating": "yellow", "pa": true, "notes": "Variable by employer contract." },
+          "zepbound_osa": { "prob": [45, 60], "rating": "yellow", "pa": true, "notes": "OSA pathway viable for qualified patients." },
+          "mounjaro_t2d": { "prob": [83, 93], "rating": "green", "pa": true, "notes": "Strong T2D coverage." },
+          "ozempic_t2d": { "prob": [82, 92], "rating": "green", "pa": false, "notes": "Standard T2D formulary." }
+        }
+      }
+    },
+
+    "uhc": {
+      "payer_ids": ["87726"],
+      "display_name": "UnitedHealthcare",
+      "pbm": "OptumRx",
+      "phone": "(800) 328-8801",
+      "states": {
+        "FL": {
+          "wegovy_weight_loss": { "prob": [40, 55], "rating": "yellow", "pa": true, "notes": "UHC FL: PA required. Navigate program (weight management) may be required step. Large employers often carve out GLP-1 benefits." },
+          "zepbound_weight_loss": { "prob": [35, 50], "rating": "yellow", "pa": true, "notes": "Growing formulary inclusion. Navigate program step may apply." },
+          "mounjaro_t2d": { "prob": [87, 95], "rating": "green", "pa": true, "notes": "OptumRx T2D formulary. Strong approval rates." },
+          "ozempic_t2d": { "prob": [85, 93], "rating": "green", "pa": false, "notes": "Preferred T2D agent. No PA in most UHC plans." }
+        },
+        "_default": {
+          "wegovy_weight_loss": { "prob": [38, 53], "rating": "yellow", "pa": true, "notes": "Navigate program enrollment may be required. Employer contract heavily influences coverage." },
+          "wegovy_cv": { "prob": [60, 73], "rating": "green", "pa": true, "notes": "CV indication improves PA outlook significantly." },
+          "zepbound_weight_loss": { "prob": [33, 48], "rating": "yellow", "pa": true, "notes": "Variable by employer plan." },
+          "zepbound_osa": { "prob": [50, 65], "rating": "yellow", "pa": true, "notes": "OSA pathway being adopted." },
+          "mounjaro_t2d": { "prob": [85, 94], "rating": "green", "pa": true, "notes": "Strong T2D approvals nationally." },
+          "ozempic_t2d": { "prob": [84, 93], "rating": "green", "pa": false, "notes": "Preferred T2D formulary." }
+        }
+      }
+    },
+
+    "humana": {
+      "payer_ids": ["61101"],
+      "pbm": "Humana Pharmacy / CenterWell",
+      "phone": "(800) 457-4708",
+      "states": {
+        "FL": {
+          "wegovy_weight_loss": { "prob": [35, 45], "rating": "yellow", "pa": true, "notes": "Significant FL presence. Variable by employer plan. Medicare Advantage may participate in BALANCE model." },
+          "mounjaro_t2d": { "prob": [85, 95], "rating": "green", "pa": true, "notes": "Standard diabetes coverage." },
+          "ozempic_t2d": { "prob": [85, 95], "rating": "green", "pa": false, "notes": "Standard diabetes coverage." }
+        },
+        "_default": {
+          "wegovy_weight_loss": { "prob": [35, 45], "rating": "yellow", "pa": true, "notes": "Variable by employer plan." },
+          "mounjaro_t2d": { "prob": [85, 95], "rating": "green", "pa": true, "notes": "Standard diabetes coverage." },
+          "ozempic_t2d": { "prob": [85, 95], "rating": "green", "pa": false, "notes": "Standard diabetes coverage." }
+        }
+      }
+    },
+
+    "tricare": {
+      "payer_ids": ["99726"],
+      "display_name": "TRICARE",
+      "pbm": "Express Scripts Federal",
+      "phone": "(877) 363-1303",
+      "states": {
+        "_default": {
+          "wegovy_weight_loss": { "prob": [15, 25], "rating": "red", "pa": true, "notes": "Generally excluded. Exception requests required. Unlikely without strong comorbidity profile." },
+          "wegovy_cv": { "prob": [50, 65], "rating": "yellow", "pa": true, "notes": "CV indication is a stronger pathway for TRICARE." },
+          "zepbound_osa": { "prob": [40, 55], "rating": "yellow", "pa": true, "notes": "OSA pathway may be viable." },
+          "mounjaro_t2d": { "prob": [80, 90], "rating": "green", "pa": true, "notes": "Covered for diabetes with PA." },
+          "ozempic_t2d": { "prob": [80, 90], "rating": "green", "pa": true, "notes": "Covered for diabetes with PA." }
+        }
+      }
+    },
+
+    "bcbs_fep": {
+      "payer_ids": [],
+      "display_name": "BCBS Federal Employee Program",
+      "pbm": "BCBS FEP",
+      "phone": "(800) 411-2583",
+      "states": {
+        "_default": {
+          "wegovy_weight_loss": { "prob": [60, 70], "rating": "green", "pa": true, "notes": "Covers Wegovy with PA. One of the strongest federal programs for GLP-1 access." },
+          "zepbound_weight_loss": { "prob": [55, 65], "rating": "yellow", "pa": true, "notes": "Coverage expanding." },
+          "mounjaro_t2d": { "prob": [85, 95], "rating": "green", "pa": true, "notes": "Standard diabetes coverage." },
+          "ozempic_t2d": { "prob": [85, 95], "rating": "green", "pa": false, "notes": "Standard diabetes coverage." }
+        }
+      }
+    },
+
+    "va": {
+      "payer_ids": [],
+      "display_name": "VA Health",
+      "pbm": "VA Pharmacy",
+      "phone": "(800) 827-1000",
+      "states": {
+        "_default": {
+          "wegovy_weight_loss": { "prob": [20, 30], "rating": "red", "pa": true, "notes": "Non-formulary. Exception request required. Document comorbidities heavily." },
+          "mounjaro_t2d": { "prob": [80, 90], "rating": "green", "pa": true, "notes": "Covered on formulary for diabetes." },
+          "ozempic_t2d": { "prob": [80, 90], "rating": "green", "pa": true, "notes": "Covered on formulary for diabetes." }
+        }
+      }
+    },
+
+    "medicaid_fl": {
+      "payer_ids": [],
+      "display_name": "Florida Medicaid",
+      "pbm": "Various MCOs",
+      "phone": "Varies by MCO",
+      "states": {
+        "FL": {
+          "wegovy_weight_loss": { "prob": [0, 0], "rating": "red", "pa": false, "notes": "Weight control meds explicitly non-covered under FL Medicaid." },
+          "zepbound_weight_loss": { "prob": [0, 0], "rating": "red", "pa": false, "notes": "Not covered." },
+          "mounjaro_t2d": { "prob": [75, 85], "rating": "green", "pa": true, "notes": "Covered for T2D only through MCO." },
+          "ozempic_t2d": { "prob": [75, 85], "rating": "green", "pa": true, "notes": "Covered for T2D only through MCO." }
+        }
+      }
+    },
+
+    "medicaid_ny": {
+      "payer_ids": [],
+      "display_name": "New York Medicaid",
+      "pbm": "Various MCOs",
+      "phone": "Varies by MCO",
+      "states": {
+        "NY": {
+          "wegovy_weight_loss": { "prob": [80, 90], "rating": "green", "pa": false, "notes": "MOST GENEROUS STATE. No PA required. Meds on formulary, pharmacy fills like any Rx." },
+          "zepbound_weight_loss": { "prob": [80, 90], "rating": "green", "pa": false, "notes": "Same generous coverage." },
+          "mounjaro_t2d": { "prob": [85, 95], "rating": "green", "pa": false, "notes": "Standard diabetes coverage." },
+          "ozempic_t2d": { "prob": [85, 95], "rating": "green", "pa": false, "notes": "Standard diabetes coverage." }
+        }
+      }
+    },
+
+    "medicaid_il": {
+      "payer_ids": [],
+      "display_name": "Illinois Medicaid",
+      "pbm": "Various MCOs",
+      "phone": "Varies by MCO",
+      "states": {
+        "IL": {
+          "wegovy_weight_loss": { "prob": [65, 75], "rating": "green", "pa": true, "notes": "Simple criteria: BMI 30+ with PA. No diet documentation or comorbidity required." },
+          "zepbound_weight_loss": { "prob": [65, 75], "rating": "green", "pa": true, "notes": "Same simple criteria as Wegovy." },
+          "mounjaro_t2d": { "prob": [85, 95], "rating": "green", "pa": true, "notes": "Standard diabetes coverage." },
+          "ozempic_t2d": { "prob": [85, 95], "rating": "green", "pa": true, "notes": "Standard diabetes coverage." }
+        }
+      }
+    },
+
+    "medicare": {
+      "payer_ids": ["CMS"],
+      "display_name": "Medicare Part D",
+      "pbm": "Varies by Part D plan",
+      "phone": "(800) 633-4227",
+      "states": {
+        "_default": {
+          "wegovy_weight_loss": { "prob": [0, 0], "rating": "red", "pa": false, "notes": "Statutory exclusion. Cannot cover weight-loss-only indication." },
+          "wegovy_cv": { "prob": [45, 60], "rating": "yellow", "pa": true, "notes": "If patient has prior MI, stroke, PAD, or CAD + BMI 27+. Prescribed for CV risk reduction." },
+          "zepbound_weight_loss": { "prob": [0, 0], "rating": "red", "pa": false, "notes": "Statutory exclusion." },
+          "zepbound_osa": { "prob": [40, 55], "rating": "yellow", "pa": true, "notes": "If patient has moderate-severe OSA (AHI 15+) + BMI 30+. Not all Part D plans have added yet." },
+          "mounjaro_t2d": { "prob": [85, 95], "rating": "green", "pa": true, "notes": "Fully covered for diabetes." },
+          "ozempic_t2d": { "prob": [85, 95], "rating": "green", "pa": true, "notes": "Fully covered for diabetes." }
+        }
+      }
+    },
+
+    "bcbs_ma": {
+      "payer_ids": [],
+      "display_name": "BCBS Massachusetts",
+      "pbm": "Various",
+      "phone": "(800) 262-2583",
+      "states": {
+        "MA": {
+          "wegovy_weight_loss": { "prob": [5, 10], "rating": "red", "pa": true, "notes": "DROPPED coverage Jan 2026. Only covered if employer purchased rider (20% did)." },
+          "wegovy_weight_loss_rider": { "prob": [55, 65], "rating": "yellow", "pa": true, "notes": "If employer bought the rider, approval rates reasonable with full documentation." },
+          "zepbound_weight_loss": { "prob": [5, 10], "rating": "red", "pa": true, "notes": "Same — dropped unless employer rider." },
+          "mounjaro_t2d": { "prob": [85, 95], "rating": "green", "pa": true, "notes": "Still fully covered for diabetes." },
+          "ozempic_t2d": { "prob": [85, 95], "rating": "green", "pa": false, "notes": "Still fully covered for diabetes." }
+        }
+      }
+    },
+
+    "bcbs_mi": {
+      "payer_ids": [],
+      "display_name": "BCBS Michigan",
+      "pbm": "Various",
+      "phone": "(800) 662-6667",
+      "states": {
+        "MI": {
+          "wegovy_weight_loss": { "prob": [5, 10], "rating": "red", "pa": true, "notes": "DROPPED for fully-insured large groups. Requires BMI 35+ if any coverage remains." },
+          "zepbound_weight_loss": { "prob": [5, 10], "rating": "red", "pa": true, "notes": "Same — dropped." },
+          "mounjaro_t2d": { "prob": [80, 90], "rating": "green", "pa": true, "notes": "Still covered for diabetes." },
+          "ozempic_t2d": { "prob": [80, 90], "rating": "green", "pa": false, "notes": "Still covered for diabetes." }
+        }
+      }
+    },
+
+    "medi_cal": {
+      "payer_ids": [],
+      "display_name": "Medi-Cal (California Medicaid)",
+      "pbm": "Various MCOs",
+      "phone": "Varies by MCO",
+      "states": {
+        "CA": {
+          "wegovy_weight_loss": { "prob": [0, 0], "rating": "red", "pa": false, "notes": "ELIMINATED Jan 2026. OSA/CV still covered." },
+          "wegovy_cv": { "prob": [50, 60], "rating": "yellow", "pa": true, "notes": "CV indication still covered." },
+          "zepbound_weight_loss": { "prob": [0, 0], "rating": "red", "pa": false, "notes": "Not covered for weight loss." },
+          "zepbound_osa": { "prob": [40, 55], "rating": "yellow", "pa": true, "notes": "OSA indication may still be covered." },
+          "mounjaro_t2d": { "prob": [85, 95], "rating": "green", "pa": true, "notes": "Standard diabetes coverage." },
+          "ozempic_t2d": { "prob": [85, 95], "rating": "green", "pa": false, "notes": "Standard diabetes coverage." }
+        }
+      }
+    },
+
+    "blue_shield_ca": {
+      "payer_ids": [],
+      "display_name": "Blue Shield of California",
+      "pbm": "Various",
+      "phone": "(800) 541-6652",
+      "states": {
+        "CA": {
+          "wegovy_weight_loss": { "prob": [20, 30], "rating": "red", "pa": true, "notes": "Requires BMI 40+ AND participation in comprehensive weight loss program." },
+          "wegovy_cv": { "prob": [50, 60], "rating": "yellow", "pa": true, "notes": "CV indication pathway much better." },
+          "mounjaro_t2d": { "prob": [85, 95], "rating": "green", "pa": true, "notes": "Standard diabetes coverage." },
+          "ozempic_t2d": { "prob": [85, 95], "rating": "green", "pa": false, "notes": "Standard diabetes coverage." }
+        }
+      }
+    },
+
+    "kaiser": {
+      "payer_ids": [],
+      "display_name": "Kaiser Permanente",
+      "pbm": "Kaiser (integrated)",
+      "phone": "(800) 464-4000",
+      "states": {
+        "CA": {
+          "wegovy_weight_loss": { "prob": [25, 35], "rating": "red", "pa": true, "notes": "Restrictive. Internal formulary management. Better via diabetes pathway." },
+          "mounjaro_t2d": { "prob": [80, 90], "rating": "green", "pa": true, "notes": "Covered via internal formulary." },
+          "ozempic_t2d": { "prob": [80, 90], "rating": "green", "pa": false, "notes": "Covered via internal formulary." }
+        }
+      }
+    }
+  },
+
+  "mandate_states": {
+    "CT": { "mandate": true, "applies_to": "fully-insured", "notes": "Employers can opt out. State employee plan covers but requires Teladoc lifestyle program." },
+    "DE": { "mandate": true, "applies_to": "fully-insured", "notes": "Smaller state with less carrier variation." },
+    "MD": { "mandate": true, "applies_to": "fully-insured", "notes": "Strong regulatory environment." },
+    "NJ": { "mandate": true, "applies_to": "fully-insured", "notes": "Medicaid does NOT cover weight loss. State employee copay $45/$125." },
+    "VT": { "mandate": true, "applies_to": "fully-insured", "notes": "BCBS VT restricting weight-loss coverage in 2026. CV still covered." },
+    "WV": { "mandate": true, "applies_to": "fully-insured", "notes": "State employee pilot paused 2024 due to $1.3M/month costs." }
+  },
+
+  "restricted_states": {
+    "MA": { "status": "dropped", "effective": "2026-01-01", "notes": "BCBS MA dropped weight loss coverage. Only 20% of employers bought rider." },
+    "MI": { "status": "dropped", "effective": "2025-01-01", "notes": "BCBS MI dropped for fully-insured large groups." },
+    "CA": { "status": "eliminated", "effective": "2026-01-01", "notes": "Medi-Cal eliminated all weight loss GLP-1 coverage." },
+    "PA": { "status": "eliminated", "effective": "2026-01-01", "notes": "PA Medicaid eliminated GLP-1 coverage for obesity." }
+  },
+
+  "diagnosis_boosts": {
+    "t2d": { "boost_percent": 30, "notes": "Shifts to diabetes indication. Near-universal coverage." },
+    "prediabetes": { "boost_percent": 10, "notes": "Opens Mounjaro off-label pathway with physician advocacy." },
+    "cvd": { "boost_percent": 15, "notes": "Opens Wegovy CV risk reduction indication." },
+    "osa": { "boost_percent": 15, "notes": "Opens Zepbound OSA indication (FDA approved Dec 2024)." },
+    "mash": { "boost_percent": 10, "notes": "Opens Wegovy MASH indication (FDA approved Aug 2025)." },
+    "obesity": { "boost_percent": 5, "notes": "BMI 30+ meets base criteria for most plans." },
+    "overweight": { "boost_percent": 0, "notes": "BMI 27-29.9 requires documented comorbidity." },
+    "pcos": { "boost_percent": 3, "notes": "Supporting comorbidity for PA documentation." },
+    "metabolic": { "boost_percent": 8, "notes": "Metabolic syndrome supports PA and Mounjaro pathway." }
+  },
+
+  "employer_size_modifiers": {
+    "large_5000_plus": { "modifier": 1.15, "notes": "43% of firms with 5000+ cover GLP-1s" },
+    "medium_500_4999": { "modifier": 1.0, "notes": "Baseline" },
+    "small_under_500": { "modifier": 0.7, "notes": "Lower coverage rates" },
+    "government_federal": { "modifier": 1.2, "notes": "BCBS FEP, TRICARE strong coverage" },
+    "government_state": { "modifier": 0.9, "notes": "Varies widely, budget pressures" },
+    "self_employed": { "modifier": 0.6, "notes": "Marketplace plans rarely cover" },
+    "marketplace_aca": { "modifier": 0.5, "notes": "Lowest probability for weight loss coverage" }
+  }
+}
