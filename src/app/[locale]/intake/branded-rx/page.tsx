@@ -1,14 +1,14 @@
 "use client";
 
-import { Suspense, useState, useEffect, useRef } from "react";
+import { Suspense, useState } from "react";
 import {
   CheckCircle,
   AlertTriangle,
   XCircle,
   ClipboardList,
   Loader2,
-  Building2,
 } from "lucide-react";
+import PharmacySearch, { type PharmacySelection } from "@/components/pharmacy-search/PharmacySearch";
 
 const US_STATES = [
   "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA",
@@ -103,88 +103,6 @@ function MultiSelect({ options, selected, onToggle }: { options: string[]; selec
   );
 }
 
-interface Pharmacy { name: string; address: string; npi: string; }
-
-function PharmacySearch({ onSelect, selected, onClear }: {
-  onSelect: (p: Pharmacy) => void; selected: Pharmacy | null; onClear: () => void;
-}) {
-  const [query, setQuery] = useState("");
-  const [zip, setZip] = useState("");
-  const [results, setResults] = useState<Pharmacy[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  async function search(q: string) {
-    try {
-      const isZip = /^\d{5}/.test(q);
-      let url = "https://npiregistry.cms.hhs.gov/api/?version=2.1&enumeration_type=NPI-2&taxonomy_description=Pharmacy&limit=8";
-      if (isZip) url += `&postal_code=${encodeURIComponent(q.substring(0, 5))}*`;
-      else { url += `&organization_name=${encodeURIComponent(q)}*`; if (zip) url += `&postal_code=${encodeURIComponent(zip)}*`; }
-      setLoading(true);
-      const res = await fetch(url);
-      const data = await res.json();
-      setLoading(false);
-      if (!data.results?.length) { setResults([]); setOpen(true); return; }
-      setResults(data.results.map((r: Record<string, unknown>) => {
-        const addr = (r.addresses as Record<string, string>[])?.[0] || {};
-        const basic = r.basic as Record<string, string> | undefined;
-        return { name: basic?.organization_name || "Unknown", address: [addr.address_1, addr.city, addr.state, addr.postal_code?.substring(0, 5)].filter(Boolean).join(", "), npi: (r.number as string) || "" };
-      }));
-      setOpen(true);
-    } catch { setLoading(false); }
-  }
-
-  function handleInput(v: string) {
-    setQuery(v);
-    if (timerRef.current) clearTimeout(timerRef.current);
-    if (v.length < 3) { setOpen(false); return; }
-    timerRef.current = setTimeout(() => search(v), 500);
-  }
-
-  if (selected) {
-    return (
-      <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-600 rounded-lg mt-2">
-        <Building2 className="w-4 h-4 text-green-700 shrink-0" />
-        <div className="flex-1 min-w-0">
-          <p className="font-heading font-bold text-xs text-heading truncate">{selected.name}</p>
-          <p className="text-[11px] text-body-muted truncate">{selected.address}{selected.npi ? ` · NPI: ${selected.npi}` : ""}</p>
-        </div>
-        <button type="button" onClick={onClear} className="text-brand-red text-xs font-semibold font-heading border border-brand-red px-2.5 py-1 rounded-full hover:bg-red-50 shrink-0">Change</button>
-      </div>
-    );
-  }
-
-  return (
-    <div ref={wrapRef} className="relative mt-2">
-      <div className="grid grid-cols-3 gap-2 mb-2">
-        <div className="col-span-2"><TextInput value={query} onChange={handleInput} placeholder="Search by pharmacy name..." /></div>
-        <TextInput value={zip} onChange={setZip} placeholder="ZIP (optional)" />
-      </div>
-      {loading && <p className="text-xs text-body-muted py-2 text-center">Searching...</p>}
-      {open && (
-        <div className="absolute top-full left-0 right-0 z-10 bg-white border border-border rounded-b-lg shadow-lg max-h-52 overflow-y-auto">
-          {results.length === 0 ? <p className="text-xs text-body-muted px-3 py-3">No pharmacies found.</p> : results.map((p, i) => (
-            <button key={i} type="button" onClick={() => { onSelect(p); setOpen(false); setQuery(""); }}
-              className="w-full text-left px-3 py-2.5 border-b border-gray-50 hover:bg-red-50 transition-colors last:border-b-0">
-              <p className="font-heading font-semibold text-xs text-heading">{p.name}</p>
-              <p className="text-[11px] text-body-muted mt-0.5">{p.address}</p>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 function ProgressBar({ step }: { step: number }) {
   const steps = ["About You","Medical","Rx Details","Consent"];
@@ -234,7 +152,7 @@ function BrandedRxForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState("");
-  const [pharmacy, setPharmacy] = useState<Pharmacy | null>(null);
+  const [pharmacy, setPharmacy] = useState<PharmacySelection | null>(null);
 
   const [s1, setS1] = useState({
     firstName: "", lastName: "", email: "", phone: "",
@@ -373,7 +291,18 @@ function BrandedRxForm() {
                 <div><FieldLabel required>ZIP</FieldLabel><TextInput value={s1.zip} onChange={(v) => u1("zip", v)} placeholder="ZIP" /></div>
               </div>
               <FieldLabel required>Find Your Pharmacy</FieldLabel>
-              <PharmacySearch onSelect={setPharmacy} selected={pharmacy} onClear={() => setPharmacy(null)} />
+              {pharmacy ? (
+                <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-600 rounded-lg mt-2">
+                  <CheckCircle className="w-4 h-4 text-green-700 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-heading font-bold text-xs text-heading truncate">{pharmacy.pharmacy_name}</p>
+                    <p className="text-[11px] text-body-muted truncate">{pharmacy.pharmacy_address}{pharmacy.pharmacy_npi ? ` · NPI: ${pharmacy.pharmacy_npi}` : ""}</p>
+                  </div>
+                  <button type="button" onClick={() => setPharmacy(null)} className="text-brand-red text-xs font-semibold font-heading border border-brand-red px-2.5 py-1 rounded-full hover:bg-red-50 shrink-0">Change</button>
+                </div>
+              ) : (
+                <PharmacySearch onSelect={setPharmacy} />
+              )}
             </div>
 
             <div className="flex justify-end">
