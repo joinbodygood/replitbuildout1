@@ -8,7 +8,8 @@ type WebhookEvent =
   | "insurance.checked"
   | "referral.created"
   | "review.submitted"
-  | "lead.captured";
+  | "lead.captured"
+  | "intake.submitted";
 
 type WebhookPayload = {
   event: WebhookEvent;

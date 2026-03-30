@@ -29,6 +29,23 @@ export default function CheckoutPage() {
   const [referralValid, setReferralValid] = useState<boolean | null>(null);
   const [processing, setProcessing] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [intakeRoute, setIntakeRoute] = useState<string | null>(null);
+
+  function resolveIntakeRoute(cartItems: typeof items): string | null {
+    const inj = cartItems.find(
+      (i) => i.productId === "WM-TIR-INJ" || i.productId === "WM-SEM-INJ"
+    );
+    if (inj) {
+      return `/${locale}/intake/glp1-injectable?med=${inj.productId === "WM-TIR-INJ" ? "tirz" : "sema"}`;
+    }
+    const oral = cartItems.find(
+      (i) => i.productId === "WM-ORAL-SEM" || i.productId === "WM-ORAL-TIR"
+    );
+    if (oral) {
+      return `/${locale}/intake/glp1-oral?med=${oral.productId === "WM-ORAL-SEM" ? "sema" : "tirz"}`;
+    }
+    return null;
+  }
 
   const formatPrice = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
@@ -127,6 +144,7 @@ export default function CheckoutPage() {
 
       const data = await res.json();
       if (data.success) {
+        setIntakeRoute(resolveIntakeRoute(items));
         setOrderId(data.orderId);
         setStep("confirmation");
         clearCart();
@@ -430,6 +448,7 @@ export default function CheckoutPage() {
                           });
                           const data = await res.json();
                           if (data.success) {
+                            setIntakeRoute(resolveIntakeRoute(items));
                             setOrderId(data.orderId);
                             setStep("confirmation");
                             clearCart();
@@ -488,7 +507,10 @@ export default function CheckoutPage() {
                         ? "Completa tu formulario de ingreso médico para que nuestro equipo pueda revisar tu caso."
                         : "Complete your medical intake form so our team can review your case."}
                     </p>
-                    <Button href="https://glow.bodygoodstudio.com" size="md">
+                    <Button
+                      href={intakeRoute ?? "https://glow.bodygoodstudio.com"}
+                      size="md"
+                    >
                       {isEs ? "Completar Formulario Médico →" : "Complete Medical Intake →"}
                     </Button>
                   </div>

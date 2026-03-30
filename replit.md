@@ -4,7 +4,7 @@
 
 A custom telehealth e-commerce platform for Body Good Studio, a physician-led weight loss practice founded by **Dr. Linda Moleon, MD**. This platform **replaces Shopify** as the storefront while keeping Zoho One for CRM/clinical operations and n8n for automation.
 
-**This is a commerce-only platform — no PHI (Protected Health Information) is stored here.** All clinical data (medical intake, provider review, prescriptions) lives in Zoho One / GLOW portal. After checkout, patients are redirected to Zoho to complete their medical intake.
+**This is a commerce-only platform — no PHI (Protected Health Information) is stored in the local database.** All clinical intake data is forwarded via n8n webhook to Zoho One / GLOW portal. After checkout, GLP-1 patients complete their medical intake directly on this platform, which then fires to n8n — never stored locally.
 
 ## Why Custom (Not Shopify, Not Medusa.js)
 
