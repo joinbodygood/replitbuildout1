@@ -3,6 +3,28 @@ import type { WebSearchData } from './confidence-engine';
 
 const MODEL = 'claude-opus-4-5';
 
+interface CacheEntry {
+  data: WebSearchData;
+  expiresAt: number;
+}
+
+const cache = new Map<string, CacheEntry>();
+const CACHE_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours
+
+function getCacheKey(params: {
+  insurerName: string;
+  state: string;
+  diagnoses: string[];
+  employerSize: string;
+}): string {
+  return [
+    params.insurerName.toLowerCase().trim(),
+    params.state.toUpperCase(),
+    [...params.diagnoses].sort().join(','),
+    params.employerSize,
+  ].join('|');
+}
+
 export async function runWebSearch(params: {
   insurerName: string;
   state: string;
@@ -11,6 +33,12 @@ export async function runWebSearch(params: {
 }): Promise<WebSearchData | null> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return null;
+
+  const cacheKey = getCacheKey(params);
+  const cached = cache.get(cacheKey);
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.data;
+  }
 
   const client = new Anthropic({ apiKey });
 
@@ -46,6 +74,7 @@ Base your verdict on what you find. If uncertain, use "inconclusive" with confid
     const response = await client.messages.create({
       model: MODEL,
       max_tokens: 500,
+      temperature: 0,
       tools: [
         {
           type: 'web_search_20250305' as 'web_search_20250305',
@@ -69,7 +98,7 @@ Base your verdict on what you find. If uncertain, use "inconclusive" with confid
       details: string;
     };
 
-    return {
+    const result: WebSearchData = {
       summary: parsed.summary || '',
       verdict: (['eligible', 'pa_required', 'not_covered', 'inconclusive'].includes(parsed.verdict)
         ? parsed.verdict
@@ -77,6 +106,10 @@ Base your verdict on what you find. If uncertain, use "inconclusive" with confid
       confidence: Math.min(85, Math.max(30, Number(parsed.confidence) || 50)),
       details: parsed.details || '',
     };
+
+    cache.set(cacheKey, { data: result, expiresAt: Date.now() + CACHE_TTL_MS });
+
+    return result;
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('[web-search] Claude API error:', message);
