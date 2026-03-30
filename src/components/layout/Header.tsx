@@ -15,24 +15,28 @@ import {
 // ─── Desktop dropdown definitions ────────────────────────────────────────────
 const WEIGHT_LOSS_ITEMS = [
   {
+    id: "wl-insurance",
     label: { en: "Insurance Coverage Check", es: "Verificar Cobertura de Seguro" },
     desc:  { en: "Check your GLP-1 coverage odds — free", es: "Verifica si tu seguro cubre GLP-1" },
     href:  { en: "/en/insurance-check", es: "/es/insurance-check" },
     icon: Shield,
   },
   {
+    id: "wl-compounded",
     label: { en: "Compounded GLP-1", es: "GLP-1 Compuesto" },
     desc:  { en: "Semaglutide & tirzepatide — from $139/mo", es: "Semaglutide y tirzepatide desde $139/mes" },
     href:  { en: "/en/quiz", es: "/es/quiz" },
     icon: FlaskConical,
   },
   {
+    id: "wl-oral",
     label: { en: "Oral Medication", es: "Medicamento Oral" },
     desc:  { en: "Oral semaglutide — no injections", es: "Semaglutide oral — sin inyecciones" },
     href:  { en: "/en/quiz", es: "/es/quiz" },
     icon: Pill,
   },
   {
+    id: "wl-brand",
     label: { en: "Brand (Cash Pay)", es: "Marca (Pago Directo)" },
     desc:  { en: "Wegovy, Zepbound & Ozempic with Rx", es: "Wegovy, Zepbound y Ozempic con receta" },
     href:  { en: "/en/quiz", es: "/es/quiz" },
@@ -179,9 +183,10 @@ function DesktopDropdown({
         const desc  = isEs ? item.desc.es  : item.desc.en;
         const href  = isEs ? item.href.es  : item.href.en;
         const color = "iconColor" in item ? item.iconColor : "#ed1b1b";
+        const key   = "id" in item ? item.id : href;
         return (
           <Link
-            key={href}
+            key={key}
             href={href}
             onClick={onClose}
             className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors group"

@@ -29,7 +29,7 @@ export default function RootLayout({
 }) {
   return (
     <html className={`${poppins.variable} ${manrope.variable}`}>
-      <body className="bg-surface text-body font-body text-base leading-relaxed antialiased">
+      <body className="bg-surface text-body font-body text-base leading-relaxed antialiased" suppressHydrationWarning>
         {children}
       </body>
     </html>
