@@ -230,14 +230,20 @@ Patients who purchase the $25 Insurance Eligibility Check ($SKU: INS-ELIG) compl
 | Body Good historical outcomes | 30% | `src/lib/insurance/confidence-engine.ts` |
 | Claude API web search (real-time formulary) | 30% | `src/lib/insurance/web-search.ts` |
 
-**Real-time eligibility — Stedi integration (built, ready to activate):**
-- Integration fully coded in `src/lib/insurance/stedi.ts`. Activates automatically when `STEDI_API_KEY` secret is added.
-- Already have a Stedi account at portal.stedi.com. To activate: go to **https://www.stedi.com/app/settings/api-keys** → Create API Key (Production) → add as `STEDI_API_KEY` secret.
-- FREE on existing Basic plan: 100 checks/month. Upgrade path: Developer plan = pay-as-you-go per check (no $500 commitment — the $500 was the old enterprise plan, not required).
-- Endpoint: `POST https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/eligibility/v3`
-- Auth: `Authorization: Key <key>`. Body: JSON with subscriber, provider, encounter (serviceTypeCodes: ["88"]).
-- When active: adds a 4th source at 20% weight; other 3 sources share remaining 80%.
-- Alternative: Eligible.com ~$0.05/check + BAA required. Code stub in `stedi.ts` comments.
+**Real-time eligibility — Two activation paths (built, choose one):**
+
+OPTION 1 — Stedi Test Key (free, validates integration, returns mock data):
+- portal.stedi.com → Settings → API Keys → Create API Key → Test mode
+- Add `STEDI_API_KEY = test_0dqzhy0...` to Replit Secrets
+- Upgrade to Developer plan for a production key (pay-as-you-go)
+
+OPTION 2 — Portal automation (FREE, real production data, ~15s/check):
+- Automates portal.stedi.com headlessly using your existing Basic plan
+- Add 3 secrets: `STEDI_EMAIL`, `STEDI_PASSWORD`, `STEDI_ACCOUNT_ID=1b621bea-6ae4-4cc4-a870-7e6df38c4b26`
+- Chromium installed at `/nix/store/.../chromium`; Playwright installed
+
+Priority order (automatic): API key → portal automation → skip gracefully
+Files: `stedi.ts` (API), `stedi-portal.ts` (automation), `stedi-payer-ids.ts` (payer map)
 
 ### Flow
 

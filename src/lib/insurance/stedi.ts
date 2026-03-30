@@ -1,81 +1,40 @@
 /**
- * Real-time insurance eligibility via Stedi Healthcare Eligibility v3 API
+ * Real-time insurance eligibility via Stedi
  *
- * ─── HOW TO ACTIVATE ─────────────────────────────────────────────────────────
- * You already have an account at portal.stedi.com!
+ * ─── OPTION 1 — Stedi API (requires Developer plan for production keys) ───────
+ * Test key (already in portal, free, returns mock data):
+ *   Go to portal.stedi.com → Settings → API Keys → Create API Key → Test mode
+ *   Add to Replit Secrets: STEDI_API_KEY = test_0dqzhy0...  (validates integration)
  *
- * 1. Go to:  https://www.stedi.com/app/settings/api-keys
- * 2. Click "Create API Key" → Production → name it "body-good-eligibility"
- * 3. Copy the key (you only see it once)
- * 4. Add to Replit Secrets:  STEDI_API_KEY = <your key>
- * 5. The integration activates automatically — no code changes needed.
+ * Production key (requires paid Developer plan):
+ *   portal.stedi.com → Settings → Billing → Upgrade → then create Production key
+ *   Add to Replit Secrets: STEDI_API_KEY = <production key>
  *
- * ─── PRICING ─────────────────────────────────────────────────────────────────
- * FREE Basic plan: 100 eligibility checks/month (you're already on it)
- * Paid Developer plan: pay-as-you-go per check (no $500 commitment)
- * Contact: portal.stedi.com → Settings → Billing to upgrade when ready
+ * ─── OPTION 2 — Portal automation (FREE, uses your existing Basic plan) ──────
+ * No API key needed. Headlessly automates portal.stedi.com with your credentials.
+ * Add to Replit Secrets:
+ *   STEDI_EMAIL      = linda@bodygoodstudio.com
+ *   STEDI_PASSWORD   = <portal password>
+ *   STEDI_ACCOUNT_ID = 1b621bea-6ae4-4cc4-a870-7e6df38c4b26
  *
- * ─── API REFERENCE ───────────────────────────────────────────────────────────
- * POST https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/eligibility/v3
- * Auth: Authorization: Key <API_KEY>
- * Docs: https://www.stedi.com/docs/healthcare/send-eligibility-checks
- * ─────────────────────────────────────────────────────────────────────────────
+ * ─── OPTION 3 — Eligible.com (future) ───────────────────────────────────────
+ * ~$0.05/check, requires BAA. Contact eligible.com → add ELIGIBLE_API_KEY.
  *
- * ─── FUTURE ALTERNATIVE ──────────────────────────────────────────────────────
- * Eligible.com: ~$0.05/check, requires BAA (HIPAA). Code in eligible.ts.
- * Endpoint: GET https://gds.eligibleapi.com/v1.5/coverage/all?api_key=…
- * Contact sales at eligible.com → sign BAA → add ELIGIBLE_API_KEY secret.
+ * ─── PRIORITY ORDER ──────────────────────────────────────────────────────────
+ * STEDI_API_KEY present → API (fast, structured)
+ * STEDI_EMAIL present   → Portal automation (free, slower ~15s)
+ * Neither              → graceful skip, other 3 sources carry full weight
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
 import type { StediData } from './confidence-engine';
+import { runPortalEligibilityCheck, portalCredentialsAvailable } from './stedi-portal';
+import { resolveStediPayerId } from './stedi-payer-ids';
 
 const STEDI_API_KEY = process.env.STEDI_API_KEY;
 const STEDI_ENDPOINT = 'https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/eligibility/v3';
 const PROVIDER_NPI = process.env.PROVIDER_NPI || '1558788851';
 const PROVIDER_NAME = process.env.PROVIDER_NAME || 'Body Good Studio';
-
-const PAYER_ID_MAP: Record<string, string> = {
-  'cigna': 'CIGNA', 'evernorth': 'CIGNA',
-  'aetna': '60054', 'cvs health': '60054',
-  'unitedhealthcare': '87726', 'united health': '87726', 'uhc': '87726', 'optum': '87726',
-  'humana': '61101', 'centerwell': '61101',
-  'florida blue': '00590', 'bcbs of florida': '00590', 'bcbs fl': '00590', 'blue cross florida': '00590',
-  'anthem': 'ANTHEM1', 'elevance': 'ANTHEM1', 'wellpoint': 'ANTHEM1',
-  'tricare': '99726', 'champus': '99726',
-  'medicare': 'MDCR', 'cms': 'MDCR', 'medicare advantage': 'MDCR',
-  'oscar': '11303', 'oscar health': '11303',
-  'kaiser': 'KPSA0', 'kaiser permanente': 'KPSA0',
-  'molina': 'MHHI0', 'molina healthcare': 'MHHI0',
-  'wellcare': 'WCA01',
-  'bcbs fep': 'BCBSF', 'federal employee': 'BCBSF', 'fep': 'BCBSF', 'federal employees': 'BCBSF',
-  'highmark': '00033',
-  'carefirst': '00380',
-  'horizon': 'HBCBS', 'horizon bcbs': 'HBCBS',
-  'bcbs of nc': '00544', 'blue cross nc': '00544',
-  'bcbs of texas': '00901', 'bcbs texas': '00901',
-  'bcbs of illinois': '00111', 'bcbs illinois': '00111',
-  'bcbs of alabama': '00020', 'bcbs alabama': '00020',
-  'premera': 'PRMR0', 'premera blue cross': 'PRMR0',
-  'regence': 'REGCE', 'regence blueshield': 'REGCE',
-  'health net': 'HealthNet', 'healthnet': 'HealthNet',
-  'emblemhealth': 'GHIBS',
-  'medica': 'MDCAI',
-  'select health': 'SLHLT', 'selecthealth': 'SLHLT',
-  'geisinger': 'GEISG',
-  'upmc': 'UPMCP', 'upmc health plan': 'UPMCP',
-  'harvard pilgrim': 'HARVP',
-  'tufts health': 'TUFT0', 'tufts': 'TUFT0',
-  'va': '12115', 'veterans affairs': '12115', 'va health': '12115',
-};
-
-export function resolveStediPayerId(insurerName: string): string {
-  const normalized = (insurerName || '').toLowerCase().trim();
-  for (const [key, id] of Object.entries(PAYER_ID_MAP)) {
-    if (normalized.includes(key)) return id;
-  }
-  return normalized.replace(/[^a-z0-9]/g, '').slice(0, 10).toUpperCase();
-}
 
 interface BenefitInfo {
   code?: string;
@@ -126,7 +85,19 @@ export async function runStediCheck(params: {
   dob: string;
 }): Promise<StediData | null> {
   if (!STEDI_API_KEY) {
-    console.info('[stedi] STEDI_API_KEY not set — skipping real-time eligibility check.');
+    if (portalCredentialsAvailable()) {
+      console.info('[stedi] No API key — falling back to portal automation');
+      const payerId = resolveStediPayerId(params.insurerName);
+      return runPortalEligibilityCheck({
+        insurerName: params.insurerName,
+        payerId,
+        memberId: params.memberId,
+        firstName: params.firstName,
+        lastName: params.lastName,
+        dob: params.dob,
+      });
+    }
+    console.info('[stedi] No API key or portal credentials — skipping real-time eligibility check.');
     return null;
   }
 
