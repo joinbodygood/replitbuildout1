@@ -230,9 +230,12 @@ Patients who purchase the $25 Insurance Eligibility Check ($SKU: INS-ELIG) compl
 | Body Good historical outcomes | 30% | `src/lib/insurance/confidence-engine.ts` |
 | Claude API web search (real-time formulary) | 30% | `src/lib/insurance/web-search.ts` |
 
-**Real-time eligibility (future upgrade):**
-- **Eligible.com** — ~$0.20/check, no monthly minimum. Same 270/271 transactions as Stedi. Add `ELIGIBLE_API_KEY` secret + implement in `src/lib/insurance/stedi.ts`.
-- Stedi ($500/mo) was evaluated and removed. The stub file remains with upgrade instructions.
+**Real-time eligibility — Eligible.com integration (built, awaiting API key):**
+- Integration fully coded in `src/lib/insurance/stedi.ts`. Activates automatically when `ELIGIBLE_API_KEY` secret is added.
+- Sign up: https://eligible.com → contact sales → sign BAA → get key from Admin → API Keys
+- Pricing: ~$0.05/check (first 250k/mo). No monthly base fee.
+- When active: adds a 4th source at 20% weight; other 3 sources share remaining 80%.
+- Stedi ($500/mo) was evaluated and removed.
 
 ### Flow
 

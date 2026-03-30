@@ -363,9 +363,10 @@ export class ConfidenceEngine {
     }
 
     const weights: Record<string, number> = {
-      probabilityDB: 40,
-      historical: 30,
-      webSearch: 30,
+      stedi: 20,
+      probabilityDB: 35,
+      historical: 25,
+      webSearch: 20,
     };
 
     let totalWeight = 0;

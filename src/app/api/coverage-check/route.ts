@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ConfidenceEngine } from '@/lib/insurance/confidence-engine';
 import type { PatientInput } from '@/lib/insurance/confidence-engine';
+import { runStediCheck } from '@/lib/insurance/stedi';
 import { runWebSearch } from '@/lib/insurance/web-search';
 import { fireWebhook } from '@/lib/webhooks';
 
@@ -45,15 +46,15 @@ export async function POST(req: NextRequest) {
       planType: mapPlanType(planType || ''),
     };
 
-    const webSearchResult = await Promise.resolve(
+    const [eligibleResult, webSearchResult] = await Promise.all([
+      runStediCheck({ insurerName, memberId, groupNumber, firstName, lastName, dob: subscriberDob })
+        .catch((err: Error) => { console.warn('[coverage-check] Eligible check failed:', err?.message); return null; }),
       runWebSearch({ insurerName, state, diagnoses, employerSize })
-    ).catch((err: Error) => {
-      console.warn('[coverage-check] Web search failed:', err?.message);
-      return null;
-    });
+        .catch((err: Error) => { console.warn('[coverage-check] Web search failed:', err?.message); return null; }),
+    ]);
 
     const engine = new ConfidenceEngine();
-    const results = await engine.calculateCoverage(patient, null, webSearchResult);
+    const results = await engine.calculateCoverage(patient, eligibleResult, webSearchResult);
 
     fireWebhook('coverage_check.completed', {
       intakeRef: body.intakeRef,
