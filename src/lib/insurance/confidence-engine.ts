@@ -603,27 +603,195 @@ export class ConfidenceEngine {
       '61101': 'humana',
       '99726': 'tricare',
       'CMS': 'medicare',
+      'ANTHEM1': 'anthem',
+      'ANTM1': 'anthem',
+      '00620': 'anthem',
+      'OSCAR1': 'oscar',
+      'MOLINA1': 'molina',
     };
     if (stedi?.payerId && payerIdMap[stedi.payerId]) return payerIdMap[stedi.payerId];
 
     const name = (stedi?.payerName || patient.insurerName || '').toLowerCase();
-    if (name.includes('cigna')) return 'cigna';
-    if (name.includes('florida blue') || (name.includes('bcbs') && patient.state === 'FL')) return 'bcbs_fl';
-    if (name.includes('aetna')) return 'aetna';
-    if (name.includes('united') || name.includes('uhc')) return 'uhc';
-    if (name.includes('humana')) return 'humana';
+    const st = patient.state;
+
+    // ── Medicare / Medicaid — check early, before BCBS catches them ─────────
+    if (name.includes('medicare advantage') || name.includes('mapd')) {
+      if (name.includes('united') || name.includes('uhc') || name.includes('aarp')) return 'uhc_medicare';
+      if (name.includes('humana')) return 'humana_medicare';
+      if (name.includes('aetna')) return 'aetna_medicare';
+      if (name.includes('devoted')) return 'devoted_health';
+      return 'medicare';
+    }
+    if (name.includes('medicare part d') || name.includes('medicare prescription')) return 'medicare';
+    if (name.includes('medicare')) {
+      if (name.includes('united') || name.includes('uhc') || name.includes('aarp')) return 'uhc_medicare';
+      if (name.includes('humana')) return 'humana_medicare';
+      if (name.includes('aetna')) return 'aetna_medicare';
+      if (name.includes('devoted')) return 'devoted_health';
+      return 'medicare';
+    }
+    if (name.includes('medi-cal')) return 'medi_cal';
+    if (name.includes('apple health') || (name.includes('medicaid') && st === 'WA')) return 'medicaid_wa';
+    if (name.includes('tenncare') || (name.includes('medicaid') && st === 'TN')) return 'medicaid_tn';
+    if (name.includes('colorado medicaid') || name.includes('health first colorado') || (name.includes('medicaid') && st === 'CO')) return 'medicaid_co';
+    if (name.includes('medicaid') && st === 'FL') return 'medicaid_fl';
+    if (name.includes('medicaid') && st === 'NY') return 'medicaid_ny';
+    if (name.includes('medicaid') && st === 'IL') return 'medicaid_il';
+    if (name.includes('medicaid') && st === 'CA') return 'medi_cal';
+    if (name.includes('medicaid') && st === 'TX') return 'medicaid_tx';
+    if (name.includes('medicaid') && st === 'OH') return 'medicaid_oh';
+    if (name.includes('medicaid') && st === 'GA') return 'medicaid_ga';
+    if (name.includes('medicaid') && st === 'PA') return 'medicaid_pa';
+    if (name.includes('medicaid') && st === 'NC') return 'medicaid_nc';
+
+    // ── Cigna / Evernorth ────────────────────────────────────────────────────
+    if (name.includes('cigna') || name.includes('evernorth')) return 'cigna';
+
+    // ── Aetna / CVS ──────────────────────────────────────────────────────────
+    if (name.includes('aetna') || name.includes('cvs health plan')) return 'aetna';
+
+    // ── UnitedHealthcare ──────────────────────────────────────────────────────
+    if (name.includes('unitedhealthcare') || name.includes('united health') || name.includes('uhc') || name.includes('optumhealth')) return 'uhc';
+
+    // ── Humana ────────────────────────────────────────────────────────────────
+    if (name.includes('humana') || name.includes('centerwell')) return 'humana';
+
+    // ── TRICARE ───────────────────────────────────────────────────────────────
     if (name.includes('tricare')) return 'tricare';
+
+    // ── VA ────────────────────────────────────────────────────────────────────
+    if (name.includes('veterans affairs') || name.includes('va health') || name.includes(' va ') || name === 'va') return 'va';
+
+    // ── Kaiser Permanente ─────────────────────────────────────────────────────
     if (name.includes('kaiser')) return 'kaiser';
-    if (name.includes('bcbs') && name.includes('fep')) return 'bcbs_fep';
-    if (name.includes('medicare')) return 'medicare';
-    if (name.includes('medicaid') && patient.state === 'FL') return 'medicaid_fl';
-    if (name.includes('medicaid') && patient.state === 'NY') return 'medicaid_ny';
-    if (name.includes('medicaid') && patient.state === 'IL') return 'medicaid_il';
-    if (name.includes('medi-cal') || (name.includes('medicaid') && patient.state === 'CA')) return 'medi_cal';
-    if (name.includes('bcbs') && name.includes('mass')) return 'bcbs_ma';
-    if (name.includes('bcbs') && name.includes('mich')) return 'bcbs_mi';
-    if (name.includes('blue shield') && patient.state === 'CA') return 'blue_shield_ca';
-    if (name.includes('va') || name.includes('veterans')) return 'va';
+
+    // ── Oscar ─────────────────────────────────────────────────────────────────
+    if (name.includes('oscar health') || name.includes('oscar insurance')) return 'oscar';
+
+    // ── Molina ────────────────────────────────────────────────────────────────
+    if (name.includes('molina')) return 'molina';
+
+    // ── WellCare / Centene ────────────────────────────────────────────────────
+    if (name.includes('wellcare')) return 'wellcare';
+    if (name.includes('ambetter')) return 'ambetter';
+    if (name.includes('health net') || name.includes('healthnet')) return 'health_net';
+
+    // ── CareSource ────────────────────────────────────────────────────────────
+    if (name.includes('caresource')) return 'caresource';
+
+    // ── Devoted Health ────────────────────────────────────────────────────────
+    if (name.includes('devoted')) return 'devoted_health';
+
+    // ── BCBS — FEP first (before generic BCBS match) ─────────────────────────
+    if (name.includes('fep') || name.includes('federal employee') || name.includes('fehb')) return 'bcbs_fep';
+
+    // ── Anthem / Elevance ─────────────────────────────────────────────────────
+    if (name.includes('anthem') || name.includes('elevance')) return 'anthem';
+
+    // ── Highmark ──────────────────────────────────────────────────────────────
+    if (name.includes('highmark')) return 'highmark';
+
+    // ── CareFirst ─────────────────────────────────────────────────────────────
+    if (name.includes('carefirst')) return 'carefirst';
+
+    // ── Horizon BCBS NJ ───────────────────────────────────────────────────────
+    if (name.includes('horizon') && (name.includes('bcbs') || name.includes('blue cross') || st === 'NJ')) return 'horizon_bcbs_nj';
+
+    // ── Independence Blue Cross (PA) ──────────────────────────────────────────
+    if (name.includes('independence blue') || (name.includes('ibx') && st === 'PA')) return 'independence_bcbs';
+
+    // ── Premera ───────────────────────────────────────────────────────────────
+    if (name.includes('premera')) return 'premera';
+
+    // ── Regence ───────────────────────────────────────────────────────────────
+    if (name.includes('regence')) return 'regence';
+
+    // ── Harvard Pilgrim ───────────────────────────────────────────────────────
+    if (name.includes('harvard pilgrim')) return 'harvard_pilgrim';
+
+    // ── Tufts / Point32Health ─────────────────────────────────────────────────
+    if (name.includes('tufts health') || name.includes('point32')) return 'tufts_health';
+
+    // ── AllWays Health Partners ───────────────────────────────────────────────
+    if (name.includes('allways') || name.includes('all ways health')) return 'allways_health';
+
+    // ── Excellus BCBS (NY Rochester area) ────────────────────────────────────
+    if (name.includes('excellus')) return 'excellus_bcbs';
+
+    // ── EmblemHealth / GHI / HIP (NY NYC area) ───────────────────────────────
+    if (name.includes('emblemhealth') || name.includes('emblem health') || (name.includes('ghi') && st === 'NY') || (name.includes('hip') && st === 'NY')) return 'emblemhealth';
+
+    // ── Medica ────────────────────────────────────────────────────────────────
+    if (name.includes('medica health') || (name.includes('medica') && !name.includes('medicaid') && !name.includes('medi-cal'))) return 'medica';
+
+    // ── HealthPartners ────────────────────────────────────────────────────────
+    if (name.includes('healthpartners') || name.includes('health partners')) return 'healthpartners';
+
+    // ── UCare ─────────────────────────────────────────────────────────────────
+    if (name.includes('ucare')) return 'ucare';
+
+    // ── Sanford Health Plan ────────────────────────────────────────────────────
+    if (name.includes('sanford health plan')) return 'sanford_health';
+
+    // ── SelectHealth ──────────────────────────────────────────────────────────
+    if (name.includes('selecthealth') || name.includes('select health') || name.includes('intermountain')) return 'select_health';
+
+    // ── Geisinger ─────────────────────────────────────────────────────────────
+    if (name.includes('geisinger')) return 'geisinger';
+
+    // ── UPMC ──────────────────────────────────────────────────────────────────
+    if (name.includes('upmc')) return 'upmc_health';
+
+    // ── Medical Mutual of Ohio ────────────────────────────────────────────────
+    if (name.includes('medical mutual')) return 'medical_mutual_oh';
+
+    // ── Community Health Plan of Washington ───────────────────────────────────
+    if (name.includes('community health plan') && st === 'WA') return 'community_health_wa';
+
+    // ── Providence Health Plan ────────────────────────────────────────────────
+    if (name.includes('providence health plan')) return 'providence_health';
+
+    // ── Moda Health ───────────────────────────────────────────────────────────
+    if (name.includes('moda health') || name.includes('moda ')) return 'moda_health';
+
+    // ── PacificSource ─────────────────────────────────────────────────────────
+    if (name.includes('pacificsource') || name.includes('pacific source')) return 'pacific_source';
+
+    // ── Quartz ────────────────────────────────────────────────────────────────
+    if (name.includes('quartz')) return 'quartz_wi';
+
+    // ── Dean Health / SSM ─────────────────────────────────────────────────────
+    if (name.includes('dean health') || name.includes('ssm health')) return 'dean_health';
+
+    // ── Wellmark ──────────────────────────────────────────────────────────────
+    if (name.includes('wellmark')) return 'wellmark';
+
+    // ── BCBS state plans — resolved by state ──────────────────────────────────
+    const isBCBS = name.includes('bcbs') || name.includes('blue cross') || name.includes('bluecross') || name.includes('blue shield') || name.includes('blueshield');
+    if (isBCBS) {
+      if (st === 'FL' || name.includes('florida blue') || name.includes('florida bcbs')) return 'bcbs_fl';
+      if (st === 'MA' || name.includes('massachusetts')) return 'bcbs_ma';
+      if (st === 'MI' || name.includes('michigan')) return 'bcbs_mi';
+      if (st === 'CA' && name.includes('blue shield')) return 'blue_shield_ca';
+      if (st === 'TX' || name.includes('texas')) return 'bcbs_tx';
+      if (st === 'NC' || name.includes('north carolina') || name.includes('nc')) return 'bcbs_nc';
+      if (st === 'TN' || name.includes('tennessee')) return 'bcbs_tn';
+      if (st === 'AL' || name.includes('alabama')) return 'bcbs_al';
+      if (st === 'IL' || name.includes('illinois')) return 'bcbs_il';
+      if (st === 'SC' || name.includes('south carolina')) return 'bcbs_sc';
+      if (st === 'AZ' || name.includes('arizona')) return 'bcbs_az';
+      if (st === 'KS' || name.includes('kansas')) return 'bcbs_ks';
+      if (st === 'OK' || name.includes('oklahoma')) return 'bcbs_ok';
+      if (st === 'MT' || name.includes('montana')) return 'bcbs_mt';
+      if (st === 'NM' || name.includes('new mexico')) return 'bcbs_nm';
+      if (st === 'PA' && (name.includes('capital') || name.includes('capital blue'))) return 'independence_bcbs';
+      if (st === 'NJ' || name.includes('new jersey')) return 'horizon_bcbs_nj';
+      if (st === 'DC' || st === 'MD' || name.includes('carefirst')) return 'carefirst';
+      if (st === 'WA' && name.includes('premera')) return 'premera';
+      if (name.includes('regence')) return 'regence';
+      if (st === 'NY' && name.includes('excellus')) return 'excellus_bcbs';
+    }
+
     return null;
   }
 
