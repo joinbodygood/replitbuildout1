@@ -44,6 +44,27 @@ export default function CheckoutPage() {
     if (oral) {
       return `/${locale}/intake/glp1-oral?med=${oral.productId === "WM-ORAL-SEM" ? "sema" : "tirz"}`;
     }
+    if (cartItems.find((i) => i.productId === "WM-BRAND-MGMT")) {
+      return `/${locale}/intake/branded-rx`;
+    }
+    if (cartItems.find((i) => i.productId.startsWith("INS-"))) {
+      return `/${locale}/intake/insurance`;
+    }
+    if (cartItems.find((i) => i.productId.startsWith("WI-"))) {
+      return `/${locale}/intake/wellness`;
+    }
+    const hairItem = cartItems.find((i) => i.productId.startsWith("HL-"));
+    if (hairItem) {
+      return `/${locale}/intake/specialty?program=hair`;
+    }
+    const femItem = cartItems.find((i) => i.productId.startsWith("FH-"));
+    if (femItem) {
+      return `/${locale}/intake/specialty?program=feminine`;
+    }
+    const mentalItem = cartItems.find((i) => i.productId.startsWith("MW-"));
+    if (mentalItem) {
+      return `/${locale}/intake/specialty?program=mental&fulfillment=pharm`;
+    }
     return null;
   }
 

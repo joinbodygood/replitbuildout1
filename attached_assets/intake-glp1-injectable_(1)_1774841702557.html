@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Body Good Studio — GLP-1 Injectable Intake</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FBF7F4;--white:#fff;--red:#ed1b1b;--red-lt:#fde7e7;--red-dk:#c41616;--green:#0A8754;--green-lt:#e6f5ee;--text:#0C0D0F;--body:#55575A;--muted:#999;--border:#E5E5E5;--danger:#D32F2F;--danger-lt:#FDEAEA;--r:12px;--pill:50px;--sh:0 1px 4px rgba(0,0,0,0.04);--shm:0 4px 20px rgba(0,0,0,0.06)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);font-family:'Manrope',sans-serif;color:var(--body);-webkit-font-smoothing:antialiased;line-height:1.5}
+
+.ty{text-align:center;padding:30px 20px 22px;max-width:680px;margin:0 auto}
+.ty-ico{width:48px;height:48px;background:var(--green-lt);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:22px;color:var(--green);font-weight:700}
+.ty h1{font-family:'Poppins',sans-serif;font-weight:800;font-size:clamp(20px,4vw,26px);color:var(--text);margin-bottom:6px}
+.ty h1 span{color:var(--red)}
+.ty p{font-size:13.5px;color:var(--body);line-height:1.65;max-width:480px;margin:0 auto}
+
+.chip{display:flex;align-items:center;gap:12px;max-width:680px;margin:0 auto 6px;padding:13px 18px;background:var(--white);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh)}
+.chip-i{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.chip-n{font-family:'Poppins',sans-serif;font-weight:700;font-size:14px;color:var(--text)}
+.chip-s{font-size:11.5px;color:var(--muted);margin-top:1px}
+
+.wrap{max-width:680px;margin:0 auto;padding:18px 20px 50px}
+
+/* Progress */
+.prog{margin-bottom:28px}.prog-track{height:4px;background:#eee;border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:var(--red);transition:width .4s;border-radius:4px}
+.prog-dots{display:flex;justify-content:space-between;margin-top:9px}
+.pd{font-family:'Poppins',sans-serif;font-size:10.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;transition:color .3s}
+.pd.on{color:var(--red)}.pd.dn{color:var(--green)}
+.pd b{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:9px;font-weight:800;background:var(--white);border:1.5px solid var(--border);color:var(--muted);margin-right:4px;vertical-align:middle;transition:all .3s}
+.pd.on b{background:var(--red);border-color:var(--red);color:#fff}
+.pd.dn b{background:var(--green);border-color:var(--green);color:#fff}
+
+/* Step */
+.step{display:none;animation:fu .3s ease}.step.on{display:block}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Card */
+.cd{background:var(--white);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);padding:22px;margin-bottom:16px}
+.cd-t{font-family:'Poppins',sans-serif;font-weight:700;font-size:15px;color:var(--text);margin-bottom:2px}
+.cd-d{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6}
+
+/* Fields */
+.rw{display:grid;gap:12px;margin-bottom:12px}.r2{grid-template-columns:1fr 1fr}.r3{grid-template-columns:1fr 1fr 1fr}.r1{grid-template-columns:1fr}
+.fg{display:flex;flex-direction:column}
+.fl{font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--text);margin-bottom:4px}
+.fl .rq{color:var(--red);margin-left:2px}
+input[type="text"],input[type="email"],input[type="tel"],input[type="date"],input[type="number"],select,textarea{width:100%;padding:10px 12px;font-family:'Manrope',sans-serif;font-size:13px;color:var(--text);border:1.5px solid var(--border);border-radius:9px;background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(237,27,27,.07)}
+textarea{resize:vertical;min-height:56px}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23999' d='M5 7L0 2h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:30px}
+
+/* Y/N */
+.qr{padding:12px 0;border-bottom:1px solid #f3f3f3}.qr:last-child{border-bottom:none}
+.qt{font-size:13px;color:var(--text);line-height:1.45;font-weight:500;margin-bottom:7px}.qt strong{font-weight:700}
+.pls{display:flex;gap:7px}
+.pl{flex:1;padding:8px 0;text-align:center;font-family:'Poppins',sans-serif;font-size:11.5px;font-weight:600;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;background:var(--white);color:var(--body);transition:all .2s;user-select:none}
+.pl:hover{border-color:#ccc}
+.pl.sy{background:var(--danger-lt);border-color:var(--danger);color:var(--danger)}
+.pl.sn{background:var(--green-lt);border-color:var(--green);color:var(--green)}
+
+/* Checks */
+.ckg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}
+.ck{display:flex;align-items:center;gap:7px;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;transition:all .2s;user-select:none;font-size:12px;color:var(--text)}
+.ck:hover{border-color:#ccc}.ck.on{background:var(--red-lt);border-color:var(--red);color:var(--red);font-weight:600}
+.ckb{width:15px;height:15px;border:1.5px solid var(--border);border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:9px;transition:all .2s}
+.ck.on .ckb{background:var(--red);border-color:var(--red);color:#fff}
+
+/* Alerts */
+.aw{background:#FFF3E0;border:1px solid #FFB74D;border-radius:9px;padding:10px 14px;font-size:12px;color:#E65100;line-height:1.55;margin-top:7px;display:none}
+.as{background:var(--danger-lt);border:1px solid var(--danger);border-radius:9px;padding:10px 14px;font-size:12px;color:var(--danger);line-height:1.55;margin-top:7px;display:none}
+.aw.sh,.as.sh{display:block}.aw strong,.as strong{font-weight:700}
+
+/* Consent */
+.csb{background:#F9F9F9;border:1px solid var(--border);border-radius:9px;padding:14px;font-size:11.5px;color:var(--body);line-height:1.7;margin-bottom:12px;max-height:150px;overflow-y:auto}
+.csc{display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:12px;color:var(--text);margin-top:9px;user-select:none}
+.csc input{margin-top:3px;accent-color:var(--red);width:14px;height:14px}
+
+/* Buttons */
+.br{display:flex;justify-content:space-between;gap:10px;margin-top:22px}
+.bt{font-family:'Poppins',sans-serif;font-weight:700;font-size:13px;padding:12px 26px;border-radius:var(--pill);border:none;cursor:pointer;transition:all .2s}
+.bp{background:var(--red);color:#fff;box-shadow:0 3px 10px rgba(237,27,27,.2)}
+.bp:hover{background:var(--red-dk);transform:translateY(-1px)}
+.bb{background:transparent;color:var(--body);border:1.5px solid var(--border)}
+.bb:hover{border-color:#bbb}
+
+/* Success */
+.ok{display:none;text-align:center;padding:44px 20px;animation:fu .4s ease}
+.ok.on{display:block}
+.ok-i{width:58px;height:58px;background:var(--green-lt);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;color:var(--green)}
+.ok h2{font-family:'Poppins',sans-serif;font-weight:700;font-size:19px;color:var(--text);margin-bottom:7px}
+.ok p{font-size:13.5px;color:var(--body);max-width:380px;margin:0 auto;line-height:1.65}
+
+@media(max-width:600px){.r2,.r3{grid-template-columns:1fr}.ckg{grid-template-columns:1fr}.cd{padding:17px 15px}.bt{padding:11px 18px;font-size:12px}}
+</style>
+</head>
+<body>
+
+<div class="ty">
+  <div class="ty-ico">✓</div>
+  <h1>Order confirmed. <span>One more step.</span></h1>
+  <p>Complete your medical intake so our clinical team can begin your evaluation right away.</p>
+</div>
+
+<!-- Program auto-detected from checkout -->
+<div class="chip">
+  <div class="chip-i" id="ci" style="background:var(--red-lt)">💉</div>
+  <div><div class="chip-n" id="cn">Compounded Tirzepatide</div><div class="chip-s" id="cs">Self-Pay GLP-1 Injectable · Starter Phase</div></div>
+</div>
+
+<div class="wrap">
+<div class="prog">
+  <div class="prog-track"><div class="prog-fill" id="pf" style="width:0%"></div></div>
+  <div class="prog-dots">
+    <span class="pd on" id="d1"><b>1</b>About You</span>
+    <span class="pd" id="d2"><b>2</b>Medical</span>
+    <span class="pd" id="d3"><b>3</b>GLP-1 Screening</span>
+    <span class="pd" id="d4"><b>4</b>Consent</span>
+  </div>
+</div>
+
+<!-- ══════ STEP 1: DEMOGRAPHICS + SHIPPING ══════ -->
+<div class="step on" id="s1">
+  <div class="cd">
+    <div class="cd-t">Personal Information</div>
+    <div class="cd-d">Required for your medical evaluation and prescription.</div>
+    <div class="rw r2">
+      <div class="fg"><label class="fl">First Name <span class="rq">*</span></label><input type="text" placeholder="First name"></div>
+      <div class="fg"><label class="fl">Last Name <span class="rq">*</span></label><input type="text" placeholder="Last name"></div>
+    </div>
+    <div class="rw r2">
+      <div class="fg"><label class="fl">Email <span class="rq">*</span></label><input type="email" placeholder="you@email.com"></div>
+      <div class="fg"><label class="fl">Phone <span class="rq">*</span></label><input type="tel" placeholder="(555) 123-4567"></div>
+    </div>
+    <div class="rw r3">
+      <div class="fg"><label class="fl">Date of Birth <span class="rq">*</span></label><input type="date"></div>
+      <div class="fg"><label class="fl">Sex at Birth <span class="rq">*</span></label><select><option value="">Select</option><option>Female</option><option>Male</option></select></div>
+      <div class="fg"><label class="fl">State <span class="rq">*</span></label><select class="st-sel"><option value="">Select</option></select></div>
+    </div>
+    <div class="rw r3">
+      <div class="fg"><label class="fl">Height (ft) <span class="rq">*</span></label><select><option value="">Feet</option><option>4</option><option>5</option><option>6</option><option>7</option></select></div>
+      <div class="fg"><label class="fl">Height (in) <span class="rq">*</span></label><select><option value="">In</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option></select></div>
+      <div class="fg"><label class="fl">Weight (lbs) <span class="rq">*</span></label><input type="number" placeholder="lbs" min="80" max="700"></div>
+    </div>
+  </div>
+
+  <div class="cd">
+    <div class="cd-t">Shipping Address</div>
+    <div class="cd-d">Where should we ship your medication?</div>
+    <div class="rw r1"><div class="fg"><label class="fl">Street Address <span class="rq">*</span></label><input type="text" placeholder="123 Main St, Apt 4B"></div></div>
+    <div class="rw r3">
+      <div class="fg"><label class="fl">City <span class="rq">*</span></label><input type="text" placeholder="City"></div>
+      <div class="fg"><label class="fl">State <span class="rq">*</span></label><select class="st-sel"><option value="">Select</option></select></div>
+      <div class="fg"><label class="fl">ZIP <span class="rq">*</span></label><input type="text" placeholder="ZIP"></div>
+    </div>
+  </div>
+
+  <div class="br" style="justify-content:flex-end"><button class="bt bp" onclick="go(2)">Continue →</button></div>
+</div>
+
+<!-- ══════ STEP 2: MEDICAL HISTORY ══════ -->
+<div class="step" id="s2">
+  <div class="cd">
+    <div class="cd-t">Medical History</div>
+    <div class="cd-d">Answer honestly — this directly impacts prescribing decisions and your safety.</div>
+
+    <div class="qr">
+      <div class="qt">Do you have any known <strong>drug allergies</strong>? <span class="rq">*</span></div>
+      <div class="pls"><div class="pl" onclick="yn(this,'y')">Yes</div><div class="pl" onclick="yn(this,'n')">No</div></div>
+      <div class="fg cond" style="display:none;margin-top:7px"><textarea placeholder="List all drug allergies and reactions..."></textarea></div>
+    </div>
+    <div class="qr">
+      <div class="qt">Currently taking any <strong>medications</strong>? (Rx, OTC, supplements) <span class="rq">*</span></div>
+      <div class="pls"><div class="pl" onclick="yn(this,'y')">Yes</div><div class="pl" onclick="yn(this,'n')">No</div></div>
+      <div class="fg cond" style="display:none;margin-top:7px"><textarea placeholder="List all medications, doses, frequency..."></textarea></div>
+    </div>
+    <div class="qr">
+      <div class="qt">Previously taken a <strong>GLP-1 medication</strong>? (semaglutide, tirzepatide, liraglutide) <span class="rq">*</span></div>
+      <div class="pls"><div class="pl" onclick="yn(this,'y')">Yes</div><div class="pl" onclick="yn(this,'n')">No</div></div>
+      <div class="fg cond" style="display:none;margin-top:7px"><textarea placeholder="Which medication, dose, how long, reason you stopped..."></textarea></div>
+    </div>
+    <div class="qr">
+      <div class="qt">Select any existing conditions:</div>
+      <div class="ckg">
+        <div class="ck" onclick="ct(this)"><div class="ckb"></div>Type 2 Diabetes</div>
+        <div class="ck" onclick="ct(this)"><div class="ckb"></div>High Blood Pressure</div>
+        <div class="ck" onclick="ct(this)"><div class="ckb"></div>High Cholesterol</div>
+        <div class="ck" onclick="ct(this)"><div class="ckb"></div>PCOS</div>
+        <div class="ck" onclick="ct(this)"><div class="ckb"></div>Sleep Apnea</div>
+        <div class="ck" onclick="ct(this)"><div class="ckb"></div>Hypothyroidism</div>
+        <div class="ck" onclick="ct(this)"><div class="ckb"></div>Fatty Liver Disease</div>
+        <div class="ck" onclick="ct(this)"><div class="ckb"></div>None of the above</div>
+      </div>
+    </div>
+    <div class="qr">
+      <div class="qt">What is your primary <strong>weight loss goal</strong>?</div>
+      <div class="fg" style="margin-top:6px"><input type="text" placeholder="e.g. Lose 30 lbs, manage PCOS, reduce A1C..."></div>
+    </div>
+  </div>
+  <div class="br"><button class="bt bb" onclick="go(1)">← Back</button><button class="bt bp" onclick="go(3)">Continue →</button></div>
+</div>
+
+<!-- ══════ STEP 3: GLP-1 CONTRAINDICATION SCREENING ══════ -->
+<div class="step" id="s3">
+  <div class="cd">
+    <div class="cd-t">GLP-1 Safety Screening</div>
+    <div class="cd-d">These screen for absolute and relative contraindications to GLP-1 receptor agonist therapy.</div>
+
+    <div class="qr">
+      <div class="qt">Do you or any blood relative have a history of <strong>medullary thyroid carcinoma (MTC)</strong>? <span class="rq">*</span></div>
+      <div class="pls"><div class="pl" onclick="yn(this,'y','hs')">Yes</div><div class="pl" onclick="yn(this,'n','hs')">No</div></div>
+      <div class="as"><strong>Prescribing Alert:</strong> Personal or family history of MTC is an absolute contraindication to GLP-1 therapy. Our provider will contact you about alternative options.</div>
+    </div>
+    <div class="qr">
+      <div class="qt">Have you been diagnosed with <strong>Multiple Endocrine Neoplasia type 2 (MEN2)</strong>? <span class="rq">*</span></div>
+      <div class="pls"><div class="pl" onclick="yn(this,'y','hs')">Yes</div><div class="pl" onclick="yn(this,'n','hs')">No</div></div>
+      <div class="as"><strong>Prescribing Alert:</strong> MEN2 is an absolute contraindication to GLP-1 therapy.</div>
+    </div>
+    <div class="qr">
+      <div class="qt">History of <strong>pancreatitis</strong>? <span class="rq">*</span></div>
+      <div class="pls"><div class="pl" onclick="yn(this,'y','w')">Yes</div><div class="pl" onclick="yn(this,'n','w')">No</div></div>
+      <div class="aw"><strong>Flagged for review:</strong> Pancreatitis history requires additional clinical evaluation. You may still qualify.</div>
+    </div>
+    <div class="qr">
+      <div class="qt">Do you have <strong>gastroparesis</strong> or severe GI motility issues? <span class="rq">*</span></div>
+      <div class="pls"><div class="pl" onclick="yn(this,'y','w')">Yes</div><div class="pl" onclick="yn(this,'n','w')">No</div></div>
+      <div class="aw"><strong>Flagged:</strong> GLP-1 medications further slow gastric emptying. Provider will evaluate severity.</div>
+    </div>
+    <div class="qr">
+      <div class="qt">History of <strong>gallbladder disease or gallstones</strong>? <span class="rq">*</span></div>
+      <div class="pls"><div class="pl" onclick="yn(this,'y','w')">Yes</div><div class="pl" onclick="yn(this,'n','w')">No</div></div>
+      <div class="aw"><strong>Flagged:</strong> Rapid weight loss increases gallstone risk. Provider may add precautions.</div>
+    </div>
+    <div class="qr">
+      <div class="qt"><strong>Severe kidney disease</strong> (eGFR &lt; 30 or dialysis)? <span class="rq">*</span></div>
+      <div class="pls"><div class="pl" onclick="yn(this,'y','w')">Yes</div><div class="pl" onclick="yn(this,'n','w')">No</div></div>
+      <div class="aw"><strong>Flagged:</strong> Additional lab work may be required before prescribing.</div>
+    </div>
+    <div class="qr">
+      <div class="qt">Currently <strong>pregnant, breastfeeding, or planning pregnancy</strong> within 2 months? <span class="rq">*</span></div>
+      <div class="pls"><div class="pl" onclick="yn(this,'y','hs')">Yes</div><div class="pl" onclick="yn(this,'n','hs')">No</div></div>
+      <div class="as"><strong>Prescribing Alert:</strong> GLP-1 medications are contraindicated during pregnancy/breastfeeding. Discontinue at least 2 months before conception.</div>
+    </div>
+
+    <!-- Tirzepatide-specific -->
+    <div class="qr" id="tirzQ">
+      <div class="qt">Are you currently taking <strong>insulin</strong>? <span class="rq">*</span></div>
+      <div class="pls"><div class="pl" onclick="yn(this,'y','w')">Yes</div><div class="pl" onclick="yn(this,'n','w')">No</div></div>
+      <div class="aw"><strong>Flagged:</strong> Tirzepatide + insulin increases hypoglycemia risk. Provider may adjust your insulin dose.</div>
+    </div>
+
+    <div class="qr">
+      <div class="qt">Do you take <strong>blood thinners</strong> (warfarin, Eliquis, etc.)? <span class="rq">*</span></div>
+      <div class="pls"><div class="pl" onclick="yn(this,'y','w')">Yes</div><div class="pl" onclick="yn(this,'n','w')">No</div></div>
+      <div class="aw"><strong>Flagged:</strong> GLP-1 can alter warfarin absorption. Provider will coordinate with prescriber.</div>
+    </div>
+
+    <div class="qr">
+      <div class="qt">Anything else your provider should know? (surgeries, hospitalizations, other concerns)</div>
+      <div class="fg" style="margin-top:6px"><textarea placeholder="Optional — share anything relevant to your care..."></textarea></div>
+    </div>
+  </div>
+  <div class="br"><button class="bt bb" onclick="go(2)">← Back</button><button class="bt bp" onclick="go(4)">Continue →</button></div>
+</div>
+
+<!-- ══════ STEP 4: CONSENT ══════ -->
+<div class="step" id="s4">
+  <div class="cd">
+    <div class="cd-t">Informed Consent</div>
+    <div class="cd-d">Please review and agree before your evaluation begins.</div>
+    <div class="csb">
+      <strong>Telehealth Consent:</strong> I understand my medical evaluation will be conducted via telehealth by a licensed physician or PA at Body Good Studio. I consent to receive care through electronic communication and understand telehealth limitations.<br><br>
+      <strong>Prescription Acknowledgment:</strong> I understand a prescription may or may not be issued based on my medical history. Prescribing is at the provider's sole discretion. I will use medications only as directed and report side effects immediately.<br><br>
+      <strong>GLP-1 Specific:</strong> I understand GLP-1 receptor agonists carry a boxed warning about thyroid C-cell tumors observed in rodent studies. I will report any neck mass, dysphagia, or hoarseness immediately.<br><br>
+      <strong>Accuracy:</strong> I certify all information provided is accurate and complete. False or incomplete information may result in unsafe prescribing and service termination.<br><br>
+      <strong>HIPAA:</strong> Body Good Studio maintains privacy per HIPAA regulations.<br><br>
+      <strong>Billing:</strong> I understand my subscription terms and may pause, cancel, or modify through the portal or support.
+    </div>
+    <label class="csc"><input type="checkbox" id="c1">I agree to the <strong>Telehealth Consent</strong> and <strong>HIPAA Notice</strong>.</label>
+    <label class="csc"><input type="checkbox" id="c2">I certify all information is <strong>accurate and complete</strong>.</label>
+    <label class="csc"><input type="checkbox" id="c3">I understand prescribing decisions are at the <strong>provider's discretion</strong>.</label>
+    <label class="csc"><input type="checkbox" id="c4">I acknowledge the <strong>GLP-1 boxed warning</strong> regarding thyroid tumors.</label>
+  </div>
+  <div class="cd">
+    <div class="cd-t">Electronic Signature</div>
+    <div class="cd-d">Type your full legal name to sign.</div>
+    <div class="rw r2">
+      <div class="fg"><label class="fl">Full Legal Name <span class="rq">*</span></label><input type="text" placeholder="Full name" id="sig"></div>
+      <div class="fg"><label class="fl">Date</label><input type="text" id="dt" readonly style="background:#f9f9f9"></div>
+    </div>
+  </div>
+  <div class="br"><button class="bt bb" onclick="go(3)">← Back</button><button class="bt bp" onclick="sub()">Submit Intake →</button></div>
+</div>
+
+<div class="ok" id="okp">
+  <div class="ok-i">✓</div>
+  <h2>Intake Complete!</h2>
+  <p>Your medical intake has been submitted. Our clinical team will begin your evaluation and you'll hear from us within 24-48 hours.</p>
+  <div style="margin-top:18px"><a href="#" class="bt bp" style="text-decoration:none;display:inline-block">Return to Dashboard →</a></div>
+</div>
+</div>
+
+<script>
+// Program detection from checkout
+const P=new URLSearchParams(location.search),prog=P.get('med')||'tirz';
+if(prog==='sema'){
+  document.getElementById('cn').textContent='Compounded Semaglutide';
+  document.getElementById('cs').textContent='Self-Pay GLP-1 Injectable';
+  document.getElementById('ci').style.background='#EDE8FD';
+  document.getElementById('ci').textContent='💉';
+  document.getElementById('tirzQ').style.display='none';
+}
+
+// States
+const ST='AL,AK,AZ,AR,CA,CO,CT,DE,FL,GA,HI,ID,IL,IN,IA,KS,KY,LA,ME,MD,MA,MI,MN,MS,MO,MT,NE,NV,NH,NJ,NM,NY,NC,ND,OH,OK,OR,PA,RI,SC,SD,TN,TX,UT,VT,VA,WA,WV,WI,WY,DC'.split(',');
+document.querySelectorAll('.st-sel').forEach(s=>ST.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;s.appendChild(o)}));
+document.getElementById('dt').value=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+
+let step=1;
+function go(n){
+  step=n;
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('on'));
+  document.getElementById('s'+n).classList.add('on');
+  document.getElementById('pf').style.width=((n-1)/3*100)+'%';
+  for(let i=1;i<=4;i++){const d=document.getElementById('d'+i),b=d.querySelector('b');d.classList.remove('on','dn');if(i<n){d.classList.add('dn');b.textContent='✓'}else if(i===n){d.classList.add('on');b.textContent=i}else{b.textContent=i}}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function yn(p,v,a){
+  p.parentElement.querySelectorAll('.pl').forEach(x=>x.classList.remove('sy','sn'));
+  p.classList.add(v==='y'?'sy':'sn');
+  const r=p.closest('.qr'),c=r.querySelector('.cond');
+  if(c&&!a)c.style.display=v==='y'?'block':'none';
+  if(a==='hs'){const b=r.querySelector('.as');if(b)b.classList.toggle('sh',v==='y')}
+  if(a==='w'){const b=r.querySelector('.aw');if(b)b.classList.toggle('sh',v==='y')}
+}
+
+function ct(e){
+  e.classList.toggle('on');e.querySelector('.ckb').textContent=e.classList.contains('on')?'✓':'';
+  if(e.textContent.includes('None')&&e.classList.contains('on'))e.closest('.ckg').querySelectorAll('.ck').forEach(c=>{if(c!==e){c.classList.remove('on');c.querySelector('.ckb').textContent=''}});
+  else{const n=[...e.closest('.ckg').querySelectorAll('.ck')].find(c=>c.textContent.includes('None'));if(n){n.classList.remove('on');n.querySelector('.ckb').textContent=''}}
+}
+
+function sub(){
+  if(!document.getElementById('c1').checked||!document.getElementById('c2').checked||!document.getElementById('c3').checked||!document.getElementById('c4').checked){alert('Please agree to all consent items.');return}
+  if(!document.getElementById('sig').value.trim()){alert('Please sign with your full name.');return}
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('on'));
+  document.getElementById('okp').classList.add('on');
+  document.querySelector('.prog').style.display='none';
+  document.querySelector('.chip').style.display='none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>

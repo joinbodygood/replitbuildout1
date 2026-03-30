@@ -199,7 +199,16 @@ Redirect to Zoho/GLOW for medical intake
 - Real PayPal SDK integration (sandbox) — **NOTE: server-side verification not yet built**
 - Order API (creates order in DB), discount code system
 - 3 discount codes seeded (WELCOME25, SAVE10, FRIEND25)
-- Confirmation page with "Complete Medical Intake" CTA → Zoho
+- Confirmation page with "Complete Medical Intake" CTA — routes to correct intake form per SKU via `resolveIntakeRoute()`
+
+### Medical Intake Forms (PHI → n8n webhook only, never stored locally)
+- **GLP-1 Injectable** (`/intake/glp1-injectable?med=tirz|sema`) — 4-step wizard; contraindications, e-signature; WM-TIR-INJ, WM-SEM-INJ
+- **GLP-1 Oral** (`/intake/glp1-oral?med=sema|tirz`) — 4-step wizard; WM-ORAL-SEM, WM-ORAL-TIR, WM-ORAL-METCOMBO, WM-ORAL-LDN
+- **Specialty** (`/intake/specialty?program=hair|feminine|mental`) — fulfillment toggle (ship/pharm), NPI pharmacy search, program-specific Step 3 screening (Hair: loss patterns/thyroid/liver/prostate; Feminine: concerns/menstrual/hormone cancers; Mental: concerns/seizures/bipolar/glaucoma); HL-*, FH-*, MW-* SKUs
+- **Branded Rx** (`/intake/branded-rx`) — NPI pharmacy search, GLP-1 contraindication screening, branded med preference, transfer details; WM-BRAND-MGMT
+- **Insurance Navigation** (`/intake/insurance`) — insurance details (provider/plan/member ID), BMI auto-calculator, comorbidities checklist for PA strengthening, prior denials, NPI pharmacy; INS-* SKUs
+- **Wellness Injections** (`/intake/wellness`) — injection-specific screening (B-vitamin allergy, Leber's disease, kidney/cancer/clotting/pregnancy/diabetes), self-injection comfort; WI-* SKUs
+- All forms POST to `/api/intake/submit` → `fireWebhook("intake.submitted", data)` → n8n
 
 ### Growth Systems
 - Referral program (unique links, share buttons, stats tracking)
