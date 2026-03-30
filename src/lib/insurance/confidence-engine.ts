@@ -311,11 +311,63 @@ export class ConfidenceEngine {
   ): SourceVerdict | null {
     if (!carrierKey) return null;
 
-    const knownCarriers = ['cigna', 'bcbs_fl', 'aetna', 'uhc', 'humana', 'bcbs_fep', 'medicare', 'medicaid_fl', 'medicaid_ny'];
+    const knownCarriers = ['cigna', 'bcbs_fl', 'aetna', 'uhc', 'humana', 'bcbs_fep', 'medicare', 'medicaid_fl', 'medicaid_ny', 'tricare'];
     if (!knownCarriers.includes(carrierKey)) return null;
 
     const isDiabetesMed = medication === 'mounjaro' || medication === 'ozempic';
     const hasT2D = patient.diagnoses.includes('t2d');
+
+    // ── TRICARE-specific historical logic ───────────────────────────────────
+    if (carrierKey === 'tricare') {
+      if (isDiabetesMed && hasT2D) {
+        return {
+          source: 'historical',
+          verdict: 'pa_required',
+          confidence: 75,
+          probabilityRange: [78, 90],
+          notes: 'Historical: TRICARE covers Mounjaro/Ozempic for T2D with PA. Express Scripts FH formulary includes GLP-1 agonists for diabetes.',
+        };
+      }
+      if (medication === 'wegovy') {
+        const hasCvd = patient.diagnoses.includes('cvd');
+        if (hasCvd) {
+          return {
+            source: 'historical',
+            verdict: 'pa_required',
+            confidence: 62,
+            probabilityRange: [48, 63],
+            notes: 'Historical: TRICARE CV indication pathway has limited but growing approval rate post-2024 SELECT trial data.',
+          };
+        }
+        return {
+          source: 'historical',
+          verdict: 'not_covered',
+          confidence: 70,
+          probabilityRange: [10, 22],
+          notes: 'Historical: TRICARE does not cover Wegovy for weight loss alone. Exception request required — rarely approved.',
+        };
+      }
+      if (medication === 'zepbound') {
+        const hasOsa = patient.diagnoses.includes('osa');
+        if (hasOsa) {
+          return {
+            source: 'historical',
+            verdict: 'pa_required',
+            confidence: 58,
+            probabilityRange: [38, 54],
+            notes: 'Historical: TRICARE OSA pathway for Zepbound is emerging but inconsistently approved. Sleep study required.',
+          };
+        }
+        return {
+          source: 'historical',
+          verdict: 'not_covered',
+          confidence: 70,
+          probabilityRange: [10, 20],
+          notes: 'Historical: TRICARE does not cover Zepbound for weight loss alone.',
+        };
+      }
+      return null;
+    }
 
     if (isDiabetesMed && hasT2D) {
       return {
@@ -412,13 +464,30 @@ export class ConfidenceEngine {
     medication: MedKey,
     patient: PatientInput
   ): MedicationResult['status'] {
-    const highConfDenials = verdicts.filter(v => v.verdict === 'not_covered' && v.confidence >= 80);
-    if (highConfDenials.length > 0) return 'not_covered';
+    // Only probabilityDB or stedi can issue a hard high-confidence denial.
+    // webSearch and historical are too broad/generic to override medication-specific data.
+    const hardDenials = verdicts.filter(
+      v =>
+        v.verdict === 'not_covered' &&
+        v.confidence >= 80 &&
+        (v.source === 'probabilityDB' || v.source === 'stedi')
+    );
+    if (hardDenials.length > 0) return 'not_covered';
 
-    if (combinedScore.probability === 0) return 'not_covered';
+    // If probabilityDB shows strong coverage probability (>= 60%), it anchors the result —
+    // a generic webSearch denial cannot override medication-specific DB data.
+    const dbVerdict = verdicts.find(v => v.source === 'probabilityDB');
+    const dbIsStrongCoverage =
+      dbVerdict &&
+      dbVerdict.probabilityRange &&
+      dbVerdict.probabilityRange[0] >= 60;
+
+    if (combinedScore.probability === 0 && !dbIsStrongCoverage) return 'not_covered';
 
     const counts: Record<string, number> = {};
     verdicts.forEach(v => {
+      // Don't let webSearch alone force a not_covered when DB strongly disagrees
+      if (v.source === 'webSearch' && v.verdict === 'not_covered' && dbIsStrongCoverage) return;
       if (v.verdict) counts[v.verdict] = (counts[v.verdict] || 0) + 1;
     });
 
