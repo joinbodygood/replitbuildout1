@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { RecommendationConfigurator } from "@/components/quiz/RecommendationConfigurator";
 import { MedicationPickerPage } from "@/components/quiz/MedicationPickerPage";
+import { BrandedCashPayPage } from "@/components/quiz/BrandedCashPayPage";
 import { BGS_PRODUCTS } from "@/lib/bgs-products";
 
 type Props = {
@@ -11,7 +12,6 @@ type Props = {
 const OUTCOME_TO_SKU: Record<string, string> = {
   oral:      "WM-ORAL-SEM",
   insurance: "INS-ELIG",
-  branded:   "WM-BRAND-MGMT",
 };
 
 export default async function WeightLossResultPage({ params }: Props) {
@@ -24,6 +24,11 @@ export default async function WeightLossResultPage({ params }: Props) {
   // Compounded → show medication picker (Tirzepatide vs Semaglutide)
   if (outcome === "compounded") {
     return <MedicationPickerPage locale={locale} />;
+  }
+
+  // Branded (Cash Pay) → show 4-option brand comparison page
+  if (outcome === "branded") {
+    return <BrandedCashPayPage locale={locale} />;
   }
 
   const sku = OUTCOME_TO_SKU[outcome];

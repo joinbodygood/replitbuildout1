@@ -161,9 +161,15 @@ export function QuizEngine({ forceReset = false, isBrandPath = false }: { forceR
   function advance(updates: Partial<QuizState> = {}) {
     const newState = { ...state, ...updates, currentStep: state.currentStep + 1 };
 
-    // Brand (Cash Pay) path: skip insurance-interest entirely — patient already chose cash pay
+    // Brand (Cash Pay) path: skip insurance-interest + priority — patient already chose brand, comparison shown on result page
     if (isBrandPath && STEPS[newState.currentStep] === "insurance-interest") {
-      setState({ ...newState, insuranceInterest: "no", currentStep: newState.currentStep + 1 });
+      const cardTrustIdx = STEPS.indexOf("card-trust");
+      setState({ ...newState, insuranceInterest: "no", priority: "brand-name", currentStep: cardTrustIdx });
+      return;
+    }
+    // Safety: also skip priority individually in case we land on it via other paths
+    if (isBrandPath && STEPS[newState.currentStep] === "priority") {
+      setState({ ...newState, priority: "brand-name", currentStep: newState.currentStep + 1 });
       return;
     }
 
@@ -214,9 +220,10 @@ export function QuizEngine({ forceReset = false, isBrandPath = false }: { forceR
   function goBack() {
     if (state.currentStep > 0) {
       const prevStep = state.currentStep - 1;
-      // Brand path: skip back over insurance-interest
-      if (isBrandPath && STEPS[prevStep] === "insurance-interest") {
-        setState({ ...state, currentStep: prevStep - 1 });
+      // Brand path: skip back over both priority and insurance-interest — land on needles
+      if (isBrandPath && (STEPS[prevStep] === "priority" || STEPS[prevStep] === "insurance-interest")) {
+        const needlesIdx = STEPS.indexOf("needles");
+        setState({ ...state, currentStep: needlesIdx });
       } else {
         setState({ ...state, currentStep: prevStep });
       }
