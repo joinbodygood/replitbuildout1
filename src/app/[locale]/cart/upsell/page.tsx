@@ -70,15 +70,18 @@ function UpsellPageInner() {
   const { items, total, itemCount } = useCart();
   const locale = useLocale();
   const searchParams = useSearchParams();
-  const isBranded = searchParams.get("flow") === "branded";
+  const flow = searchParams.get("flow");
+  const isBranded = flow === "branded";
+  const isOral = flow === "oral";
+  const isSingleUpsell = isBranded || isOral;
   const isEs = locale === "es";
 
   const formatPrice = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
   const cartItemNames = items.map((i) => i.name).join(", ");
 
-  // Branded flow: only offer Ondansetron (no ongoing-care or insurance upsells)
-  const visibleUpsells = isBranded
+  // Branded & Oral flows: only offer Ondansetron (no ongoing-care or insurance upsells)
+  const visibleUpsells = isSingleUpsell
     ? UPSELLS.filter((u) => u.id === "upsell-ondansetron")
     : UPSELLS;
 

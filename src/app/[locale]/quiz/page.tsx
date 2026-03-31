@@ -15,6 +15,7 @@ export default async function QuizPage({ params, searchParams }: Props) {
     <QuizEngine
       forceReset={reset === "true"}
       isBrandPath={path === "brand"}
+      isOralPath={path === "oral"}
     />
   );
 }

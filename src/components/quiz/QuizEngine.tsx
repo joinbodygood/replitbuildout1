@@ -79,7 +79,15 @@ const STEPS: StepId[] = [
   "insurance-type",
 ];
 
-function determineOutcome(state: QuizState): string {
+function determineOutcome(state: QuizState, isOral: boolean = false): string {
+  // Oral path: outcome driven entirely by oral-specific priority choice
+  if (isOral) {
+    if (state.priority === "oral-appetite") return "oral-appetite";
+    if (state.priority === "oral-metabolic") return "oral-metabolic";
+    if (state.priority === "oral-wegovy") return "oral-wegovy";
+    return "oral-appetite";
+  }
+
   // Hard override: absolutely no needles → oral (unless brand-name → branded)
   if (state.needleComfort === "absolutely-not") {
     if (state.priority === "brand-name") return "branded";
@@ -121,7 +129,12 @@ const STEP_TO_QNUM: Partial<Record<StepId, number>> = {
   "insurance-type": 10,
 };
 
-export function QuizEngine({ forceReset = false, isBrandPath = false }: { forceReset?: boolean; isBrandPath?: boolean }) {
+const ORAL_STEP_TO_QNUM: Partial<Record<StepId, number>> = {
+  "state": 1, "medical": 2, "weight-goal": 3, "story": 4,
+  "priority": 5, "timeline": 6, "email": 7,
+};
+
+export function QuizEngine({ forceReset = false, isBrandPath = false, isOralPath = false }: { forceReset?: boolean; isBrandPath?: boolean; isOralPath?: boolean }) {
   const [state, setState] = useState<QuizState>(initialState);
   const [showLanding, setShowLanding] = useState(true);
   const [showRetakeConfirm, setShowRetakeConfirm] = useState(false);
@@ -155,7 +168,8 @@ export function QuizEngine({ forceReset = false, isBrandPath = false }: { forceR
   }, [state]);
 
   const currentStepId = STEPS[state.currentStep];
-  const qNum = STEP_TO_QNUM[currentStepId];
+  const qNum = isOralPath ? ORAL_STEP_TO_QNUM[currentStepId] : STEP_TO_QNUM[currentStepId];
+  const totalQuestions = isOralPath ? 7 : TOTAL_QUESTIONS;
   const progress = Math.round(((state.currentStep + 1) / STEPS.length) * 100);
 
   function advance(updates: Partial<QuizState> = {}) {
@@ -170,6 +184,17 @@ export function QuizEngine({ forceReset = false, isBrandPath = false }: { forceR
     // Safety: also skip priority individually in case we land on it via other paths
     if (isBrandPath && STEPS[newState.currentStep] === "priority") {
       setState({ ...newState, priority: "brand-name", currentStep: newState.currentStep + 1 });
+      return;
+    }
+
+    // Oral path: skip card-education, needles, insurance-interest — jump straight to priority
+    if (isOralPath && STEPS[newState.currentStep] === "card-education") {
+      setState({
+        ...newState,
+        needleComfort: "absolutely-not",
+        insuranceInterest: "no",
+        currentStep: STEPS.indexOf("priority"),
+      });
       return;
     }
 
@@ -191,7 +216,7 @@ export function QuizEngine({ forceReset = false, isBrandPath = false }: { forceR
   }
 
   function finalize(finalState: QuizState) {
-    const outcome = determineOutcome(finalState);
+    const outcome = determineOutcome(finalState, isOralPath);
     localStorage.removeItem("bg_quiz_state_v2");
 
     fetch("/api/quiz-lead", {
@@ -224,9 +249,15 @@ export function QuizEngine({ forceReset = false, isBrandPath = false }: { forceR
       if (isBrandPath && (STEPS[prevStep] === "priority" || STEPS[prevStep] === "insurance-interest")) {
         const needlesIdx = STEPS.indexOf("needles");
         setState({ ...state, currentStep: needlesIdx });
-      } else {
-        setState({ ...state, currentStep: prevStep });
+        return;
       }
+      // Oral path: skip back over insurance-interest, needles, or card-education — land on story
+      if (isOralPath && (STEPS[prevStep] === "card-education" || STEPS[prevStep] === "needles" || STEPS[prevStep] === "insurance-interest")) {
+        const storyIdx = STEPS.indexOf("story");
+        setState({ ...state, currentStep: storyIdx });
+        return;
+      }
+      setState({ ...state, currentStep: prevStep });
     }
   }
 
@@ -381,7 +412,7 @@ export function QuizEngine({ forceReset = false, isBrandPath = false }: { forceR
           </button>
           {qNum && (
             <span className="text-body-muted text-xs font-semibold uppercase tracking-wide">
-              {isEs ? `Pregunta ${qNum} de ${TOTAL_QUESTIONS}` : `Question ${qNum} of ${TOTAL_QUESTIONS}`}
+              {isEs ? `Pregunta ${qNum} de ${totalQuestions}` : `Question ${qNum} of ${totalQuestions}`}
             </span>
           )}
         </div>
@@ -518,7 +549,7 @@ export function QuizEngine({ forceReset = false, isBrandPath = false }: { forceR
           />
         )}
 
-        {currentStepId === "priority" && (
+        {currentStepId === "priority" && !isOralPath && (
           <QuizStep
             question={
               isEs
@@ -544,6 +575,46 @@ export function QuizEngine({ forceReset = false, isBrandPath = false }: { forceR
                   ? "Emparéjame con la opción más efectiva para mis objetivos."
                   : "Match me to the most effective option for my goals.",
                 value: "best-results",
+              },
+            ]}
+            onSelect={(value) => advance({ priority: value })}
+          />
+        )}
+
+        {currentStepId === "priority" && isOralPath && (
+          <QuizStep
+            question={
+              isEs
+                ? "¿Cuál de estas describe mejor tu objetivo principal?"
+                : "Which of these best describes your main goal?"
+            }
+            options={[
+              {
+                label: isEs
+                  ? '"Control del apetito — reducir el hambre y la resistencia a la insulina"'
+                  : '"Appetite control — reduce hunger and insulin resistance"',
+                sub: isEs
+                  ? "Ideal para PCOS, prediabetes o hambre constante."
+                  : "Ideal for PCOS, pre-diabetes, or persistent hunger.",
+                value: "oral-appetite",
+              },
+              {
+                label: isEs
+                  ? '"Reinicio metabólico — calmar los antojos y la inflamación"'
+                  : '"Metabolic reset — quiet cravings and reduce inflammation"',
+                sub: isEs
+                  ? "Ideal para comer emocionalmente o antojos frecuentes."
+                  : "Ideal for emotional eating or frequent food cravings.",
+                value: "oral-metabolic",
+              },
+              {
+                label: isEs
+                  ? '"Quiero la pastilla oral de Wegovy aprobada por la FDA"'
+                  : '"I want the FDA-approved oral Wegovy pill"',
+                sub: isEs
+                  ? "Semaglutide oral — la misma eficacia, sin inyecciones. Se paga en la farmacia."
+                  : "Oral semaglutide — same proven efficacy, no injections. Filled at your pharmacy.",
+                value: "oral-wegovy",
               },
             ]}
             onSelect={(value) => advance({ priority: value })}

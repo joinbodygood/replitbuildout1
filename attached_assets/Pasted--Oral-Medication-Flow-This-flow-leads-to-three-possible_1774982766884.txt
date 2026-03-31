@@ -1,0 +1,42 @@
+ Oral Medication Flow
+This flow leads to three possible product recommendations: Glow Rx Appetite Control, Glow Rx
+Metabolic Reset, or Oral Wegovy (pill). All outcomes are oral medications — no injectables.
+A. Quiz Fixes (Remove Irrelevant Questions)
+• Remove or rewrite the “Two Meds, One Goal” question card that references GLP-1
+medications. The recommendation page includes more than just GLP-1 options, so this
+framing is misleading.
+• Remove the question about self-injections entirely. This pathway is 100% oral medication
+— injections are not a possible outcome.
+BODY GOOD STUDIO | Platform Migration QA Task List
+Confidential — Body Good Studio March 31, 2026
+• Remove the health insurance question/card. None of the medications in this flow will have
+insurance coverage as an option.
+• Rewrite the “What Matters Most” question card. The three possible outcomes are Glow Rx
+Appetite Control, Glow Rx Metabolic Reset, or Oral Wegovy, so the answer choices must
+map logically to those three paths. Example framing: appetite suppression vs. metabolic
+reset vs. brand-name FDA-approved oral option.
+B. Recommendation Page
+• Display exactly 3 options: Glow Rx Appetite Control, Glow Rx Metabolic Reset, and Wegovy
+Pill.
+• For Glow Rx products: clearly indicate that medications ARE included in the listed price.
+• For Wegovy Pill: this is a self-pay consultation model. The customer pays Body Good for
+the consultation, then receives a prescription sent to their pharmacy where they pay for
+the medication out of pocket. Include the NovoCare pricing for Wegovy on the
+recommendation page so the customer knows what to expect at the pharmacy.
+• Upsell must be Ondansetron, then proceed straight to checkout.
+4. Self-Pay Brand Rx Flow
+This flow is for customers who want brand-name medications (Wegovy or Zepbound) and are
+willing to pay out of pocket for a consultation plus the manufacturer’s direct pricing.
+A. Quiz Fixes
+• Replace the current “Tirzepatide vs. Semaglutide” card with: Wegovy (pill or injection) vs.
+Zepbound (vial or QwikPen). Use the actual brand names customers will recognize.
+• Remove the question about paying with insurance. This flow is 100% self-pay.
+• Remove the “What Matters Most” question entirely. It is not needed here — the
+recommendation page will present all options with pros/cons for easy comparison.
+B. Recommendation Page
+• Present all 4 brand options: Wegovy Pill, Wegovy Injection, Zepbound Vial, and Zepbound
+QwikPen.
+• Each option must include a clear pro/con comparison so the visitor can quickly identify
+the best fit for them (e.g., convenience, cost, administration method, dosing flexibility).
+• Include the out-of-pocket price list from NovoCare (for Wegovy products) and Eli Lilly (for
+Zepbound products) so customers see the full cost picture before the consultation.
