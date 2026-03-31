@@ -275,8 +275,8 @@ export function QuizEngine({ forceReset = false }: { forceReset?: boolean }) {
           </p>
           <p className="text-body-muted mb-8 text-sm">
             {isEs
-              ? "Nuestro equipo de médicos puede revisar tu situación específica de forma personal y gratuita."
-              : "Our physician team can review your specific situation personally and at no cost to you."}
+              ? "Nuestro equipo de médicos puede revisar tu situación específica personalmente."
+              : "Our physician team can review your specific situation personally."}
           </p>
 
           {/* Primary CTA */}
@@ -285,7 +285,7 @@ export function QuizEngine({ forceReset = false }: { forceReset?: boolean }) {
             className="inline-flex items-center justify-center gap-2 w-full bg-brand-red text-white font-heading font-semibold px-8 py-4 rounded-pill shadow-btn hover:bg-brand-red-hover hover:shadow-btn-hover transition-all duration-base text-base mb-4"
           >
             <Calendar className="w-5 h-5" />
-            {isEs ? "Agendar una Consulta Gratuita" : "Schedule a Free Consultation"}
+            {isEs ? "Agendar una Consulta" : "Schedule a Consultation"}
           </a>
 
           {/* Secondary retake link */}
