@@ -1,6 +1,8 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import {
   CheckCircle,
   AlertTriangle,
@@ -9,6 +11,7 @@ import {
   Loader2,
 } from "lucide-react";
 import PharmacySearch, { type PharmacySelection } from "@/components/pharmacy-search/PharmacySearch";
+import { useCart } from "@/context/CartContext";
 
 const US_STATES = [
   "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA",
@@ -148,6 +151,9 @@ function SuccessScreen() {
 }
 
 function BrandedRxForm() {
+  const router = useRouter();
+  const locale = useLocale();
+  const { addItem } = useCart();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -220,8 +226,16 @@ function BrandedRxForm() {
           consent: { telehealth: s4.c1, medicationNotIncluded: s4.c2, glp1Warning: s4.c3, signature: s4.signature, signedAt: new Date().toISOString() },
         }),
       });
-      setSubmitted(true);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      // Intake saved — now add the $55 doctor review fee to cart and collect payment
+      addItem({
+        productId: "WM-BRAND-MGMT",
+        variantId: "pharmacy",
+        name: "Branded Rx — Doctor Review & Prescription",
+        variantLabel: "One-time medical review",
+        price: 5500, // $55.00 in cents
+        slug: "wegovy",
+      });
+      router.push(`/${locale}/checkout`);
     } catch {
       setSubmitError("Submission failed. Please try again.");
     } finally {
@@ -234,13 +248,15 @@ function BrandedRxForm() {
   return (
     <div className="min-h-screen" style={{ background: "#FBF7F4" }}>
       <div className="text-center py-7 px-5 max-w-xl mx-auto">
-        <div className="w-12 h-12 bg-success-soft rounded-full flex items-center justify-center mx-auto mb-3">
-          <CheckCircle className="w-6 h-6 text-success" />
+        <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-3">
+          <ClipboardList className="w-6 h-6 text-blue-600" />
         </div>
         <h1 className="font-heading text-heading text-2xl font-bold mb-1.5">
-          Order confirmed. <span className="text-brand-red">Almost there.</span>
+          Step 1 of 2 — <span className="text-brand-red">Your health intake.</span>
         </h1>
-        <p className="text-body-muted text-sm leading-relaxed">Complete your intake for your branded GLP-1 prescription.</p>
+        <p className="text-body-muted text-sm leading-relaxed">
+          Complete the form below, then you&apos;ll pay the <strong>$55 doctor review fee</strong> to submit.
+        </p>
       </div>
 
       <div className="flex items-center gap-3 max-w-xl mx-auto px-5 mb-5 bg-white border border-border rounded-card p-4" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
@@ -432,7 +448,7 @@ function BrandedRxForm() {
               <button onClick={() => goTo(3)} className="font-heading font-bold text-sm border border-border text-body px-6 py-3 rounded-pill hover:border-gray-400 transition-colors">← Back</button>
               <button onClick={handleSubmit} disabled={submitting} className="font-heading font-bold text-sm bg-brand-red text-white px-8 py-3 rounded-pill hover:bg-brand-red-hover transition-colors disabled:opacity-60 flex items-center gap-2" style={{ boxShadow: "0 4px 12px rgba(237,27,27,0.2)" }}>
                 {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                {submitting ? "Submitting..." : "Submit Intake →"}
+                {submitting ? "Saving your intake..." : "Submit & Proceed to Payment — $55 →"}
               </button>
             </div>
           </div>
