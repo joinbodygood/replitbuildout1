@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import {
@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Tag,
   Info,
+  CheckCircle,
 } from "lucide-react";
 import type { BGSProduct } from "@/lib/bgs-products";
 
@@ -22,7 +23,8 @@ interface Props {
 }
 
 interface PriceDisplay {
-  price: number | "—";
+  price: number | "—";  // per-month display price
+  total?: number;       // total plan cost (price × months)
   sub?: string;
   note?: string;
   extra?: string;
@@ -30,7 +32,7 @@ interface PriceDisplay {
 }
 
 export function RecommendationConfigurator({ product, locale }: Props) {
-  const { addItem } = useCart();
+  const { addItem, replaceMedPlan, items } = useCart();
   const router = useRouter();
 
   const hasDoses = !!product.doses;
@@ -45,6 +47,8 @@ export function RecommendationConfigurator({ product, locale }: Props) {
   const [pharmacyName, setPharmacyName] = useState("");
   const [pharmacyZip, setPharmacyZip] = useState("");
   const [pharmacyPhone, setPharmacyPhone] = useState("");
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Auto-select fulfillment based on product type
   useEffect(() => {
@@ -93,10 +97,8 @@ export function RecommendationConfigurator({ product, locale }: Props) {
   // ── PRICE CALCULATION ──
   const calcPrice = useCallback((): PriceDisplay => {
     if (isService) {
-      return {
-        price: product.servicePrice ?? 0,
-        sub: product.serviceLabel,
-      };
+      const svc = product.servicePrice ?? 0;
+      return { price: svc, total: svc, sub: product.serviceLabel };
     }
     if (!fulfillment) return { price: "—", note: "Select a delivery option" };
 
@@ -104,6 +106,7 @@ export function RecommendationConfigurator({ product, locale }: Props) {
       const fee = product.pharmacyFee ?? 25;
       return {
         price: fee,
+        total: fee,
         sub: product.isAcute ? "One-time consult" : "Doctor review + e-Rx",
         note: product.ongoingFee
           ? `+ $${product.ongoingFee}/mo ongoing management`
@@ -116,14 +119,15 @@ export function RecommendationConfigurator({ product, locale }: Props) {
     if (!hasDoses) {
       if (!duration) return { price: "—", note: "Choose shipping frequency" };
       const prices = product.prices ?? {};
-      const total = prices[duration] ?? (prices[1] ?? 0) * duration;
-      const monthly = duration > 1 ? Math.round(total / duration) : total;
+      const planTotal = prices[duration] ?? (prices[1] ?? 0) * duration;
+      const monthly = duration > 1 ? Math.round(planTotal / duration) : planTotal;
       return {
         price: monthly,
+        total: planTotal,
         sub: duration > 1 ? "per month" : undefined,
         note:
           duration > 1
-            ? `Total: $${total}`
+            ? `Total: $${planTotal}`
             : "Meds + doctor review + free shipping",
       };
     }
@@ -140,16 +144,16 @@ export function RecommendationConfigurator({ product, locale }: Props) {
     }
 
     const tp = product.tierPricing ?? {};
-    let total = 0;
+    let planTotal = 0;
     const breakdown = monthDoses.map((mg) => {
       const dose = product.doses!.find((d) => d.mg === mg)!;
       const tierKey = dose.tier;
       const price = tp[tierKey]?.[duration] ?? tp[tierKey]?.[1] ?? 0;
-      total += price;
+      planTotal += price;
       return { mg: mg!, tier: tierKey, price };
     });
 
-    const monthly = Math.round(total / duration);
+    const monthly = Math.round(planTotal / duration);
     const allSameTier = new Set(breakdown.map((b) => b.tier)).size === 1;
     const tierLabel = allSameTier
       ? breakdown[0].tier === "starter"
@@ -160,9 +164,10 @@ export function RecommendationConfigurator({ product, locale }: Props) {
       : "Mixed tier pricing";
 
     return {
-      price: duration === 1 ? total : monthly,
+      price: duration === 1 ? planTotal : monthly,
+      total: planTotal,
       sub: duration > 1 ? "per month" : undefined,
-      note: duration > 1 ? `Total: $${total} · ${tierLabel}` : tierLabel,
+      note: duration > 1 ? `Total: $${planTotal} · ${tierLabel}` : tierLabel,
       breakdown,
     };
   }, [
@@ -196,13 +201,34 @@ export function RecommendationConfigurator({ product, locale }: Props) {
   const stepFreq = 2;
   const stepDose = hasDurChoice ? 3 : 2;
 
+  function showToast(msg: string) {
+    setToast(msg);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 3500);
+  }
+
   function handleGetStarted() {
     if (!canSubmit) return;
 
-    const priceInCents =
+    // Use plan total — not per-month price
+    const planTotal = pd.total ?? (pd.price !== "—" ? (pd.price as number) : 0);
+    const totalPriceInCents = Math.round(planTotal * 100);
+    const monthlyPriceInCents =
       pd.price !== "—" ? Math.round((pd.price as number) * 100) : 0;
+    const months = duration ?? 1;
 
-    // Build rich metadata and store in localStorage
+    // Build variant label with clear breakdown
+    const doseStr = monthDoses.filter(Boolean).join(" → ");
+    const variantLabel =
+      months > 1
+        ? doseStr
+          ? `${months}-Month Plan · ${doseStr} · $${pd.price as number}/mo × ${months} = $${planTotal}`
+          : `${months}-Month Plan · $${pd.price as number}/mo × ${months} = $${planTotal}`
+        : doseStr
+        ? `1-Month · ${doseStr}`
+        : "1-Month Supply";
+
+    // Store rich metadata
     const richData = {
       sku: product.sku,
       fulfillment_type:
@@ -212,44 +238,45 @@ export function RecommendationConfigurator({ product, locale }: Props) {
           ? "service"
           : "pharmacy_pickup",
       product_name: product.name,
-      duration_months: duration ?? 1,
+      duration_months: months,
       monthly_doses: monthDoses.filter(Boolean).length
         ? monthDoses.map((d) => d ?? "")
         : null,
       monthly_prices: pd.breakdown ? pd.breakdown.map((b) => b.price) : null,
-      total_price:
-        pd.breakdown
-          ? pd.breakdown.reduce((s, b) => s + b.price, 0)
-          : pd.price !== "—"
-          ? (pd.price as number)
-          : 0,
+      total_price: planTotal,
       includes_medication: fulfillment === "ship",
       requires_pharmacy_selection: fulfillment === "pharmacy",
       goodrx_drug_slug: product.slug ?? null,
     };
     localStorage.setItem("bg_recommendation_data", JSON.stringify(richData));
 
-    // For pharmacy, open modal first
+    // Pharmacy path — open modal first
     if (fulfillment === "pharmacy") {
       setPharmacyModalOpen(true);
       return;
     }
 
-    // Add to cart and go to upsell/checkout
-    addItem({
+    // Ship path — replace any existing medication plan (only one allowed at a time)
+    const cartItem = {
       productId: product.sku,
-      variantId: `${product.sku}-${fulfillment}-${duration}mo`,
+      variantId: `${product.sku}-${fulfillment}-${months}mo`,
       name: product.name,
-      variantLabel:
-        monthDoses.filter(Boolean).length
-          ? `${duration}-Month · Doses: ${monthDoses.join(" → ")}`
-          : duration && duration > 1
-          ? `${duration}-Month Supply`
-          : "1-Month Supply",
-      price: priceInCents,
+      variantLabel,
+      price: totalPriceInCents,
       slug: product.slug ?? product.sku.toLowerCase(),
-    });
-    router.push(`/${locale}/cart/upsell`);
+      isMedPlan: true,
+      monthlyPrice: monthlyPriceInCents,
+      durationMonths: months,
+    };
+
+    const hadExisting = items.some((i) => i.isMedPlan);
+    replaceMedPlan(cartItem);
+    if (hadExisting) {
+      showToast("Your plan has been updated");
+      setTimeout(() => router.push(`/${locale}/cart/upsell`), 1200);
+    } else {
+      router.push(`/${locale}/cart/upsell`);
+    }
   }
 
   function handlePharmacyConfirm() {
@@ -274,6 +301,14 @@ export function RecommendationConfigurator({ product, locale }: Props) {
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: "Manrope, sans-serif" }}>
+      {/* TOAST */}
+      {toast && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-[#0C0D0F] text-white text-[13px] font-semibold px-5 py-3 rounded-full shadow-lg animate-fade-in">
+          <CheckCircle size={16} className="text-[#4ADE80] flex-shrink-0" />
+          {toast}
+        </div>
+      )}
+
       {/* TOP BAR */}
       <div className="bg-[#0C0D0F] text-white text-center py-2.5 px-4 text-[12px] font-medium tracking-wide">
         Board-Certified Doctors &bull; Licensed in 20 States &bull; Free Shipping

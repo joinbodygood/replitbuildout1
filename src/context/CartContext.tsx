@@ -7,14 +7,18 @@ export type CartItem = {
   variantId: string;
   name: string;
   variantLabel: string;
-  price: number; // cents
+  price: number;        // cents — TOTAL plan cost, not per-month
   quantity: number;
   slug: string;
+  isMedPlan?: boolean;      // true for ship-to-me medication plans
+  monthlyPrice?: number;    // cents per month, for display purposes
+  durationMonths?: number;  // number of months in the plan
 };
 
 type CartContextType = {
   items: CartItem[];
   addItem: (item: Omit<CartItem, "quantity">) => void;
+  replaceMedPlan: (item: Omit<CartItem, "quantity">) => boolean; // returns true if an existing plan was replaced
   removeItem: (variantId: string) => void;
   updateQuantity: (variantId: string, quantity: number) => void;
   clearCart: () => void;
@@ -28,7 +32,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [loaded, setLoaded] = useState(false);
 
-  // Load from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem("bg_cart");
     if (saved) {
@@ -39,7 +42,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setLoaded(true);
   }, []);
 
-  // Save to localStorage on change
   useEffect(() => {
     if (loaded) {
       localStorage.setItem("bg_cart", JSON.stringify(items));
@@ -51,13 +53,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const existing = prev.find((i) => i.variantId === item.variantId);
       if (existing) {
         return prev.map((i) =>
-          i.variantId === item.variantId
-            ? { ...i, quantity: i.quantity + 1 }
-            : i
+          i.variantId === item.variantId ? { ...i, quantity: i.quantity + 1 } : i
         );
       }
       return [...prev, { ...item, quantity: 1 }];
     });
+  }, []);
+
+  // Replace any existing medication plan with the new one.
+  // Returns true if a previous plan was removed (so callers can show a toast).
+  const replaceMedPlan = useCallback((item: Omit<CartItem, "quantity">): boolean => {
+    let replaced = false;
+    setItems((prev) => {
+      const hadExisting = prev.some((i) => i.isMedPlan);
+      if (hadExisting) replaced = true;
+      const filtered = prev.filter((i) => !i.isMedPlan);
+      return [...filtered, { ...item, quantity: 1 }];
+    });
+    return replaced;
   }, []);
 
   const removeItem = useCallback((variantId: string) => {
@@ -81,7 +94,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ items, addItem, removeItem, updateQuantity, clearCart, itemCount, total }}
+      value={{ items, addItem, replaceMedPlan, removeItem, updateQuantity, clearCart, itemCount, total }}
     >
       {children}
     </CartContext.Provider>

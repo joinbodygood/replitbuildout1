@@ -48,7 +48,7 @@ interface Props {
 }
 
 export function SplitRecommendationPage({ config, locale }: Props) {
-  const { addItem } = useCart();
+  const { addItem, replaceMedPlan } = useCart();
   const router = useRouter();
   const [pharmacyModalOpen, setPharmacyModalOpen] = useState(false);
   const [pharmacyName, setPharmacyName] = useState("");
@@ -61,13 +61,14 @@ export function SplitRecommendationPage({ config, locale }: Props) {
     : null;
 
   function handleShipToMe() {
-    addItem({
+    replaceMedPlan({
       productId: config.shipCartData.productId,
       variantId: config.shipCartData.variantId,
       name: config.productName,
       variantLabel: config.shipCartData.variantLabel,
       price: config.shipCartData.priceInCents,
       slug: config.shipCartData.slug,
+      isMedPlan: true,
     });
     router.push(`/${locale}/cart/upsell`);
   }
