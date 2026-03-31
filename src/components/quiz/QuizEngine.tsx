@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
+import { Calendar, RotateCcw, AlertTriangle, ChevronLeft } from "lucide-react";
 import { QuizStep } from "./QuizStep";
 import { InterstitialCard } from "./InterstitialCard";
 import { EmailCapture } from "./EmailCapture";
@@ -120,15 +121,23 @@ const STEP_TO_QNUM: Partial<Record<StepId, number>> = {
   "insurance-type": 10,
 };
 
-export function QuizEngine() {
+export function QuizEngine({ forceReset = false }: { forceReset?: boolean }) {
   const [state, setState] = useState<QuizState>(initialState);
   const [showLanding, setShowLanding] = useState(true);
+  const [showRetakeConfirm, setShowRetakeConfirm] = useState(false);
   const router = useRouter();
   const locale = useLocale();
   const isEs = locale === "es";
 
-  // Persist state
+  // Handle ?reset=true bypass (admin/testing)
   useEffect(() => {
+    if (forceReset) {
+      localStorage.removeItem("bg_quiz_state_v2");
+      setState(initialState);
+      setShowLanding(false);
+      setState({ ...initialState, currentStep: 1 });
+      return;
+    }
     const saved = localStorage.getItem("bg_quiz_state_v2");
     if (saved) {
       try {
@@ -137,7 +146,7 @@ export function QuizEngine() {
         setShowLanding(false);
       } catch {}
     }
-  }, []);
+  }, [forceReset]);
 
   useEffect(() => {
     if (state.currentStep > 0) {
@@ -202,36 +211,95 @@ export function QuizEngine() {
     }
   }
 
-  // Disqualification screen
+  // Retake confirmation modal
+  if (state.disqualified && showRetakeConfirm) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center px-6 py-20">
+        <div className="max-w-md text-center">
+          <div className="w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-amber-200">
+            <AlertTriangle className="w-6 h-6 text-amber-500" />
+          </div>
+          <h2 className="font-heading text-heading text-xl font-bold mb-4">
+            {isEs
+              ? "¿Estás segura de que quieres retomar el quiz?"
+              : "Are you sure you want to retake the quiz?"}
+          </h2>
+          <p className="text-body-muted text-sm leading-relaxed mb-8">
+            {isEs
+              ? "Si alguna de las condiciones de la pantalla anterior aplica a ti, nuestro equipo médico puede ayudarte personalmente — sin costo. El quiz está diseñado para protegerte, no para bloquearte."
+              : "If any of the conditions on the previous screen apply to you, our medical team can help you personally — at no cost. The quiz is designed to protect you, not block you."}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={() => setShowRetakeConfirm(false)}
+              className="inline-flex items-center justify-center gap-2 border border-border text-heading font-heading font-semibold px-6 py-3 rounded-pill hover:bg-surface transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              {isEs ? "Regresar" : "Go Back"}
+            </button>
+            <button
+              onClick={() => {
+                localStorage.removeItem("bg_quiz_state_v2");
+                setState({ ...initialState, currentStep: 1 });
+                setShowLanding(false);
+                setShowRetakeConfirm(false);
+              }}
+              className="inline-flex items-center justify-center gap-2 bg-brand-red text-white font-heading font-semibold px-6 py-3 rounded-pill hover:bg-brand-red-hover transition-colors"
+            >
+              <RotateCcw className="w-4 h-4" />
+              {isEs ? "Retomar el Quiz" : "Retake Quiz"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Disqualification screen — branching paths
   if (state.disqualified) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center px-6 py-20">
         <div className="max-w-md text-center">
           <div className="w-14 h-14 bg-brand-pink-soft rounded-full flex items-center justify-center mx-auto mb-6 border border-brand-red/20">
-            <span className="text-brand-red text-xl font-bold">!</span>
+            <AlertTriangle className="w-6 h-6 text-brand-red" />
           </div>
           <h2 className="font-heading text-heading text-2xl font-bold mb-4">
             {isEs
-              ? "Basado en tus respuestas, GLP-1 puede no ser adecuado ahora mismo."
-              : "Based on your answers, GLP-1 medication may not be the right fit right now."}
+              ? "Basado en tus respuestas, GLP-1 puede requerir una revisión médica primero."
+              : "Based on your answers, GLP-1 may require a medical review first."}
           </h2>
           <p className="text-body-muted mb-3 text-sm leading-relaxed">
             {isEs
-              ? "Ciertas condiciones médicas requieren evaluación adicional antes de iniciar la terapia GLP-1. No es una determinación médica final — es una pantalla de seguridad para protegerte."
+              ? "Ciertas condiciones médicas requieren evaluación adicional antes de iniciar la terapia GLP-1. Esto no es una determinación médica final — es una pantalla de seguridad para protegerte."
               : "Certain medical conditions require additional evaluation before starting GLP-1 therapy. This isn't a final medical determination — it's a safety screen to protect you."}
           </p>
           <p className="text-body-muted mb-8 text-sm">
             {isEs
-              ? "Nuestro equipo médico estaría feliz de revisar tu situación específica personalmente."
-              : "Our physician team would be happy to review your specific situation personally."}
+              ? "Nuestro equipo de médicos puede revisar tu situación específica de forma personal y gratuita."
+              : "Our physician team can review your specific situation personally and at no cost to you."}
           </p>
+
+          {/* Primary CTA */}
           <a
             href={`/${locale}/contact`}
-            className="inline-flex items-center justify-center bg-heading text-white font-heading font-semibold px-8 py-3.5 rounded-pill hover:opacity-90 transition-opacity"
+            className="inline-flex items-center justify-center gap-2 w-full bg-brand-red text-white font-heading font-semibold px-8 py-4 rounded-pill shadow-btn hover:bg-brand-red-hover hover:shadow-btn-hover transition-all duration-base text-base mb-4"
           >
-            {isEs ? "Hablar con el Equipo →" : "Have the Team Reach Out →"}
+            <Calendar className="w-5 h-5" />
+            {isEs ? "Agendar una Consulta Gratuita" : "Schedule a Free Consultation"}
           </a>
-          <p className="text-body-muted text-xs mt-4 italic">
+
+          {/* Secondary retake link */}
+          <button
+            onClick={() => setShowRetakeConfirm(true)}
+            className="inline-flex items-center justify-center gap-1.5 text-body-muted text-sm hover:text-brand-red transition-colors underline underline-offset-2"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            {isEs
+              ? "Puede que haya respondido incorrectamente — retomar el quiz"
+              : "I may have answered incorrectly — retake the quiz"}
+          </button>
+
+          <p className="text-body-muted text-xs mt-6 italic">
             {isEs
               ? "Tus respuestas son anónimas y no se almacenan con tu email. Esto no es un diagnóstico."
               : "Your answers are anonymous and are not stored with your email. This is not a diagnosis."}
