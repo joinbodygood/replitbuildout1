@@ -221,13 +221,13 @@ export function QuizEngine({ forceReset = false }: { forceReset?: boolean }) {
           </div>
           <h2 className="font-heading text-heading text-xl font-bold mb-4">
             {isEs
-              ? "¿Estás segura de que quieres retomar el quiz?"
-              : "Are you sure you want to retake the quiz?"}
+              ? "Antes de retomar el quiz"
+              : "Before you retake the quiz"}
           </h2>
           <p className="text-body-muted text-sm leading-relaxed mb-8">
             {isEs
-              ? "Si alguna de las condiciones de la pantalla anterior aplica a ti, nuestro equipo médico puede ayudarte personalmente — sin costo. El quiz está diseñado para protegerte, no para bloquearte."
-              : "If any of the conditions on the previous screen apply to you, our medical team can help you personally — at no cost. The quiz is designed to protect you, not block you."}
+              ? "¿Estás segura? Si alguna de las condiciones de la pantalla anterior aplica a ti, nuestro equipo médico puede revisar tu situación específica personalmente. El quiz está diseñado para protegerte, no para bloquearte."
+              : "Are you sure? If any of the conditions on the previous screen apply to you, our medical team can review your specific situation personally. The quiz is designed to protect you, not block you."}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
