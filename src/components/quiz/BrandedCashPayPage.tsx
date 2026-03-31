@@ -170,6 +170,32 @@ export function BrandedCashPayPage({ locale }: Props) {
         </p>
       </div>
 
+      {/* $55 BANNER */}
+      <div className="max-w-[900px] mx-auto px-4 mb-8">
+        <div className="rounded-2xl bg-[#0C0D0F] text-white px-7 py-6 flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex-1">
+            <div className="text-[28px] md:text-[34px] font-bold leading-tight mb-1" style={{ fontFamily: "Poppins, sans-serif" }}>
+              Get started for <span className="text-[#4ADE80]">$55</span>
+            </div>
+            <p className="text-[#C8C9CA] text-[13px] leading-relaxed max-w-[540px]">
+              One-time medical review fee. A board-certified physician reviews your info and writes
+              your prescription. Medication costs are separate and listed below for each option.
+            </p>
+          </div>
+          <div className="flex flex-col items-start sm:items-end gap-1 flex-shrink-0">
+            <div className="flex items-center gap-1.5 text-[12px] text-[#C8C9CA]">
+              <ShieldCheck size={13} className="text-[#4ADE80]" /> HIPAA Compliant
+            </div>
+            <div className="flex items-center gap-1.5 text-[12px] text-[#C8C9CA]">
+              <Check size={13} className="text-[#4ADE80]" /> Board-Certified MDs
+            </div>
+            <div className="flex items-center gap-1.5 text-[12px] text-[#C8C9CA]">
+              <Check size={13} className="text-[#4ADE80]" /> Cancel anytime
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* COMPARISON GRID */}
       <div className="max-w-[1100px] mx-auto px-4 pb-10 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
         {OPTIONS.map((opt) => (
@@ -240,28 +266,43 @@ export function BrandedCashPayPage({ locale }: Props) {
               </div>
 
               {/* Price */}
-              <div className="mt-auto pt-3 border-t border-[#F0F0F0]">
-                <div className="flex items-baseline gap-1 mb-0.5">
-                  <span className="text-[22px] font-bold text-[#0C0D0F]">{opt.priceLabel}</span>
-                  <span className="text-[12px] text-[#55575A]">{opt.priceNote}</span>
+              <div className="mt-auto pt-3 border-t border-[#F0F0F0] space-y-2">
+                {/* BGS fee */}
+                <div className="rounded-lg bg-[#E8F5EE] px-3 py-2">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#1B8A4A] mb-0.5">
+                    Your cost to get started
+                  </div>
+                  <div className="text-[20px] font-bold text-[#0C0D0F] leading-none">$55</div>
+                  <div className="text-[10px] text-[#55575A] mt-0.5">One-time doctor review &amp; Rx fee</div>
                 </div>
-                <a
-                  href={opt.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold mb-3"
-                  style={{ color: opt.brandColor }}
-                >
-                  <ExternalLink size={10} strokeWidth={2.5} />
-                  Pricing from {opt.sourceLabel}
-                </a>
+
+                {/* Manufacturer med cost */}
+                <div className="rounded-lg bg-[#F5F5F5] px-3 py-2">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#55575A] mb-0.5">
+                    Medication cost (paid to manufacturer)
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-[18px] font-bold text-[#0C0D0F]">{opt.priceLabel}</span>
+                    <span className="text-[11px] text-[#55575A]">{opt.priceNote}</span>
+                  </div>
+                  <a
+                    href={opt.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[10px] font-semibold mt-0.5"
+                    style={{ color: opt.brandColor }}
+                  >
+                    <ExternalLink size={9} strokeWidth={2.5} />
+                    Source: {opt.sourceLabel}
+                  </a>
+                </div>
 
                 <button
                   onClick={() => handleChoose(opt.intakePref)}
                   className="w-full py-2.5 rounded-xl text-[13px] font-bold text-white transition-opacity hover:opacity-90"
                   style={{ backgroundColor: opt.brandColor }}
                 >
-                  Choose {opt.name} {opt.formFactor} →
+                  Choose {opt.name} {opt.formFactor} — $55 →
                 </button>
               </div>
             </div>
