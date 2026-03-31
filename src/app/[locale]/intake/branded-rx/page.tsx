@@ -276,7 +276,8 @@ function BrandedRxForm() {
         slug: "branded-rx",
         isMedPlan: false,
       });
-      router.push(`/${locale}/checkout`);
+      // Route through the branded upsell page (Ondansetron only) before checkout
+      router.push(`/${locale}/cart/upsell?flow=branded`);
     } catch {
       setSubmitError("Submission failed. Please try again.");
     } finally {

@@ -1,5 +1,7 @@
 "use client";
 
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useLocale } from "next-intl";
 import { Container } from "@/components/ui/Container";
@@ -64,14 +66,21 @@ const UPSELLS = [
   },
 ];
 
-export default function UpsellPage() {
+function UpsellPageInner() {
   const { items, total, itemCount } = useCart();
   const locale = useLocale();
+  const searchParams = useSearchParams();
+  const isBranded = searchParams.get("flow") === "branded";
   const isEs = locale === "es";
 
   const formatPrice = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
   const cartItemNames = items.map((i) => i.name).join(", ");
+
+  // Branded flow: only offer Ondansetron (no ongoing-care or insurance upsells)
+  const visibleUpsells = isBranded
+    ? UPSELLS.filter((u) => u.id === "upsell-ondansetron")
+    : UPSELLS;
 
   return (
     <>
@@ -83,14 +92,18 @@ export default function UpsellPage() {
               {isEs ? "¡Agregado al carrito!" : "Added to cart!"}
             </div>
             <h1 className="font-heading text-heading text-2xl md:text-3xl font-bold mb-2">
-              {isEs
-                ? "¿Quieres mejores resultados?"
-                : "Want to get better results, faster?"}
+              {isBranded
+                ? (isEs ? "Una cosa más antes de pagar" : "One more thing before you pay")
+                : (isEs ? "¿Quieres mejores resultados?" : "Want to get better results, faster?")}
             </h1>
-            <p className="text-body-muted">
-              {isEs
-                ? "Muchos de nuestros pacientes agregan estos complementos a sus planes."
-                : "Most of our patients add at least one of these to their plan."}
+            <p className="text-body-muted max-w-lg mx-auto">
+              {isBranded
+                ? (isEs
+                    ? "La mayoría de los pacientes con GLP-1 experimentan náuseas al inicio. ¿Quieres agregar Ondansetron?"
+                    : "Most GLP-1 patients experience nausea in the first few weeks. Add Ondansetron to your order?")
+                : (isEs
+                    ? "Muchos de nuestros pacientes agregan estos complementos a sus planes."
+                    : "Most of our patients add at least one of these to their plan.")}
             </p>
           </div>
         </Container>
@@ -115,7 +128,9 @@ export default function UpsellPage() {
       <section className="py-10">
         <Container narrow>
           <h2 className="font-heading text-heading text-xl font-bold mb-1">
-            {isEs ? "Complementos recomendados" : "Recommended add-ons"}
+            {isBranded
+              ? (isEs ? "Recomendado por tu médico" : "Recommended by your provider")
+              : (isEs ? "Complementos recomendados" : "Recommended add-ons")}
           </h2>
           <p className="text-body-muted text-sm mb-6">
             {isEs
@@ -123,8 +138,8 @@ export default function UpsellPage() {
               : "Select any to add to your order. Skip anytime."}
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
-            {UPSELLS.map((upsell) => (
+          <div className={`grid grid-cols-1 gap-5 mb-10 ${visibleUpsells.length === 1 ? "max-w-sm" : "md:grid-cols-3"}`}>
+            {visibleUpsells.map((upsell) => (
               <UpsellCard key={upsell.id} upsell={upsell} locale={locale} />
             ))}
           </div>
@@ -155,6 +170,14 @@ export default function UpsellPage() {
         </Container>
       </section>
     </>
+  );
+}
+
+export default function UpsellPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen" />}>
+      <UpsellPageInner />
+    </Suspense>
   );
 }
 
