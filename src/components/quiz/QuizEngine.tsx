@@ -121,7 +121,7 @@ const STEP_TO_QNUM: Partial<Record<StepId, number>> = {
   "insurance-type": 10,
 };
 
-export function QuizEngine({ forceReset = false }: { forceReset?: boolean }) {
+export function QuizEngine({ forceReset = false, isBrandPath = false }: { forceReset?: boolean; isBrandPath?: boolean }) {
   const [state, setState] = useState<QuizState>(initialState);
   const [showLanding, setShowLanding] = useState(true);
   const [showRetakeConfirm, setShowRetakeConfirm] = useState(false);
@@ -160,6 +160,12 @@ export function QuizEngine({ forceReset = false }: { forceReset?: boolean }) {
 
   function advance(updates: Partial<QuizState> = {}) {
     const newState = { ...state, ...updates, currentStep: state.currentStep + 1 };
+
+    // Brand (Cash Pay) path: skip insurance-interest entirely — patient already chose cash pay
+    if (isBrandPath && STEPS[newState.currentStep] === "insurance-interest") {
+      setState({ ...newState, insuranceInterest: "no", currentStep: newState.currentStep + 1 });
+      return;
+    }
 
     // Skip insurance-type if not interested in insurance
     if (STEPS[newState.currentStep] === "insurance-type") {
@@ -207,7 +213,13 @@ export function QuizEngine({ forceReset = false }: { forceReset?: boolean }) {
 
   function goBack() {
     if (state.currentStep > 0) {
-      setState({ ...state, currentStep: state.currentStep - 1 });
+      const prevStep = state.currentStep - 1;
+      // Brand path: skip back over insurance-interest
+      if (isBrandPath && STEPS[prevStep] === "insurance-interest") {
+        setState({ ...state, currentStep: prevStep - 1 });
+      } else {
+        setState({ ...state, currentStep: prevStep });
+      }
     }
   }
 

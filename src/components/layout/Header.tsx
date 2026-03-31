@@ -39,7 +39,7 @@ const WEIGHT_LOSS_ITEMS = [
     id: "wl-brand",
     label: { en: "Brand (Cash Pay)", es: "Marca (Pago Directo)" },
     desc:  { en: "Wegovy, Zepbound & Ozempic with Rx", es: "Wegovy, Zepbound y Ozempic con receta" },
-    href:  { en: "/en/quiz", es: "/es/quiz" },
+    href:  { en: "/en/quiz?path=brand", es: "/es/quiz?path=brand" },
     icon: Tag,
   },
 ];
