@@ -9,6 +9,24 @@ import { Check, ShieldCheck, Package, Star } from "lucide-react";
 
 const UPSELLS = [
   {
+    id: "upsell-ondansetron",
+    productId: "WM-ADDON-ZOFRAN",
+    variantId: "WM-ADDON-ZOFRAN",
+    slug: "ondansetron",
+    name: "Ondansetron 4mg (Anti-Nausea)",
+    tagline: "Clinically recommended for GLP-1 nausea in weeks 1–4",
+    priceDisplay: "+$29",
+    priceInCents: 2900,
+    variantLabel: "1-Month Supply — 4mg ODT",
+    bullets: [
+      "Fast-dissolving tablet — works in minutes",
+      "Most GLP-1 patients experience nausea early on",
+      "Prescribed by your Body Good provider",
+    ],
+    badge: "Clinically Recommended",
+    badgeHighlight: true,
+  },
+  {
     id: "upsell-ongoing-care",
     productId: "branded-rx-management",
     variantId: "upsell-bmgmt-1mo",
@@ -24,6 +42,7 @@ const UPSELLS = [
       "Priority support — skip the wait",
     ],
     badge: "Most Popular Add-On",
+    badgeHighlight: false,
   },
   {
     id: "upsell-insurance-check",
@@ -41,6 +60,7 @@ const UPSELLS = [
       "If covered, we help you switch — no extra fee",
     ],
     badge: "Save Hundreds/Month",
+    badgeHighlight: false,
   },
 ];
 
@@ -103,7 +123,7 @@ export default function UpsellPage() {
               : "Select any to add to your order. Skip anytime."}
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
             {UPSELLS.map((upsell) => (
               <UpsellCard key={upsell.id} upsell={upsell} locale={locale} />
             ))}
@@ -148,8 +168,8 @@ function UpsellCard({
   const isEs = locale === "es";
 
   return (
-    <div className="rounded-2xl border-2 border-border bg-white flex flex-col overflow-hidden hover:border-brand-red hover:shadow-card-hover transition-all duration-200">
-      <div className="bg-brand-red px-5 py-2">
+    <div className={`rounded-2xl border-2 bg-white flex flex-col overflow-hidden hover:shadow-card-hover transition-all duration-200 ${upsell.badgeHighlight ? "border-green-500 hover:border-green-600" : "border-border hover:border-brand-red"}`}>
+      <div className={`px-5 py-2 ${upsell.badgeHighlight ? "bg-green-600" : "bg-brand-red"}`}>
         <span className="text-white font-heading font-semibold text-xs uppercase tracking-wide">
           {upsell.badge}
         </span>
