@@ -158,6 +158,7 @@ function BrandedRxForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [stepError, setStepError] = useState("");
   const [pharmacy, setPharmacy] = useState<PharmacySelection | null>(null);
 
   const [s1, setS1] = useState({
@@ -206,7 +207,44 @@ function BrandedRxForm() {
     });
   }
 
-  function goTo(n: number) { setStep(n); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  function goTo(n: number) { setStep(n); setStepError(""); window.scrollTo({ top: 0, behavior: "smooth" }); }
+
+  function validate1(): string {
+    if (!s1.firstName.trim()) return "First name is required.";
+    if (!s1.lastName.trim()) return "Last name is required.";
+    if (!s1.email.trim() || !s1.email.includes("@")) return "A valid email address is required.";
+    if (!s1.phone.trim()) return "Phone number is required.";
+    if (!s1.dob) return "Date of birth is required.";
+    if (!s1.sex) return "Sex at birth is required.";
+    if (!s1.state) return "State is required.";
+    if (!s1.heightFt) return "Height (feet) is required.";
+    if (s1.heightIn === "") return "Height (inches) is required.";
+    if (!s1.weight.trim()) return "Weight is required.";
+    if (!s1.streetAddress.trim()) return "Street address is required.";
+    if (!s1.city.trim()) return "City is required.";
+    if (!s1.shipState) return "Mailing state is required.";
+    if (!s1.zip.trim()) return "ZIP code is required.";
+    if (!pharmacy) return "Please select your preferred pharmacy.";
+    return "";
+  }
+
+  function validate2(): string {
+    if (!s2.hasAllergies) return "Please answer: Do you have known drug allergies?";
+    if (s2.hasAllergies === "y" && !s2.allergiesDetail.trim()) return "Please list your known allergies.";
+    if (!s2.hasMeds) return "Please answer: Are you on any current medications?";
+    if (s2.hasMeds === "y" && !s2.medsDetail.trim()) return "Please list your current medications.";
+    if (!s2.mtcHistory) return "Please answer: Personal/family history of MTC or MEN2?";
+    if (!s2.pregnant) return "Please answer: Currently pregnant, breastfeeding, or planning pregnancy?";
+    if (!s2.pancreatitis) return "Please answer: History of pancreatitis?";
+    return "";
+  }
+
+  function validate3(): string {
+    if (s3.preferredMeds.length === 0) return "Please select at least one preferred medication.";
+    if (!s3.transferring) return "Please answer: Are you transferring from another provider?";
+    if (s3.transferring === "y" && !s3.transferDetail.trim()) return "Please provide your transfer details.";
+    return "";
+  }
 
   async function handleSubmit() {
     if (!s4.c1 || !s4.c2 || !s4.c3) { setSubmitError("Please agree to all consent items."); return; }
@@ -321,8 +359,17 @@ function BrandedRxForm() {
               )}
             </div>
 
+            {stepError && (
+              <div className="mb-3 p-3 bg-red-50 border border-red-400 rounded-lg text-xs text-red-700 flex gap-2">
+                <XCircle className="w-4 h-4 shrink-0 mt-0.5" />{stepError}
+              </div>
+            )}
             <div className="flex justify-end">
-              <button onClick={() => goTo(2)} className="font-heading font-bold text-sm bg-brand-red text-white px-8 py-3 rounded-pill hover:bg-brand-red-hover transition-colors" style={{ boxShadow: "0 4px 12px rgba(237,27,27,0.2)" }}>Continue →</button>
+              <button
+                onClick={() => { const err = validate1(); if (err) { setStepError(err); window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }); return; } goTo(2); }}
+                className="font-heading font-bold text-sm bg-brand-red text-white px-8 py-3 rounded-pill hover:bg-brand-red-hover transition-colors"
+                style={{ boxShadow: "0 4px 12px rgba(237,27,27,0.2)" }}
+              >Continue →</button>
             </div>
           </div>
         )}
@@ -361,9 +408,18 @@ function BrandedRxForm() {
                 </div>
               </div>
             </div>
+            {stepError && (
+              <div className="mb-3 p-3 bg-red-50 border border-red-400 rounded-lg text-xs text-red-700 flex gap-2">
+                <XCircle className="w-4 h-4 shrink-0 mt-0.5" />{stepError}
+              </div>
+            )}
             <div className="flex justify-between">
               <button onClick={() => goTo(1)} className="font-heading font-bold text-sm border border-border text-body px-6 py-3 rounded-pill hover:border-gray-400 transition-colors">← Back</button>
-              <button onClick={() => goTo(3)} className="font-heading font-bold text-sm bg-brand-red text-white px-8 py-3 rounded-pill hover:bg-brand-red-hover transition-colors" style={{ boxShadow: "0 4px 12px rgba(237,27,27,0.2)" }}>Continue →</button>
+              <button
+                onClick={() => { const err = validate2(); if (err) { setStepError(err); window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }); return; } goTo(3); }}
+                className="font-heading font-bold text-sm bg-brand-red text-white px-8 py-3 rounded-pill hover:bg-brand-red-hover transition-colors"
+                style={{ boxShadow: "0 4px 12px rgba(237,27,27,0.2)" }}
+              >Continue →</button>
             </div>
           </div>
         )}
@@ -402,9 +458,18 @@ function BrandedRxForm() {
                 </div>
               </div>
             </div>
+            {stepError && (
+              <div className="mb-3 p-3 bg-red-50 border border-red-400 rounded-lg text-xs text-red-700 flex gap-2">
+                <XCircle className="w-4 h-4 shrink-0 mt-0.5" />{stepError}
+              </div>
+            )}
             <div className="flex justify-between">
               <button onClick={() => goTo(2)} className="font-heading font-bold text-sm border border-border text-body px-6 py-3 rounded-pill hover:border-gray-400 transition-colors">← Back</button>
-              <button onClick={() => goTo(4)} className="font-heading font-bold text-sm bg-brand-red text-white px-8 py-3 rounded-pill hover:bg-brand-red-hover transition-colors" style={{ boxShadow: "0 4px 12px rgba(237,27,27,0.2)" }}>Continue →</button>
+              <button
+                onClick={() => { const err = validate3(); if (err) { setStepError(err); window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }); return; } goTo(4); }}
+                className="font-heading font-bold text-sm bg-brand-red text-white px-8 py-3 rounded-pill hover:bg-brand-red-hover transition-colors"
+                style={{ boxShadow: "0 4px 12px rgba(237,27,27,0.2)" }}
+              >Continue →</button>
             </div>
           </div>
         )}
