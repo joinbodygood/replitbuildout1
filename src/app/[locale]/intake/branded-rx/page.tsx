@@ -153,7 +153,7 @@ function SuccessScreen() {
 function BrandedRxForm() {
   const router = useRouter();
   const locale = useLocale();
-  const { addItem } = useCart();
+  const { addItem, clearCart } = useCart();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -264,14 +264,17 @@ function BrandedRxForm() {
           consent: { telehealth: s4.c1, medicationNotIncluded: s4.c2, glp1Warning: s4.c3, signature: s4.signature, signedAt: new Date().toISOString() },
         }),
       });
-      // Intake saved — now add the $55 doctor review fee to cart and collect payment
+      // Intake saved — clear any prior compounded/medication items, then add ONLY the $55 review fee.
+      // Branded flow never charges for medication; patient fills Rx at their own pharmacy.
+      clearCart();
       addItem({
         productId: "WM-BRAND-MGMT",
-        variantId: "pharmacy",
+        variantId: "WM-BRAND-MGMT",
         name: "Branded Rx — Doctor Review & Prescription",
-        variantLabel: "One-time medical review",
+        variantLabel: `One-time medical review — ${s3.preferredMeds.join(", ") || "Branded GLP-1"}`,
         price: 5500, // $55.00 in cents
-        slug: "wegovy",
+        slug: "branded-rx",
+        isMedPlan: false,
       });
       router.push(`/${locale}/checkout`);
     } catch {
