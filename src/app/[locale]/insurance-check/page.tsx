@@ -915,6 +915,26 @@ export default function InsuranceCheckPage() {
           const meds = calculateAllMeds(answers);
           setResults(meds);
           setStep("results");
+          // Fire nurture webhook based on score threshold
+          const score = meds.length > 0 ? Math.max(...meds.map((r) => r.prob)) : 0;
+          const best = meds.find((r) => r.prob === score);
+          fetch("/api/insurance-check-result", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email,
+              firstName,
+              phone: phone || null,
+              score,
+              carrier: answers.carrier?.label || null,
+              state: answers.state || null,
+              bestMed: best?.name || null,
+              bestIndication: best?.indicationLabel || null,
+              diagnoses: answers.diagnoses,
+              bmiRange: answers.bmiRange,
+              locale,
+            }),
+          }).catch(() => {});
           return 100;
         }
         return p + 4;
@@ -1414,17 +1434,28 @@ export default function InsuranceCheckPage() {
             })}
           </div>
 
-          {/* $25 UPSELL BLOCK */}
-          {overallRating === "green" && (
-            <div className="bg-green-50 border border-green-200 rounded-2xl p-6 mb-6">
-              <div className="text-green-700 text-xs font-heading font-bold mb-1">GREAT NEWS — YOUR ODDS LOOK STRONG</div>
-              <h3 style={{ fontFamily: "var(--font-heading)" }} className="text-xl font-bold text-gray-900 mb-2">
-                Want to know for sure?
+          {/* ── FAVORABLE (score ≥ 65%) — $25 Eligibility Check upgrade ── */}
+          {bestProb >= 65 && (
+            <div className="bg-green-50 border-2 border-green-300 rounded-2xl p-6 mb-6">
+              <div className="text-green-700 text-xs font-heading font-bold uppercase tracking-widest mb-2">
+                Your odds look strong — verify your real benefits
+              </div>
+              <h3 style={{ fontFamily: "var(--font-heading)" }} className="text-xl font-bold text-gray-900 mb-3">
+                Want to know for sure? The $25 Eligibility Check.
               </h3>
-              <p className="text-gray-600 text-sm mb-4">
-                For $25, we verify your actual insurance benefits in real-time and tell you exactly
-                what&apos;s covered, what needs prior authorization, and your exact next steps.
-              </p>
+              <ul className="space-y-2 mb-5">
+                {[
+                  "We verify your actual insurance benefits in real-time",
+                  "We identify the strongest covered pathway for your situation",
+                  "You get exact next steps — what's covered, what needs prior auth",
+                  "This is not an estimate — it's your real plan data",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                    <Check size={15} className="text-green-600 mt-0.5 shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
               <a
                 href={`/${locale}/products/insurance-eligibility-check`}
                 className="block w-full bg-[#ed1b1b] text-white text-center font-heading font-bold py-4 px-8 rounded-full shadow-[0_4px_12px_rgba(237,27,27,0.2)] hover:bg-[#d01818] transition-all duration-200 mb-3"
@@ -1432,68 +1463,59 @@ export default function InsuranceCheckPage() {
                 Confirm My Coverage — $25 →
               </a>
               <p className="text-gray-400 text-xs text-center">
-                This is a one-time, non-refundable eligibility verification fee. We check your actual benefits — not an estimate.
+                One-time, non-refundable verification fee. We check your actual benefits — not an estimate.
               </p>
+              <div className="mt-4 pt-4 border-t border-green-200 text-center">
+                <p className="text-gray-500 text-sm">
+                  Prefer to skip insurance?{" "}
+                  <a href={`/${locale}/programs`} className="text-[#ed1b1b] font-semibold hover:underline">
+                    Start self-pay from $169/mo →
+                  </a>
+                </p>
+              </div>
             </div>
           )}
 
-          {overallRating === "yellow" && (
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-6">
-              <div className="text-amber-700 text-xs font-heading font-bold mb-1">COVERAGE IS POSSIBLE — LET&apos;S FIND OUT</div>
-              <h3 style={{ fontFamily: "var(--font-heading)" }} className="text-xl font-bold text-gray-900 mb-2">
-                Your odds depend on your specific plan details
+          {/* ── UNFAVORABLE (score < 65%) — Self-pay redirect, never a dead end ── */}
+          {bestProb < 65 && (
+            <div className="rounded-2xl p-6 mb-6 border-2 border-gray-200 bg-white">
+              <div className="text-gray-500 text-xs font-heading font-bold uppercase tracking-widest mb-2">
+                Insurance is unlikely for weight loss — but you have great options
+              </div>
+              <h3 style={{ fontFamily: "var(--font-heading)" }} className="text-xl font-bold text-gray-900 mb-3">
+                Don&apos;t give up — self-pay is fast, effective, and affordable
               </h3>
-              <p className="text-gray-600 text-sm mb-4">
-                For $25, we&apos;ll check your actual benefits and find the strongest pathway for
-                your situation — so you don&apos;t leave coverage on the table.
-              </p>
+              <ul className="space-y-2 mb-5">
+                {[
+                  "Compounded semaglutide & tirzepatide are clinically equivalent to brand-name GLP-1s",
+                  "Programs start from $169/mo — medication included, no insurance battles",
+                  "Board-certified physician review included with every program",
+                  "Most patients start treatment within 1–3 business days",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                    <Check size={15} className="text-[#ed1b1b] mt-0.5 shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
               <a
-                href={`/${locale}/products/insurance-eligibility-check`}
+                href={`/${locale}/quiz`}
                 className="block w-full bg-[#ed1b1b] text-white text-center font-heading font-bold py-4 px-8 rounded-full shadow-[0_4px_12px_rgba(237,27,27,0.2)] hover:bg-[#d01818] transition-all duration-200 mb-3"
               >
-                Check My Real Coverage — $25 →
+                Find My Self-Pay Program →
               </a>
-              <p className="text-gray-400 text-xs text-center">
-                This is a one-time, non-refundable eligibility verification fee.
-              </p>
-            </div>
-          )}
-
-          {overallRating === "red" && (
-            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 mb-6">
-              <div className="text-gray-500 text-xs font-heading font-bold mb-1">INSURANCE COVERAGE IS UNLIKELY FOR WEIGHT LOSS</div>
-              <h3 style={{ fontFamily: "var(--font-heading)" }} className="text-xl font-bold text-gray-900 mb-2">
-                Your plan may not cover GLP-1 medications for weight loss
-              </h3>
-              <p className="text-gray-600 text-sm mb-4">
-                Based on your insurer and profile, coverage for weight management is low. However,
-                you can still access effective GLP-1 treatment through our self-pay program — no
-                insurance battles, no delays.
-              </p>
               <a
                 href={`/${locale}/programs`}
-                className="block w-full bg-[#ed1b1b] text-white text-center font-heading font-bold py-4 px-8 rounded-full shadow-[0_4px_12px_rgba(237,27,27,0.2)] hover:bg-[#d01818] transition-all duration-200 mb-3"
+                className="block w-full text-center text-gray-600 text-sm font-semibold hover:text-[#ed1b1b] transition-colors mb-2"
               >
-                Start Self-Pay — from $169/mo →
+                Browse all programs — starting at $169/mo →
               </a>
               <button
                 onClick={() => setStep("landing")}
-                className={outlineBtn}
+                className="w-full text-center text-gray-400 text-sm hover:text-gray-600 transition-colors mt-1"
               >
                 Have a diagnosis we didn&apos;t capture? Retake the quiz →
               </button>
-            </div>
-          )}
-
-          {/* Self-pay fallback (always visible) */}
-          {overallRating !== "red" && (
-            <div className="bg-[#fde7e7] rounded-2xl p-4 mb-6 text-center">
-              <p className="text-gray-600 text-sm">
-                Don&apos;t want to deal with insurance?{" "}
-                <a href={`/${locale}/programs`} className="text-[#ed1b1b] font-semibold hover:underline">
-                  Start self-pay from $169/mo →
-                </a>
-              </p>
             </div>
           )}
 

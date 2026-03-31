@@ -6,6 +6,8 @@ type WebhookEvent =
   | "order.created"
   | "order.payment_failed"
   | "insurance.checked"
+  | "insurance.favorable"
+  | "insurance.unfavorable"
   | "referral.created"
   | "review.submitted"
   | "lead.captured"
