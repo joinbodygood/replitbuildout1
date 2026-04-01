@@ -4,12 +4,81 @@ type InterstitialCardProps = {
   variant: "education" | "trust" | "stats";
   locale: string;
   onContinue: () => void;
+  isBrandPath?: boolean;
 };
 
-export function InterstitialCard({ variant, locale, onContinue }: InterstitialCardProps) {
+export function InterstitialCard({ variant, locale, onContinue, isBrandPath }: InterstitialCardProps) {
   const isEs = locale === "es";
 
   if (variant === "education") {
+    if (isBrandPath) {
+      return (
+        <div className="max-w-2xl mx-auto">
+          <p className="text-brand-red font-heading font-semibold text-xs uppercase tracking-widest text-center mb-3">
+            {isEs ? "Tarjeta Educativa 1 de 3" : "Education Card 1 of 3"}
+          </p>
+          <h2 className="font-heading text-heading text-2xl font-bold text-center mb-8">
+            {isEs
+              ? "Wegovy o Zepbound. Aquí está la diferencia."
+              : "Wegovy or Zepbound. Here's the difference."}
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="rounded-card border border-border p-6 bg-surface text-left">
+              <h3 className="font-heading text-heading text-lg font-bold mb-1">Wegovy</h3>
+              <p className="text-body-muted text-xs mb-4">
+                {isEs
+                  ? "Semaglutide — inyección semanal o pastilla diaria"
+                  : "Semaglutide — weekly injection or daily pill"}
+              </p>
+              <p className="text-body text-sm leading-relaxed mb-4">
+                {isEs
+                  ? "Wegovy es semaglutide aprobado por la FDA para la pérdida de peso. Disponible como auto-inyector semanal (pluma) o como pastilla oral diaria (Wegovy oral)."
+                  : "Wegovy is FDA-approved semaglutide for weight loss. Available as a weekly self-injector pen or as a once-daily oral pill (oral Wegovy)."}
+              </p>
+              <div className="text-3xl font-heading font-bold text-blue-600 mb-0.5">~15%</div>
+              <p className="text-body-muted text-xs uppercase tracking-wide font-semibold">
+                {isEs ? "pérdida de peso promedio en ensayos clínicos" : "Average body weight lost in clinical trials"}
+              </p>
+            </div>
+
+            <div className="rounded-card border-2 border-brand-red p-6 bg-brand-pink-soft text-left">
+              <h3 className="font-heading text-heading text-lg font-bold mb-1">Zepbound</h3>
+              <p className="text-body-muted text-xs mb-4">
+                {isEs
+                  ? "Tirzepatide — vial o QwikPen (inyección semanal)"
+                  : "Tirzepatide — vial or QwikPen (weekly injection)"}
+              </p>
+              <p className="text-body text-sm leading-relaxed mb-4">
+                {isEs
+                  ? "Zepbound es tirzepatide aprobado por la FDA. Actúa sobre dos hormonas — GLP-1 y GIP — y está disponible como vial de dosis única o como QwikPen de auto-inyección."
+                  : "Zepbound is FDA-approved tirzepatide. It works on two hormones — GLP-1 and GIP — and is available as a single-dose vial or as the QwikPen auto-injector."}
+              </p>
+              <div className="text-3xl font-heading font-bold text-brand-red mb-0.5">~20%</div>
+              <p className="text-body-muted text-xs uppercase tracking-wide font-semibold">
+                {isEs ? "pérdida de peso promedio en ensayos clínicos" : "Average body weight lost in clinical trials"}
+              </p>
+            </div>
+          </div>
+
+          <p className="text-body-muted text-sm text-center mb-8">
+            {isEs
+              ? "Ambos están aprobados por la FDA. Ambos son seguros bajo supervisión médica. La elección correcta depende de tu cuerpo, tus objetivos y tu preferencia de administración. Eso es lo que este quiz nos ayuda a determinar."
+              : "Both are FDA-approved. Both are safe under physician supervision. The right choice depends on your body, your goals, and your preferred method of administration. That's exactly what this quiz helps us figure out."}
+          </p>
+
+          <div className="text-center">
+            <button
+              onClick={onContinue}
+              className="bg-brand-red text-white font-heading font-semibold px-10 py-4 rounded-pill shadow-btn hover:bg-brand-red-hover transition-all duration-base"
+            >
+              {isEs ? "Siguiente Pregunta →" : "Next Question →"}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="max-w-2xl mx-auto">
         <p className="text-brand-red font-heading font-semibold text-xs uppercase tracking-widest text-center mb-3">

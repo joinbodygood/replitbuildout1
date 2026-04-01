@@ -514,7 +514,7 @@ export function QuizEngine({ forceReset = false, isBrandPath = false, isOralPath
         )}
 
         {currentStepId === "card-education" && !isOralPath && (
-          <InterstitialCard variant="education" locale={locale} onContinue={() => advance()} />
+          <InterstitialCard variant="education" locale={locale} onContinue={() => advance()} isBrandPath={isBrandPath} />
         )}
 
         {currentStepId === "needles" && !isOralPath && (
