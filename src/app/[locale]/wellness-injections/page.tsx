@@ -486,7 +486,7 @@ export default function WellnessInjectionsPage() {
               <p className="text-xs text-gray-400">Answer 5 quick questions and get a personalized recommendation.</p>
             </div>
             <Link
-              href={`/${locale}/wellness-quiz`}
+              href={`/${locale}/quiz/wellness-injections`}
               className="shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: "#ed1b1b" }}
             >
