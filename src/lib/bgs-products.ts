@@ -277,6 +277,45 @@ export const BGS_PRODUCTS: Record<string, BGSProduct> = {
   },
 
   // ── HAIR LOSS ──
+  "HL-W-STARTER": {
+    sku: "HL-W-STARTER",
+    name: "Hair Restore Starter (Women)",
+    program: "Hair Loss",
+    type: "both",
+    description: "Compounded Minoxidil 5% topical — entry-level formula · 30mL shipped to door",
+    bestFor: "Early-stage or recently-noticed hair thinning",
+    slug: "hair-restore-starter-women",
+    prices: { 1: 49, 3: 39 },
+    pharmacyFee: 25,
+    pharmacyDescription: "Plain Minoxidil Rx sent to your local pharmacy",
+  },
+
+  "HL-W-TOPICAL": {
+    sku: "HL-W-TOPICAL",
+    name: "Hair Restore Topical (Women)",
+    program: "Hair Loss",
+    type: "both",
+    description: "Compounded Minoxidil + Tretinoin + Vit E + Melatonin · 30mL shipped to door",
+    bestFor: "Moderate thinning & diffuse hair loss",
+    slug: "hair-restore-topical-women",
+    prices: { 1: 59, 3: 49 },
+    pharmacyFee: 25,
+    pharmacyDescription: "Plain Minoxidil Rx sent to your local pharmacy",
+  },
+
+  "HL-W-PLUS": {
+    sku: "HL-W-PLUS",
+    name: "Hair Restore Plus (Women)",
+    program: "Hair Loss",
+    type: "both",
+    description: "Compounded Minoxidil + Finasteride + Biotin + Peptides · 30mL shipped to door",
+    bestFor: "Persistent thinning, patches, or hormonal hair loss",
+    slug: "hair-restore-plus-women",
+    prices: { 1: 79, 3: 49 },
+    pharmacyFee: 25,
+    pharmacyDescription: "Plain Minoxidil Rx sent to your local pharmacy",
+  },
+
   "HL-W-MINOX": {
     sku: "HL-W-MINOX",
     name: "Compounded Minoxidil (Women)",
