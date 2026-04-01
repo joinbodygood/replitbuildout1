@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/context/CartContext";
 import {
   CheckCircle2,
   ShieldCheck,
@@ -467,7 +466,6 @@ interface Props {
 
 export function WellnessInjectionResultPage({ handle, locale, goal, concern, budget, experience }: Props) {
   const router = useRouter();
-  const { addItem } = useCart();
   const [loading, setLoading] = useState(false);
   const [tierIdx, setTierIdx] = useState(0); // 0=1mo, 1=3mo, 2=6mo
 
@@ -495,18 +493,13 @@ export function WellnessInjectionResultPage({ handle, locale, goal, concern, bud
 
   function handleGetStarted() {
     setLoading(true);
-    addItem({
-      productId:      product.sku,
-      variantId:      `${product.sku}-${tier.months}mo`,
-      name:           product.name,
-      variantLabel:   `${tier.months}-month supply`,
-      price:          tier.total * 100,   // total in cents
-      slug:           handle,
-      isMedPlan:      true,
-      monthlyPrice:   tier.price * 100,
-      durationMonths: tier.months,
+    const qp = new URLSearchParams({
+      handle,
+      tier: String(tier.months),
+      ...(goal    ? { goal }    : {}),
+      ...(concern ? { concern } : {}),
     });
-    router.push(`/${locale}/checkout`);
+    router.push(`/${locale}/quiz/wellness-injections/upsell?${qp.toString()}`);
   }
 
   return (
