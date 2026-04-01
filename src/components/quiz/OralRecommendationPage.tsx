@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, X, Pill, ShieldCheck, Star, ExternalLink, Package } from "lucide-react";
 import { useCart } from "@/context/CartContext";
@@ -20,15 +21,20 @@ interface OralOption {
   pros: string[];
   cons: string[];
   medsIncluded: boolean;
-  bgsPrice: number | null;
-  bgsLabel: string;
   pharmacyPrice: string | null;
   pharmacyNote: string | null;
   pharmacyUrl: string | null;
-  ctaLabel: string;
   accentColor: string;
   accentBg: string;
 }
+
+const ORAL_PRICES: Record<number, number> = { 1: 129, 3: 119, 6: 109 };
+
+const DURATION_LABELS: Record<number, string> = {
+  1: "Monthly",
+  3: "3-Month Plan",
+  6: "6-Month Plan",
+};
 
 const OPTIONS: OralOption[] = [
   {
@@ -48,12 +54,9 @@ const OPTIONS: OralOption[] = [
       "Gradual results vs. injectable GLP-1s",
     ],
     medsIncluded: true,
-    bgsPrice: 109,
-    bgsLabel: "/mo — medication included",
     pharmacyPrice: null,
     pharmacyNote: null,
     pharmacyUrl: null,
-    ctaLabel: "Start Appetite Control — $109/mo",
     accentColor: "#1B6B3A",
     accentBg: "#E8F5EE",
   },
@@ -74,12 +77,9 @@ const OPTIONS: OralOption[] = [
       "Gentler approach — not the highest % weight loss",
     ],
     medsIncluded: true,
-    bgsPrice: 119,
-    bgsLabel: "/mo — medication included",
     pharmacyPrice: null,
     pharmacyNote: null,
     pharmacyUrl: null,
-    ctaLabel: "Start Metabolic Reset — $119/mo",
     accentColor: "#7C3AED",
     accentBg: "#F5F0FF",
   },
@@ -100,12 +100,9 @@ const OPTIONS: OralOption[] = [
       "Lower bioavailability than injectable form",
     ],
     medsIncluded: false,
-    bgsPrice: 55,
-    bgsLabel: " one-time consultation fee",
     pharmacyPrice: "~$1,349",
     pharmacyNote: "/month list price at pharmacy",
     pharmacyUrl: "https://www.novocarepro.com/wegovy",
-    ctaLabel: "Choose Oral Wegovy — $55 →",
     accentColor: "#1B5CB8",
     accentBg: "#EEF4FF",
   },
@@ -115,23 +112,39 @@ export function OralRecommendationPage({ locale, recommended }: Props) {
   const router = useRouter();
   const { replaceMedPlan } = useCart();
 
+  const [selectedDuration, setSelectedDuration] = useState<Record<string, number>>({
+    appetite: 1,
+    metabolic: 1,
+  });
+
+  function getMonthlyPrice(id: string): number {
+    return ORAL_PRICES[selectedDuration[id] ?? 1] ?? 129;
+  }
+
+  function getTotalPrice(id: string): number {
+    const dur = selectedDuration[id] ?? 1;
+    return (ORAL_PRICES[dur] ?? 129) * dur;
+  }
+
   function handleSelect(opt: OralOption) {
     if (opt.id === "wegovy") {
       router.push(`/${locale}/intake/branded-rx?med=wegovy-oral`);
       return;
     }
     const sku = opt.id === "appetite" ? "WM-ORAL-METCOMBO" : "WM-ORAL-LDN";
-    const priceInCents = (opt.bgsPrice ?? 0) * 100;
+    const dur = selectedDuration[opt.id] ?? 1;
+    const monthly = ORAL_PRICES[dur] ?? 129;
+    const totalCents = monthly * dur * 100;
     replaceMedPlan({
       productId: sku,
-      variantId: `${sku}-1mo`,
+      variantId: `${sku}-${dur}mo`,
       name: opt.name,
-      variantLabel: `${opt.tagline} — 1-Month Supply`,
-      price: priceInCents,
+      variantLabel: `${opt.tagline} — ${DURATION_LABELS[dur]}`,
+      price: totalCents,
       slug: opt.id === "appetite" ? "appetite-control" : "metabolic-reset",
       isMedPlan: true,
-      monthlyPrice: priceInCents,
-      durationMonths: 1,
+      monthlyPrice: monthly * 100,
+      durationMonths: dur,
     });
     router.push(`/${locale}/cart/upsell?flow=oral`);
   }
@@ -162,6 +175,11 @@ export function OralRecommendationPage({ locale, recommended }: Props) {
       <div className="max-w-[1050px] mx-auto px-4 pb-10 grid grid-cols-1 md:grid-cols-3 gap-5">
         {OPTIONS.map((opt) => {
           const isRecommended = opt.id === recommended;
+          const hasTiers = opt.medsIncluded;
+          const dur = selectedDuration[opt.id] ?? 1;
+          const monthly = hasTiers ? getMonthlyPrice(opt.id) : (opt.id === "wegovy" ? 55 : 129);
+          const total = hasTiers ? getTotalPrice(opt.id) : null;
+
           return (
             <div
               key={opt.id}
@@ -224,13 +242,63 @@ export function OralRecommendationPage({ locale, recommended }: Props) {
                 </div>
 
                 <div className="mt-auto pt-3 border-t border-[#F0F0F0] space-y-2">
+
+                  {hasTiers && (
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-[#55575A] mb-1.5">
+                        Choose your plan
+                      </div>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {([1, 3, 6] as const).map((mo) => {
+                          const isSelected = dur === mo;
+                          return (
+                            <button
+                              key={mo}
+                              onClick={() =>
+                                setSelectedDuration((prev) => ({ ...prev, [opt.id]: mo }))
+                              }
+                              className={`flex flex-col items-center py-2 px-1 rounded-lg border-2 text-center transition-all ${
+                                isSelected
+                                  ? "border-[color:var(--accent)] bg-[color:var(--accent-bg)]"
+                                  : "border-[#E5E5E5] hover:border-[#AAAAAA]"
+                              }`}
+                              style={
+                                {
+                                  "--accent": opt.accentColor,
+                                  "--accent-bg": opt.accentBg,
+                                } as React.CSSProperties
+                              }
+                            >
+                              <span
+                                className="text-[13px] font-bold"
+                                style={{ color: isSelected ? opt.accentColor : "#0C0D0F" }}
+                              >
+                                ${ORAL_PRICES[mo]}/mo
+                              </span>
+                              <span className="text-[9px] text-[#55575A] leading-tight mt-0.5">
+                                {mo === 1 ? "Monthly" : `${mo}-Mo Plan`}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {dur > 1 && (
+                        <div className="text-[10px] text-[#55575A] mt-1 text-center">
+                          Billed as ${total} total &bull; Save ${(129 - monthly) * dur}/total vs monthly
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="rounded-lg bg-[#E8F5EE] px-3 py-2">
                     <div className="text-[10px] font-bold uppercase tracking-wider text-[#1B6B3A] mb-0.5">
                       {opt.medsIncluded ? "Your monthly price" : "Body Good consultation fee"}
                     </div>
                     <div className="flex items-baseline gap-0.5">
-                      <span className="text-[22px] font-bold text-[#0C0D0F]">${opt.bgsPrice}</span>
-                      <span className="text-[11px] text-[#55575A]">{opt.bgsLabel}</span>
+                      <span className="text-[22px] font-bold text-[#0C0D0F]">${monthly}</span>
+                      <span className="text-[11px] text-[#55575A]">
+                        {opt.medsIncluded ? "/mo — medication included" : " one-time consultation fee"}
+                      </span>
                     </div>
                     {opt.medsIncluded && (
                       <div className="inline-flex items-center gap-1 mt-1 bg-[#1B6B3A] text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
@@ -269,7 +337,9 @@ export function OralRecommendationPage({ locale, recommended }: Props) {
                     className="w-full py-2.5 rounded-xl text-[13px] font-bold text-white transition-opacity hover:opacity-90"
                     style={{ backgroundColor: opt.accentColor }}
                   >
-                    {opt.ctaLabel}
+                    {opt.id === "wegovy"
+                      ? "Choose Oral Wegovy — $55 →"
+                      : `Start ${opt.id === "appetite" ? "Appetite Control" : "Metabolic Reset"} — $${monthly}/mo →`}
                   </button>
                 </div>
               </div>
