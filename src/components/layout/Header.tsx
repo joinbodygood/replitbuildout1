@@ -53,6 +53,13 @@ const MORE_ITEMS = [
     iconColor: "#8b5cf6",
   },
   {
+    label: { en: "Find My Injection — Quiz", es: "Quiz: ¿Cuál Inyección es Para Ti?" },
+    desc:  { en: "6 questions → your perfect injectable match", es: "6 preguntas → tu inyección ideal" },
+    href:  { en: "/en/quiz/wellness-injections", es: "/es/quiz/wellness-injections" },
+    icon: Syringe,
+    iconColor: "#ed1b1b",
+  },
+  {
     label: { en: "Feminine Health", es: "Salud Femenina" },
     desc:  { en: "Infections, vaginal dryness & wellness", es: "Infecciones, sequedad vaginal y bienestar" },
     href:  { en: "/en/quiz/feminine-health", es: "/es/quiz/feminine-health" },
