@@ -1,0 +1,39 @@
+Overhaul the Mental Health program flow — both the quiz and the recommendation page. This is a sensitive program area and needs to feel clinically thoughtful, not generic.
+
+A. Quiz Overhaul
+
+The current mental health quiz is too basic. Expand it substantially to collect enough information for a meaningful, personalized recommendation. The quiz should screen for:
+
+Primary concern — What brings them here? Options: Anxiety, Depression, ADHD/Focus, Insomnia/Sleep, Stress/Burnout, Other (with text field)
+
+Symptom severity — How much are symptoms affecting daily life? Scale from "Mildly — I can manage but want support" to "Severely — it's impacting work, relationships, or daily functioning"
+
+Symptom frequency — How often do they experience symptoms? (Daily, Several times a week, A few times a month, Occasionally)
+
+Duration — How long have they been experiencing these symptoms? (Less than 1 month, 1-6 months, 6-12 months, Over a year)
+
+Previous treatments — Have they tried any of the following? (Therapy/counseling, Prescription medication, Over-the-counter supplements, Meditation/mindfulness apps, None — this is my first time seeking help). Select all that apply.
+
+Current medications — Are they currently taking any medications for mental health? (Yes — with text field to list them, No, Previously but stopped — with optional text field for what and why)
+
+Therapy status — Are they currently seeing a therapist or counselor? (Yes, No but interested, No and not interested at this time)
+
+Contraindications/safety screen — Similar to the GLP-1 disqualification screen, screen for conditions that require immediate or specialized care:
+
+Are you currently experiencing thoughts of self-harm or suicide? → If yes, immediately show crisis resources (988 Suicide & Crisis Lifeline, Crisis Text Line: text HOME to 741741) and encourage them to seek immediate help. Do NOT continue the quiz. This is a safety-critical screen.
+Are you currently pregnant or breastfeeding?
+Are you under 18?
+Do you have a history of bipolar disorder or psychosis?
+For any flags: show a compassionate message that a direct consultation is recommended rather than the self-serve flow, with a "Schedule a Consultation" CTA
+Goals — What are they hoping to achieve? (Better manage daily anxiety, Improve focus and productivity, Sleep better, Stabilize mood, Reduce reliance on unhealthy coping mechanisms, Other). Select all that apply.
+
+Preferences — Do they have a preference for treatment approach? (Open to medication, Prefer non-medication options first, Open to anything the doctor recommends)
+
+Quiz design guidelines:
+
+The tone should be warm, empathetic, and non-judgmental throughout
+Use language like "There are no wrong answers" and "This helps our physician understand your needs"
+Avoid clinical jargon — keep questions conversational but thorough
+Reference the quiz UX quality of platforms like Cerebral, Done, or Brightside for depth and flow
+Add a progress bar showing question count (e.g., "Question 3 of 10")
+Include a brief intro screen before the quiz starts: "This quiz helps our physician understand your mental health needs so they can provide a personalized recommendation. Your answers are confidential and are not shared outside of your care team."
