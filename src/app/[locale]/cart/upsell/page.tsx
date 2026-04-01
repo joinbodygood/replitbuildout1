@@ -28,42 +28,6 @@ const UPSELLS = [
     badge: "Clinically Recommended",
     badgeHighlight: true,
   },
-  {
-    id: "upsell-ongoing-care",
-    productId: "branded-rx-management",
-    variantId: "upsell-bmgmt-1mo",
-    slug: "branded-rx-management",
-    name: "Ongoing Care Plan",
-    tagline: "Monthly provider check-ins + messaging access",
-    priceDisplay: "+$55/mo",
-    priceInCents: 5500,
-    variantLabel: "1-Month Ongoing Care",
-    bullets: [
-      "Unlimited messaging with your provider",
-      "Monthly dose check-in & adjustments",
-      "Priority support — skip the wait",
-    ],
-    badge: "Most Popular Add-On",
-    badgeHighlight: false,
-  },
-  {
-    id: "upsell-insurance-check",
-    productId: "insurance-eligibility-check",
-    variantId: "upsell-ins-elig",
-    slug: "insurance-eligibility-check",
-    name: "Insurance Coverage Check",
-    tagline: "Find out if your plan covers GLP-1 or other meds",
-    priceDisplay: "+$25",
-    priceInCents: 2500,
-    variantLabel: "One-Time Check",
-    bullets: [
-      "We check your insurance on your behalf",
-      "Results delivered within 24 hours",
-      "If covered, we help you switch — no extra fee",
-    ],
-    badge: "Save Hundreds/Month",
-    badgeHighlight: false,
-  },
 ];
 
 function UpsellPageInner() {
@@ -72,18 +36,11 @@ function UpsellPageInner() {
   const searchParams = useSearchParams();
   const flow = searchParams.get("flow");
   const isBranded = flow === "branded";
-  const isOral = flow === "oral";
-  const isSingleUpsell = isBranded || isOral;
   const isEs = locale === "es";
 
   const formatPrice = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
   const cartItemNames = items.map((i) => i.name).join(", ");
-
-  // Branded & Oral flows: only offer Ondansetron (no ongoing-care or insurance upsells)
-  const visibleUpsells = isSingleUpsell
-    ? UPSELLS.filter((u) => u.id === "upsell-ondansetron")
-    : UPSELLS;
 
   return (
     <>
@@ -141,8 +98,8 @@ function UpsellPageInner() {
               : "Select any to add to your order. Skip anytime."}
           </p>
 
-          <div className={`grid grid-cols-1 gap-5 mb-10 ${visibleUpsells.length === 1 ? "max-w-sm" : "md:grid-cols-3"}`}>
-            {visibleUpsells.map((upsell) => (
+          <div className="grid grid-cols-1 gap-5 mb-10 max-w-sm">
+            {UPSELLS.map((upsell) => (
               <UpsellCard key={upsell.id} upsell={upsell} locale={locale} />
             ))}
           </div>
