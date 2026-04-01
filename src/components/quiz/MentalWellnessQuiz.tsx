@@ -654,7 +654,7 @@ export function MentalWellnessQuiz() {
               </div>
 
               <Button
-                onClick={() => router.push(`/${locale}/quiz/mental-wellness/result/assessment`)}
+                onClick={() => router.push(`/${locale}/contact`)}
                 size="lg"
                 variant="primary"
                 className="w-full rounded-full"
