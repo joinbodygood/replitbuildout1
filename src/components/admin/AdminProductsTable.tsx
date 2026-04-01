@@ -21,6 +21,7 @@ type Product = {
   programTag: string | null;
   variantCount: number;
   lowestPrice: number;
+  highestPrice: number;
   nameEn: string;
   createdAt: string;
 };
@@ -246,7 +247,9 @@ export function AdminProductsTable({ products, categoryLabels, fulfillmentLabels
                       {/* Price */}
                       <td className="px-4 py-3 text-center">
                         <span className="font-semibold text-heading">
-                          {fmt(p.lowestPrice)}
+                          {p.highestPrice > p.lowestPrice
+                            ? `${fmt(p.lowestPrice)}–${fmt(p.highestPrice)}`
+                            : fmt(p.lowestPrice)}
                         </span>
                         {p.pathBConsultPrice && (
                           <div className="text-[10px] text-purple-600">

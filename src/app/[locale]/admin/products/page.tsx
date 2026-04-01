@@ -66,6 +66,7 @@ export default async function AdminProductsPage({ params }: Props) {
     programTag: p.programTag,
     variantCount: p._count.variants,
     lowestPrice: p.variants.length > 0 ? Math.min(...p.variants.map((v) => v.price)) : 0,
+    highestPrice: p.variants.length > 0 ? Math.max(...p.variants.map((v) => v.price)) : 0,
     nameEn: p.translations[0]?.name ?? p.slug,
     createdAt: p.createdAt.toISOString(),
   }));
