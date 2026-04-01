@@ -23,6 +23,7 @@ export interface BGSProduct {
   doses?: Dose[];
   tierPricing?: TierPricing;
   pharmacyFee?: number;
+  pharmacyDescription?: string;
   ongoingFee?: number;
   servicePrice?: number;
   serviceLabel?: string;
@@ -278,14 +279,15 @@ export const BGS_PRODUCTS: Record<string, BGSProduct> = {
   // ── HAIR LOSS ──
   "HL-W-MINOX": {
     sku: "HL-W-MINOX",
-    name: "Minoxidil Topical (Women)",
+    name: "Compounded Minoxidil (Women)",
     program: "Hair Loss",
     type: "both",
-    description: "Minoxidil + Tretinoin + Vit E + Melatonin · 30mL",
+    description: "Compounded Minoxidil + Tretinoin + Vit E + Melatonin · 30mL — shipped to door",
     bestFor: "Thinning hair & diffuse hair loss",
     slug: "minoxidil",
-    prices: { 1: 59 },
+    prices: { 1: 59, 3: 54, 6: 49 },
     pharmacyFee: 25,
+    pharmacyDescription: "Plain Minoxidil Rx sent to your local pharmacy",
   },
 
   "HL-W-PEPTIDE": {
@@ -295,7 +297,7 @@ export const BGS_PRODUCTS: Record<string, BGSProduct> = {
     type: "compounded",
     description: "GHK-Cu + Biotin topical serum · 30mL",
     bestFor: "Thinning hair & early-stage hair loss",
-    prices: { 1: 79 },
+    prices: { 1: 79, 3: 72, 6: 65 },
   },
 
   "HL-ORAL-MINOX": {
@@ -308,6 +310,7 @@ export const BGS_PRODUCTS: Record<string, BGSProduct> = {
     slug: "minoxidil",
     prices: { 1: 35 },
     pharmacyFee: 25,
+    pharmacyDescription: "Plain Minoxidil Rx sent to your local pharmacy",
   },
 
   "HL-M-FIN": {
@@ -324,24 +327,25 @@ export const BGS_PRODUCTS: Record<string, BGSProduct> = {
 
   "HL-M-COMBO": {
     sku: "HL-M-COMBO",
-    name: "Hair Restore Combo Spray",
+    name: "Compounded Minoxidil Combo Spray",
     program: "Hair Loss",
     type: "both",
-    description: "Minoxidil 7% + Finasteride + Arginine + Biotin · 30mL",
+    description: "Compounded Minoxidil 7% + Finasteride + Arginine + Biotin · 30mL — shipped to door",
     bestFor: "Moderate hair loss & thinning temples",
     slug: "minoxidil",
-    prices: { 1: 59 },
+    prices: { 1: 59, 3: 54, 6: 49 },
     pharmacyFee: 25,
+    pharmacyDescription: "Plain Minoxidil Rx sent to your local pharmacy",
   },
 
   "HL-M-MAX": {
     sku: "HL-M-MAX",
-    name: "Hair Restore Max 7-Ingredient",
+    name: "Hair Restore Max — 7-Ingredient Formula",
     program: "Hair Loss",
     type: "compounded",
-    description: "7 active ingredients · Most powerful compounded formula",
+    description: "Compounded Minoxidil 10% + 6 active boosters · Most powerful formula — shipped to door",
     bestFor: "Aggressive or long-standing hair loss",
-    prices: { 1: 79 },
+    prices: { 1: 79, 3: 72, 6: 65 },
   },
 
   "HL-DUTAST": {
