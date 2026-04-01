@@ -269,13 +269,17 @@ export function RecommendationConfigurator({ product, locale }: Props) {
       durationMonths: months,
     };
 
+    const isHairLoss = product.program === "Hair Loss";
     const hadExisting = items.some((i) => i.isMedPlan);
     replaceMedPlan(cartItem);
     if (hadExisting) {
       showToast("Your plan has been updated");
-      setTimeout(() => router.push(`/${locale}/cart/upsell`), 1200);
+      setTimeout(
+        () => router.push(isHairLoss ? `/${locale}/checkout` : `/${locale}/cart/upsell`),
+        1200
+      );
     } else {
-      router.push(`/${locale}/cart/upsell`);
+      router.push(isHairLoss ? `/${locale}/checkout` : `/${locale}/cart/upsell`);
     }
   }
 
