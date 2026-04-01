@@ -273,7 +273,27 @@ export const BGS_PRODUCTS: Record<string, BGSProduct> = {
     type: "compounded",
     description: "3mg/mL · 6mL · GH peptide",
     bestFor: "Muscle, sleep, recovery",
-    prices: { 1: 179 },
+    prices: { 1: 179, 3: 149, 6: 129 },
+  },
+
+  "WI-PA": {
+    sku: "WI-PA",
+    name: "Pentadeca Arginate Injection",
+    program: "Wellness Injections",
+    type: "compounded",
+    description: "Peptide for tissue repair, recovery & performance",
+    bestFor: "Athletic recovery & tissue repair",
+    prices: { 1: 179, 3: 149, 6: 129 },
+  },
+
+  "WI-VitC": {
+    sku: "WI-VitC",
+    name: "Ascorbic Acid Injection",
+    program: "Wellness Injections",
+    type: "compounded",
+    description: "High-dose injectable Vitamin C · 500mg/mL · 30mL",
+    bestFor: "Immune support & antioxidant protection",
+    prices: { 1: 79, 3: 65, 6: 55 },
   },
 
   // ── HAIR LOSS ──

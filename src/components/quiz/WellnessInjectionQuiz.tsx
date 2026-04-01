@@ -170,45 +170,44 @@ const STATIC_AFTER_CONCERN: Question[] = [
 // ─── Outcome logic ─────────────────────────────────────────────────────────
 
 function getOutcome(answers: Record<string, string | string[]>): string {
-  const goal      = answers.primary_goal as string;
-  const concern   = answers.specific_concern as string;
-  const budget    = answers.budget as string;
-  const exp       = answers.injection_experience as string;
+  const goal    = answers.primary_goal as string;
+  const concern = answers.specific_concern as string;
+  const budget  = answers.budget as string;
+  const exp     = answers.injection_experience as string;
 
+  // Hard budget floor — B12 is the only sub-$60 option
   if (budget === "under50") return "vitamin-b12";
 
   if (goal === "energy") {
-    if (concern === "mental") return budget === "150plus" ? "nad-plus" : "vitamin-b12";
-    if (concern === "physical") return "lipotropic-super-b";
+    if (concern === "mental") return "vitamin-b12";
+    // physical or both → Lipotropic Super B
     return "lipotropic-super-b";
   }
 
   if (goal === "detox-skin") return "glutathione";
 
   if (goal === "fat-burning") {
-    if (budget === "50-100") return "lipo-c";
+    if (concern === "standalone" && budget === "50-100") return "l-carnitine";
     return "lipotropic-super-b";
   }
 
   if (goal === "athletic") {
-    if (concern === "recovery") return budget === "150plus" ? "sermorelin" : "l-carnitine";
-    return "l-carnitine";
+    if (concern === "recovery" || concern === "both") return "pentadeca-arginate";
+    return "l-carnitine"; // performance
   }
 
-  if (goal === "anti-aging") {
-    if (concern === "hormone") return "sermorelin";
-    return "nad-plus";
-  }
+  if (goal === "anti-aging") return "nad-plus";
 
   if (goal === "immune") {
-    if (budget === "50-100") return "vitamin-b12";
-    if (budget === "100-150") return "glutathione";
-    return budget === "150plus" ? "nad-plus" : "vitamin-b12";
+    if (concern === "antioxidant") return "glutathione";
+    return "ascorbic-acid"; // general or illness recovery
   }
 
-  if (goal === "sleep-stress") return "sermorelin";
+  if (goal === "sleep-stress") {
+    if (concern === "stress") return "nad-plus";
+    return "sermorelin"; // sleep or both
+  }
 
-  // If they prefer non-injection, B12 is the gentlest entry point
   if (exp === "no-prefer") return "vitamin-b12";
 
   return "lipotropic-super-b";
@@ -370,9 +369,10 @@ export function WellnessInjectionQuiz() {
     await new Promise((r) => setTimeout(r, 1400));
 
     const qp = new URLSearchParams();
-    if (answers.primary_goal) qp.set("goal", answers.primary_goal as string);
-    if (answers.budget)       qp.set("budget", answers.budget as string);
-    if (answers.injection_experience) qp.set("exp", answers.injection_experience as string);
+    if (answers.primary_goal)         qp.set("goal",    answers.primary_goal as string);
+    if (answers.specific_concern)     qp.set("concern", answers.specific_concern as string);
+    if (answers.budget)               qp.set("budget",  answers.budget as string);
+    if (answers.injection_experience) qp.set("exp",     answers.injection_experience as string);
     router.push(`/${locale}/quiz/wellness-injections/result/${outcome}?${qp.toString()}`);
   }
 

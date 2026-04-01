@@ -4,7 +4,7 @@ import { WellnessInjectionResultPage } from "@/components/quiz/WellnessInjection
 
 type Props = {
   params: Promise<{ locale: string; handle: string }>;
-  searchParams: Promise<{ goal?: string; budget?: string; exp?: string }>;
+  searchParams: Promise<{ goal?: string; concern?: string; budget?: string; exp?: string }>;
 };
 
 const VALID_HANDLES = [
@@ -15,6 +15,8 @@ const VALID_HANDLES = [
   "glutathione",
   "nad-plus",
   "sermorelin",
+  "pentadeca-arginate",
+  "ascorbic-acid",
 ];
 
 export default async function WellnessInjectionResultRoute({ params, searchParams }: Props) {
@@ -29,6 +31,7 @@ export default async function WellnessInjectionResultRoute({ params, searchParam
       handle={handle}
       locale={locale}
       goal={sp.goal}
+      concern={sp.concern}
       budget={sp.budget}
       experience={sp.exp}
     />
