@@ -110,7 +110,7 @@ export const BGS_PRODUCTS: Record<string, BGSProduct> = {
     type: "compounded",
     description: "Compounded capsules — insulin resistance + appetite control",
     bestFor: "PCOS, pre-diabetes, or insulin resistance",
-    prices: { 1: 79 },
+    prices: { 1: 109 },
   },
 
   "WM-ORAL-LDN": {
@@ -120,7 +120,7 @@ export const BGS_PRODUCTS: Record<string, BGSProduct> = {
     type: "compounded",
     description: "LDN 4.5mg capsules — cravings & inflammation",
     bestFor: "Emotional eating and food cravings",
-    prices: { 1: 49 },
+    prices: { 1: 119 },
   },
 
   // ── WEIGHT LOSS — BRANDED RX ──
