@@ -460,7 +460,12 @@ export function MentalWellnessQuiz() {
     }
 
     await new Promise((r) => setTimeout(r, 1400));
-    router.push(`/${locale}/quiz/mental-wellness/result/${outcome}`);
+    const qp = new URLSearchParams();
+    if (answers.concern) qp.set("concern", answers.concern as string);
+    if (answers.severity) qp.set("severity", answers.severity as string);
+    if (answers.duration) qp.set("duration", answers.duration as string);
+    if (flaggedConditions.length > 0) qp.set("flagged", "1");
+    router.push(`/${locale}/quiz/mental-wellness/result/${outcome}?${qp.toString()}`);
   }
 
   // ─── INTRO SCREEN ──────────────────────────────────────────────────────

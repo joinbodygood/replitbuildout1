@@ -557,7 +557,7 @@ export const BGS_PRODUCTS: Record<string, BGSProduct> = {
     description: "Rx: Buspirone sent to your pharmacy",
     bestFor: "Generalized anxiety",
     slug: "buspirone",
-    pharmacyFee: 49,
+    pharmacyFee: 25,
     ongoingFee: 25,
   },
 
@@ -569,7 +569,7 @@ export const BGS_PRODUCTS: Record<string, BGSProduct> = {
     description: "Rx: Propranolol sent to your pharmacy",
     bestFor: "Performance anxiety & situational stress",
     slug: "propranolol",
-    pharmacyFee: 49,
+    pharmacyFee: 25,
     ongoingFee: 25,
   },
 
@@ -581,7 +581,7 @@ export const BGS_PRODUCTS: Record<string, BGSProduct> = {
     description: "Rx: Trazodone sent to your pharmacy",
     bestFor: "Insomnia & sleep disruption",
     slug: "trazodone",
-    pharmacyFee: 49,
+    pharmacyFee: 25,
     ongoingFee: 25,
   },
 
@@ -593,7 +593,7 @@ export const BGS_PRODUCTS: Record<string, BGSProduct> = {
     description: "Rx: Sertraline sent to your pharmacy",
     bestFor: "Depression & mood support",
     slug: "sertraline",
-    pharmacyFee: 49,
+    pharmacyFee: 25,
     ongoingFee: 25,
   },
 
@@ -605,7 +605,7 @@ export const BGS_PRODUCTS: Record<string, BGSProduct> = {
     description: "Rx: Venlafaxine sent to your pharmacy",
     bestFor: "Depression + anxiety combined",
     slug: "venlafaxine",
-    pharmacyFee: 49,
+    pharmacyFee: 25,
     ongoingFee: 25,
   },
 
@@ -617,7 +617,7 @@ export const BGS_PRODUCTS: Record<string, BGSProduct> = {
     description: "Rx: Bupropion sent to your pharmacy",
     bestFor: "Depression, low energy & focus",
     slug: "bupropion",
-    pharmacyFee: 49,
+    pharmacyFee: 25,
     ongoingFee: 25,
   },
 
