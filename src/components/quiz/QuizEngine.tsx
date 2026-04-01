@@ -151,6 +151,12 @@ export function QuizEngine({ forceReset = false, isBrandPath = false, isOralPath
       setState({ ...initialState, currentStep: 1 });
       return;
     }
+    // Oral and brand paths always start fresh at the landing page —
+    // cached state from a different flow must not bleed through
+    if (isOralPath || isBrandPath) {
+      localStorage.removeItem("bg_quiz_state_v2");
+      return;
+    }
     const saved = localStorage.getItem("bg_quiz_state_v2");
     if (saved) {
       try {
@@ -159,7 +165,7 @@ export function QuizEngine({ forceReset = false, isBrandPath = false, isOralPath
         setShowLanding(false);
       } catch {}
     }
-  }, [forceReset]);
+  }, [forceReset, isOralPath, isBrandPath]);
 
   useEffect(() => {
     if (state.currentStep > 0) {

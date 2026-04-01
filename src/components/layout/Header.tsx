@@ -32,7 +32,7 @@ const WEIGHT_LOSS_ITEMS = [
     id: "wl-oral",
     label: { en: "Oral Medication", es: "Medicamento Oral" },
     desc:  { en: "Oral semaglutide — no injections", es: "Semaglutide oral — sin inyecciones" },
-    href:  { en: "/en/quiz", es: "/es/quiz" },
+    href:  { en: "/en/quiz?path=oral", es: "/es/quiz?path=oral" },
     icon: Pill,
   },
   {
