@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
               "We identify the strongest covered pathway for your situation",
               "You'll know exactly what's covered, what needs prior auth, and your next steps",
             ],
-            ctaUrl: `/${locale ?? "en"}/products/insurance-eligibility-check`,
+            ctaUrl: `/${locale ?? "en"}/intake/insurance-eligibility`,
             ctaLabel: "Confirm My Coverage — $25",
           }
         : {
