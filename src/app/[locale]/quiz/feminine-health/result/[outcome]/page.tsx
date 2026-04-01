@@ -1,19 +1,17 @@
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
-import { RecommendationConfigurator } from "@/components/quiz/RecommendationConfigurator";
+import { FeminineHealthResultPage } from "@/components/quiz/FeminineHealthResultPage";
 import { InfectionPickerPage } from "@/components/quiz/InfectionPickerPage";
-import { BGS_PRODUCTS } from "@/lib/bgs-products";
 
 type Props = {
   params: Promise<{ locale: string; outcome: string }>;
-};
-
-const OUTCOME_TO_SKU: Record<string, string> = {
-  "vaginal-dryness": "FH-VAGDRY",
-  "intimacy":        "FH-SCREAM1",
-  "prevention":      "FH-SCREAM2",
-  "acute-yeast":     "FH-YEAST",
-  "acute-bv":        "FH-BV",
+  searchParams: Promise<{
+    concern?: string;
+    life_stage?: string;
+    severity?: string;
+    preference?: string;
+    duration?: string;
+  }>;
 };
 
 const VALID = [
@@ -25,22 +23,26 @@ const VALID = [
   "acute-bv",
 ];
 
-export default async function FeminineHealthResultPage({ params }: Props) {
+export default async function FeminineHealthResultRoute({ params, searchParams }: Props) {
   const { locale, outcome } = await params;
+  const sp = await searchParams;
   setRequestLocale(locale);
 
   if (!VALID.includes(outcome)) notFound();
 
-  // Generic infection picker (backward compat / direct navigation)
   if (outcome === "acute-infection") {
     return <InfectionPickerPage locale={locale} />;
   }
 
-  const sku = OUTCOME_TO_SKU[outcome];
-  if (!sku) notFound();
-
-  const product = BGS_PRODUCTS[sku];
-  if (!product) notFound();
-
-  return <RecommendationConfigurator product={product} locale={locale} />;
+  return (
+    <FeminineHealthResultPage
+      outcome={outcome}
+      concern={sp.concern ?? ""}
+      lifeStage={sp.life_stage ?? ""}
+      severity={sp.severity ?? ""}
+      preference={sp.preference ?? ""}
+      duration={sp.duration ?? ""}
+      locale={locale}
+    />
+  );
 }

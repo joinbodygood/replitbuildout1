@@ -314,7 +314,14 @@ export function FeminineHealthQuiz() {
     }
 
     await new Promise((r) => setTimeout(r, 1400));
-    router.push(`/${locale}/quiz/feminine-health/result/${outcome}`);
+    const qp = new URLSearchParams({
+      concern:    (answers.concern as string) ?? "",
+      life_stage: (answers.life_stage as string) ?? "",
+      severity:   (answers.severity as string) ?? "",
+      preference: (answers.treatment_preference as string) ?? "",
+      duration:   (answers.duration as string) ?? "",
+    });
+    router.push(`/${locale}/quiz/feminine-health/result/${outcome}?${qp.toString()}`);
   }
 
   // ── Shared header (progress + back) ─────────────────────────────────────
