@@ -1457,7 +1457,7 @@ export default function InsuranceCheckPage() {
                 ))}
               </ul>
               <a
-                href={`/${locale}/products/insurance-eligibility-check`}
+                href={`/${locale}/intake/insurance-eligibility`}
                 className="block w-full bg-[#ed1b1b] text-white text-center font-heading font-bold py-4 px-8 rounded-full shadow-[0_4px_12px_rgba(237,27,27,0.2)] hover:bg-[#d01818] transition-all duration-200 mb-3"
               >
                 Confirm My Coverage — $25 →

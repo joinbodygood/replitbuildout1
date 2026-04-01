@@ -1,21 +1,18 @@
 "use client";
 
 import { Suspense, useState, useRef, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   CheckCircle,
   AlertTriangle,
-  Upload,
   X,
   ShieldCheck,
-  FileText,
   CreditCard,
   Loader2,
   IdCard,
   Zap,
 } from "lucide-react";
-import CoverageResults from "@/components/insurance/CoverageResults";
-import type { CoverageResult } from "@/lib/insurance/confidence-engine";
+import { useCart } from "@/context/CartContext";
 
 const CONDITIONS = [
   { id: "obesity",            label: "Obesity (BMI ≥ 30)",                                    icd: "E66.01" },
@@ -77,11 +74,11 @@ const STEPS = [
 ];
 
 const LOADING_MESSAGES = [
-  "Checking your pharmacy benefits in real time...",
-  "Querying carrier formulary policies...",
-  "Running coverage probability analysis...",
-  "Reviewing historical outcomes for your plan...",
-  "Generating your personalized coverage report...",
+  "Securely uploading your documents...",
+  "Encrypting and submitting your information...",
+  "Saving your eligibility request...",
+  "Adding your verification to cart...",
+  "Redirecting to payment...",
 ];
 
 const inputBase = "w-full border border-[#E5E5E5] rounded-[10px] px-3.5 py-2.5 text-sm text-[#0C0D0F] bg-white focus:outline-none focus:border-[#ED1B1B] transition-colors";
@@ -236,12 +233,13 @@ async function toBase64(file: File): Promise<string> {
 function EligibilityFormInner() {
   const params = useParams();
   const locale = (params?.locale as string) || "en";
+  const router = useRouter();
+  const { addItem } = useCart();
 
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState<string[]>([]);
-  const [formState, setFormState] = useState<"idle" | "loading" | "results" | "submitted">("idle");
+  const [formState, setFormState] = useState<"idle" | "loading" | "submitted">("idle");
   const [submitError, setSubmitError] = useState("");
-  const [coverageResults, setCoverageResults] = useState<CoverageResult | null>(null);
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
   const topRef = useRef<HTMLDivElement>(null);
 
@@ -335,7 +333,6 @@ function EligibilityFormInner() {
     setSubmitError("");
     topRef.current?.scrollIntoView({ behavior: "smooth" });
 
-    // Cycle loading messages every 1.5s
     let msgTimer: ReturnType<typeof setInterval> | null = null;
     msgTimer = setInterval(() => {
       setLoadingMsgIdx((i) => (i + 1) % LOADING_MESSAGES.length);
@@ -352,19 +349,6 @@ function EligibilityFormInner() {
         const c = CONDITIONS.find((x) => x.id === id);
         return { id, label: c?.label || id, icd: c?.icd || "" };
       });
-
-      const coverageCheckPayload = {
-        insurerName: insuranceProvider,
-        memberId,
-        groupNumber: groupNumber || undefined,
-        subscriberName,
-        subscriberDob,
-        state,
-        conditions,
-        employerSize,
-        planType,
-        preferredMed,
-      };
 
       const intakePayload = {
         formType: "insurance-eligibility",
@@ -385,32 +369,26 @@ function EligibilityFormInner() {
         step4_consent: { acknowledged, acknowledgedAt: new Date().toISOString() },
       };
 
-      const [coverageRes] = await Promise.allSettled([
-        fetch("/api/coverage-check", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(coverageCheckPayload),
-        }),
-        fetch("/api/intake/submit", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(intakePayload),
-        }),
-      ]);
+      await fetch("/api/intake/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(intakePayload),
+      });
 
-      if (coverageRes.status === "fulfilled" && coverageRes.value.ok) {
-        const data = await coverageRes.value.json() as { success: boolean; results: CoverageResult };
-        if (data.success && data.results) {
-          setCoverageResults(data.results);
-          setFormState("results");
-        } else {
-          setFormState("submitted");
-        }
-      } else {
-        setFormState("submitted");
-      }
+      addItem({
+        productId: "INS-ELIG",
+        variantId: "INS-ELIG-v1",
+        name: "Insurance Eligibility Check",
+        variantLabel: "One-time verification",
+        price: 2500,
+        slug: "insurance-eligibility-check",
+      });
+
+      router.push(`/${locale}/checkout`);
     } catch {
-      setFormState("submitted");
+      if (msgTimer) clearInterval(msgTimer);
+      setFormState("idle");
+      setSubmitError("Something went wrong. Please try again.");
     } finally {
       if (msgTimer) clearInterval(msgTimer);
     }
@@ -441,69 +419,6 @@ function EligibilityFormInner() {
     );
   }
 
-  // ── Results Screen ──
-  if (formState === "results" && coverageResults) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-[#FDE7E7] via-white to-white">
-        <div className="bg-white border-b border-[#E5E5E5] px-6 py-4 sticky top-0 z-10">
-          <div className="max-w-2xl mx-auto flex items-center justify-between">
-            <div>
-              <span className="font-heading font-extrabold text-lg text-[#0C0D0F]">Body Good</span>
-              <span className="font-heading font-extrabold text-lg text-[#ED1B1B]">Studio</span>
-            </div>
-            <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-3.5 py-1.5">
-              <div className="w-2 h-2 rounded-full bg-green-500" />
-              <span className="text-xs font-semibold text-green-700">Coverage Check Complete</span>
-            </div>
-          </div>
-        </div>
-        <div className="max-w-2xl mx-auto px-5 py-8 pb-20">
-          <div className="text-center mb-7">
-            <div className="inline-flex items-center gap-2 bg-[#FDE7E7] text-[#ED1B1B] rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider mb-4">
-              <CheckCircle className="w-3.5 h-3.5" /> Your Coverage Results
-            </div>
-            <h1 className="font-heading font-extrabold text-2xl text-[#0C0D0F] mb-2">
-              Here's your personalized coverage breakdown
-            </h1>
-            <p className="text-sm text-[#55575A]">
-              Based on {coverageResults.sourcesUsed} independent data sources. Our team will follow up within 3 business days to confirm.
-            </p>
-          </div>
-          <CoverageResults
-            results={coverageResults}
-            onStartReview={() => window.location.href = `/${locale}/intake/insurance`}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // ── Fallback Submitted Screen (if coverage check fails) ──
-  if (formState === "submitted") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FDE7E7] to-white p-6">
-        <div className="bg-white rounded-[20px] p-12 max-w-lg w-full text-center shadow-xl">
-          <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-10 h-10 text-green-600" />
-          </div>
-          <h2 className="font-heading font-bold text-2xl text-[#0C0D0F] mb-3">Submission Received</h2>
-          <p className="text-[#55575A] text-sm leading-relaxed mb-5">
-            Thank you for submitting your insurance eligibility documents. Our team will review your information and determine your coverage options.
-          </p>
-          <div className="bg-[#FDE7E7] rounded-[12px] p-4 mb-5 text-left">
-            <p className="font-heading font-semibold text-sm text-[#0C0D0F] mb-1.5">What happens next?</p>
-            <p className="text-[#55575A] text-xs leading-relaxed">
-              Our insurance navigation team will verify your benefits, check formulary status, and if needed, prepare a prior authorization on your behalf. Expect to hear from us within 3–5 business days.
-            </p>
-          </div>
-          <a href={`/${locale}`}
-            className="mt-2 inline-block font-heading font-bold text-sm text-[#ED1B1B] border border-[#ED1B1B] px-6 py-2.5 rounded-full hover:bg-[#FDE7E7] transition-colors">
-            Return to Home
-          </a>
-        </div>
-      </div>
-    );
-  }
 
   // ── Main Form ──
   return (
@@ -530,7 +445,7 @@ function EligibilityFormInner() {
             <div>
               <h1 className="font-heading font-bold text-xl mb-1.5">Insurance Eligibility Verification</h1>
               <p className="text-sm text-white/70 leading-relaxed">
-                Complete all steps so we can run an instant coverage check across 4 data sources. You'll see your personalized results immediately after submission.
+                Complete all steps and upload your insurance card and ID. After paying the $25 verification fee, our team will check your actual benefits and contact you within 3–5 business days.
               </p>
             </div>
           </div>
@@ -777,10 +692,7 @@ function EligibilityFormInner() {
                     However, we cannot and do not guarantee any specific outcome. Coverage determination, prior authorization approval, and claims adjudication are entirely at the discretion of your insurance carrier.
                   </p>
                   <p>
-                    The instant results you'll see immediately after submission are probability estimates based on our confidence engine and published formulary data — they are not a final coverage determination.
-                  </p>
-                  <p>
-                    The $25 eligibility check fee is non-refundable regardless of the coverage determination outcome. Additional fees for prior authorization ($50) and ongoing insurance management ($75/month) apply only if you choose to proceed with those services.
+                    The $25 eligibility check fee is non-refundable regardless of the coverage determination outcome. After payment, our team will verify your benefits, check formulary status, and contact you within 3–5 business days with your results. Additional fees for prior authorization ($50) and ongoing insurance management ($75/month) apply only if you choose to proceed with those services.
                   </p>
                 </div>
               </div>
@@ -800,7 +712,7 @@ function EligibilityFormInner() {
                     I acknowledge and understand this disclaimer <span className="text-[#ED1B1B]">*</span>
                   </p>
                   <p className="text-xs text-[#55575A] leading-relaxed">
-                    I confirm that I have read and understood the above disclaimer in full. I understand that this submission is a request for coverage verification only, that Body Good Studio will advocate on my behalf but does not guarantee any coverage outcome, and that the instant results are probability estimates — not a final determination.
+                    I confirm that I have read and understood the above disclaimer in full. I understand that this submission is a request for coverage verification only, that Body Good Studio will advocate on my behalf but does not guarantee any coverage outcome, and that the $25 verification fee is non-refundable.
                   </p>
                 </div>
               </button>
@@ -835,7 +747,7 @@ function EligibilityFormInner() {
                   : "bg-[#CCC] cursor-not-allowed"
               }`}
               style={{ boxShadow: acknowledged ? "0 4px 14px rgba(22,163,74,0.3)" : "none" }}>
-              <Zap className="w-4 h-4" /> Get My Coverage Results →
+              <Zap className="w-4 h-4" /> Submit & Pay $25 →
             </button>
           )}
         </div>
