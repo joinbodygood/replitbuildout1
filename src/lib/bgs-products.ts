@@ -311,7 +311,7 @@ export const BGS_PRODUCTS: Record<string, BGSProduct> = {
     description: "Oral Minoxidil 2.5mg + Scalp Peptide Serum — dual-action combo shipped to door",
     bestFor: "Persistent thinning, patches, or hormonal hair loss",
     slug: "hair-restore-plus-women",
-    prices: { 1: 79, 3: 147 },
+    prices: { 1: 99, 3: 237, 6: 414 },
     pharmacyFee: 25,
     pharmacyDescription: "Plain Minoxidil Rx sent to your local pharmacy",
   },
