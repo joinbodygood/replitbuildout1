@@ -1,0 +1,41 @@
+Overhaul the Feminine Health program — both the quiz and the recommendation page. This is a sensitive health area and must be handled with care, respect, and clinical accuracy.
+
+A. Quiz Overhaul
+
+The current feminine health quiz is too generic and doesn't collect enough information to make a targeted recommendation. Expand it substantially.
+
+Questions:
+
+Primary concern — What brings you here today? (Single select)
+
+Vaginal dryness or discomfort
+Recurrent yeast infections
+Bacterial vaginosis (BV)
+UTI prevention
+Low libido or decreased sexual desire
+Hormonal changes (perimenopause, menopause, irregular periods)
+General intimate wellness / not sure — help me figure it out
+Symptom duration — How long have you been experiencing this? (Less than 1 month, 1-3 months, 3-6 months, 6+ months, On and off for years)
+
+Severity — How much is this affecting your daily life or relationships? (Mildly — it's manageable, Moderately — it's becoming a problem, Significantly — it's affecting my quality of life)
+
+Previous treatments — Have you tried anything for this before? Select all that apply. (Over-the-counter products, Prescription medication, Hormone therapy, Home remedies, Nothing — this is my first time seeking help)
+
+Current medications — Are you currently taking any medications, including birth control or hormone therapy? (Yes — with text field, No)
+
+Life stage — Which best describes where you are right now? (Pre-menopausal / regular cycles, Perimenopause — cycles becoming irregular, Menopause — no period for 12+ months, Post-menopause, Prefer not to say)
+
+Contraindications / safety screen — Do any of the following apply to you?
+
+Currently pregnant or breastfeeding
+History of hormone-sensitive cancer (breast, ovarian, uterine)
+Currently experiencing unexplained vaginal bleeding
+If any are selected: show a compassionate message redirecting to a consultation. "For your safety, we recommend speaking directly with our physician team before proceeding." CTA: "Schedule a Consultation"
+Treatment preference — Do you have a preference for how you'd like to use your treatment? (Topical cream or gel, Oral medication, No preference — whatever works best)
+
+Quiz tone guidelines:
+
+Use warm, normalizing language throughout. Add reassuring copy like "You're not alone — many women experience this" and "There are no wrong answers"
+Avoid clinical jargon where possible — use plain language
+Add a brief intro screen: "This quiz helps our physician team understand your intimate health needs so they can recommend the right solution. Your answers are completely confidential."
+Include a progress bar

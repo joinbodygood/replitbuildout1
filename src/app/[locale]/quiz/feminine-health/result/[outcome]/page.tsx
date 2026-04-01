@@ -12,15 +12,26 @@ const OUTCOME_TO_SKU: Record<string, string> = {
   "vaginal-dryness": "FH-VAGDRY",
   "intimacy":        "FH-SCREAM1",
   "prevention":      "FH-SCREAM2",
+  "acute-yeast":     "FH-YEAST",
+  "acute-bv":        "FH-BV",
 };
+
+const VALID = [
+  "acute-infection",
+  "vaginal-dryness",
+  "intimacy",
+  "prevention",
+  "acute-yeast",
+  "acute-bv",
+];
 
 export default async function FeminineHealthResultPage({ params }: Props) {
   const { locale, outcome } = await params;
   setRequestLocale(locale);
 
-  const VALID = ["acute-infection", "vaginal-dryness", "intimacy", "prevention"];
   if (!VALID.includes(outcome)) notFound();
 
+  // Generic infection picker (backward compat / direct navigation)
   if (outcome === "acute-infection") {
     return <InfectionPickerPage locale={locale} />;
   }
