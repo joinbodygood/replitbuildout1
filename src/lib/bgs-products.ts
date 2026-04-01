@@ -304,13 +304,12 @@ export const BGS_PRODUCTS: Record<string, BGSProduct> = {
     sku: "HL-ORAL-MINOX",
     name: "Oral Minoxidil 2.5mg",
     program: "Hair Loss",
-    type: "both",
-    description: "Oral tablet · 30-day supply",
+    type: "pharmacy_only",
+    description: "Oral tablet · 30-day supply — Rx sent to your local pharmacy",
     bestFor: "Thinning hair & early-stage hair loss",
     slug: "minoxidil",
     prices: { 1: 35 },
     pharmacyFee: 25,
-    pharmacyDescription: "Plain Minoxidil Rx sent to your local pharmacy",
   },
 
   "HL-M-FIN": {

@@ -8,10 +8,10 @@ type Props = {
 };
 
 const OUTCOME_TO_SKU: Record<string, string> = {
-  "women-mild":     "HL-ORAL-MINOX",
+  "women-mild":     "HL-W-MINOX",
   "women-moderate": "HL-W-MINOX",
   "women-max":      "HL-M-MAX",
-  "men-basic":      "HL-M-FIN",
+  "men-basic":      "HL-M-COMBO",
   "men-combo":      "HL-M-COMBO",
   "men-max":        "HL-M-MAX",
 };
