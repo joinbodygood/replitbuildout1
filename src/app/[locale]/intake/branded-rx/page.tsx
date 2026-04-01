@@ -153,7 +153,7 @@ function SuccessScreen() {
 function BrandedRxForm() {
   const router = useRouter();
   const locale = useLocale();
-  const { addItem, clearCart } = useCart();
+  const { replaceFlow } = useCart();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -264,10 +264,10 @@ function BrandedRxForm() {
           consent: { telehealth: s4.c1, medicationNotIncluded: s4.c2, glp1Warning: s4.c3, signature: s4.signature, signedAt: new Date().toISOString() },
         }),
       });
-      // Intake saved — clear any prior compounded/medication items, then add ONLY the $55 review fee.
+      // Intake saved — replace any prior branded-rx item, then add ONLY the $55 review fee.
       // Branded flow never charges for medication; patient fills Rx at their own pharmacy.
-      clearCart();
-      addItem({
+      // Other flows (wellness injections, mental health, etc.) coexist in the cart.
+      replaceFlow("branded-rx", [{
         productId: "WM-BRAND-MGMT",
         variantId: "WM-BRAND-MGMT",
         name: "Branded Rx — Doctor Review & Prescription",
@@ -275,7 +275,7 @@ function BrandedRxForm() {
         price: 5500, // $55.00 in cents
         slug: "branded-rx",
         isMedPlan: false,
-      });
+      }]);
       // Route through the branded upsell page (Ondansetron only) before checkout
       router.push(`/${locale}/cart/upsell?flow=branded`);
     } catch {

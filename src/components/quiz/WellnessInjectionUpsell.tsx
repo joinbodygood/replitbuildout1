@@ -162,7 +162,7 @@ interface Props {
 
 export function WellnessInjectionUpsell({ handle, tier, locale }: Props) {
   const router = useRouter();
-  const { addItem } = useCart();
+  const { replaceFlow } = useCart();
   const [actionLoading, setActionLoading] = useState<"bundle" | "skip" | null>(null);
 
   // ── Main product values ──
@@ -204,7 +204,7 @@ export function WellnessInjectionUpsell({ handle, tier, locale }: Props) {
   // ── If no bundle for this handle, go straight to checkout ──
   useEffect(() => {
     if (!hasBundle) {
-      addItem({
+      replaceFlow("wellness-injection", [{
         productId:      mainSku,
         variantId:      `${mainSku}-${tier}mo`,
         name:           mainName,
@@ -214,7 +214,7 @@ export function WellnessInjectionUpsell({ handle, tier, locale }: Props) {
         isMedPlan:      true,
         monthlyPrice:   mainMonthly * 100,
         durationMonths: tier,
-      });
+      }]);
       router.push(`/${locale}/checkout`);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -230,36 +230,36 @@ export function WellnessInjectionUpsell({ handle, tier, locale }: Props) {
 
   function handleAddBundle() {
     setActionLoading("bundle");
-    // Add main at bundle-discounted price
-    addItem({
-      productId:      mainSku,
-      variantId:      `${mainSku}-${tier}mo-bundle`,
-      name:           mainName,
-      variantLabel:   `${tier}-month supply (bundle)`,
-      price:          mainBundleTotal * 100,
-      slug:           handle,
-      isMedPlan:      true,
-      monthlyPrice:   mainBundleMonthly * 100,
-      durationMonths: tier,
-    });
-    // Add partner at bundle-discounted price
-    addItem({
-      productId:      partnerSku,
-      variantId:      `${partnerSku}-${tier}mo-bundle`,
-      name:           partnerName,
-      variantLabel:   `${tier}-month supply (bundle)`,
-      price:          partnerBundleTotal * 100,
-      slug:           partnerHandle,
-      isMedPlan:      true,
-      monthlyPrice:   partnerBundleMonthly * 100,
-      durationMonths: tier,
-    });
+    replaceFlow("wellness-injection", [
+      {
+        productId:      mainSku,
+        variantId:      `${mainSku}-${tier}mo-bundle`,
+        name:           mainName,
+        variantLabel:   `${tier}-month supply (bundle)`,
+        price:          mainBundleTotal * 100,
+        slug:           handle,
+        isMedPlan:      true,
+        monthlyPrice:   mainBundleMonthly * 100,
+        durationMonths: tier,
+      },
+      {
+        productId:      partnerSku,
+        variantId:      `${partnerSku}-${tier}mo-bundle`,
+        name:           partnerName,
+        variantLabel:   `${tier}-month supply (bundle)`,
+        price:          partnerBundleTotal * 100,
+        slug:           partnerHandle,
+        isMedPlan:      true,
+        monthlyPrice:   partnerBundleMonthly * 100,
+        durationMonths: tier,
+      },
+    ]);
     router.push(`/${locale}/checkout`);
   }
 
   function handleSkip() {
     setActionLoading("skip");
-    addItem({
+    replaceFlow("wellness-injection", [{
       productId:      mainSku,
       variantId:      `${mainSku}-${tier}mo`,
       name:           mainName,
@@ -269,7 +269,7 @@ export function WellnessInjectionUpsell({ handle, tier, locale }: Props) {
       isMedPlan:      true,
       monthlyPrice:   mainMonthly * 100,
       durationMonths: tier,
-    });
+    }]);
     router.push(`/${locale}/checkout`);
   }
 

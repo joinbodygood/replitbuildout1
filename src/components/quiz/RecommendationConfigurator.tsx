@@ -32,7 +32,7 @@ interface PriceDisplay {
 }
 
 export function RecommendationConfigurator({ product, locale }: Props) {
-  const { addItem, replaceMedPlan, items } = useCart();
+  const { addItem, replaceFlow, items } = useCart();
   const router = useRouter();
 
   const hasDoses = !!product.doses;
@@ -270,8 +270,9 @@ export function RecommendationConfigurator({ product, locale }: Props) {
     };
 
     const isHairLoss = product.program === "Hair Loss";
-    const hadExisting = items.some((i) => i.isMedPlan);
-    replaceMedPlan(cartItem);
+    const flowTag = isHairLoss ? "hair-loss" : "compounded-glp1";
+    const hadExisting = items.some((i) => i.flow === flowTag);
+    replaceFlow(flowTag, [cartItem], { silent: true });
     if (hadExisting) {
       showToast("Your plan has been updated");
       setTimeout(
@@ -291,14 +292,15 @@ export function RecommendationConfigurator({ product, locale }: Props) {
     );
     const priceInCents =
       pd.price !== "—" ? Math.round((pd.price as number) * 100) : 0;
-    addItem({
+    const pharmacyFlow = product.program === "Hair Loss" ? "hair-loss" : "compounded-glp1";
+    replaceFlow(pharmacyFlow, [{
       productId: product.sku,
       variantId: `${product.sku}-pharmacy`,
       name: `${product.name} — Pharmacy Pickup`,
       variantLabel: "Doctor Consultation + E-Prescription",
       price: priceInCents,
       slug: product.slug ?? product.sku.toLowerCase(),
-    });
+    }], { silent: true });
     setPharmacyModalOpen(false);
     router.push(`/${locale}/checkout`);
   }

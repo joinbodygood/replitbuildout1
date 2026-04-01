@@ -234,7 +234,7 @@ function EligibilityFormInner() {
   const params = useParams();
   const locale = (params?.locale as string) || "en";
   const router = useRouter();
-  const { addItem } = useCart();
+  const { replaceFlow } = useCart();
 
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState<string[]>([]);
@@ -375,14 +375,14 @@ function EligibilityFormInner() {
         body: JSON.stringify(intakePayload),
       });
 
-      addItem({
+      replaceFlow("insurance", [{
         productId: "INS-ELIG",
         variantId: "INS-ELIG-v1",
         name: "Insurance Eligibility Check",
         variantLabel: "One-time verification",
         price: 2500,
         slug: "insurance-eligibility-check",
-      });
+      }]);
 
       router.push(`/${locale}/checkout`);
     } catch {

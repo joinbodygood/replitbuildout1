@@ -95,7 +95,7 @@ export function MentalWellnessResultPage({
   flagged,
 }: Props) {
   const router = useRouter();
-  const { addItem } = useCart();
+  const { replaceFlow } = useCart();
   const [loading, setLoading] = useState(false);
 
   const fee = product.pharmacyFee ?? 25;
@@ -103,14 +103,14 @@ export function MentalWellnessResultPage({
 
   function handleGetStarted() {
     setLoading(true);
-    addItem({
+    replaceFlow("mental-health", [{
       productId: product.sku,
       variantId: `${product.sku}-pharmacy`,
       name: `${product.name} — Doctor Consultation`,
       variantLabel: "Doctor Review + E-Prescription",
       price: fee * 100,
       slug: product.slug ?? product.sku.toLowerCase(),
-    });
+    }]);
     router.push(`/${locale}/checkout`);
   }
 

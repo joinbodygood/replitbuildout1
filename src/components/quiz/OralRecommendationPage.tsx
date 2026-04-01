@@ -112,7 +112,7 @@ const OPTIONS: OralOption[] = [
 
 export function OralRecommendationPage({ locale, recommended }: Props) {
   const router = useRouter();
-  const { replaceMedPlan } = useCart();
+  const { replaceFlow } = useCart();
 
   const [selectedDuration, setSelectedDuration] = useState<Record<string, number>>({
     appetite: 1,
@@ -138,7 +138,7 @@ export function OralRecommendationPage({ locale, recommended }: Props) {
     const dur = selectedDuration[opt.id] ?? 1;
     const monthly = opt.prices[dur] ?? Object.values(opt.prices)[0];
     const totalCents = monthly * dur * 100;
-    replaceMedPlan({
+    replaceFlow("oral-glp1", [{
       productId: sku,
       variantId: `${sku}-${dur}mo`,
       name: opt.name,
@@ -148,7 +148,7 @@ export function OralRecommendationPage({ locale, recommended }: Props) {
       isMedPlan: true,
       monthlyPrice: monthly * 100,
       durationMonths: dur,
-    });
+    }]);
     router.push(`/${locale}/cart/upsell?flow=oral`);
   }
 

@@ -48,7 +48,7 @@ interface Props {
 }
 
 export function SplitRecommendationPage({ config, locale }: Props) {
-  const { addItem, replaceMedPlan } = useCart();
+  const { addItem, replaceFlow } = useCart();
   const router = useRouter();
   const [pharmacyModalOpen, setPharmacyModalOpen] = useState(false);
   const [pharmacyName, setPharmacyName] = useState("");
@@ -61,7 +61,7 @@ export function SplitRecommendationPage({ config, locale }: Props) {
     : null;
 
   function handleShipToMe() {
-    replaceMedPlan({
+    replaceFlow("compounded-glp1", [{
       productId: config.shipCartData.productId,
       variantId: config.shipCartData.variantId,
       name: config.productName,
@@ -69,7 +69,7 @@ export function SplitRecommendationPage({ config, locale }: Props) {
       price: config.shipCartData.priceInCents,
       slug: config.shipCartData.slug,
       isMedPlan: true,
-    });
+    }]);
     router.push(`/${locale}/cart/upsell`);
   }
 
@@ -87,14 +87,14 @@ export function SplitRecommendationPage({ config, locale }: Props) {
         phone: pharmacyPhone,
       })
     );
-    addItem({
+    replaceFlow("compounded-glp1", [{
       productId: config.pharmacyCartData.productId,
       variantId: config.pharmacyCartData.variantId,
       name: `${config.productName} — Pharmacy Pickup`,
       variantLabel: config.pharmacyCartData.variantLabel,
       price: config.pharmacyCartData.priceInCents,
       slug: config.pharmacyCartData.slug,
-    });
+    }], { silent: true });
     setPharmacyModalOpen(false);
     router.push(`/${locale}/checkout`);
   }
