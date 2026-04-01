@@ -167,6 +167,20 @@ export function QuizEngine({ forceReset = false, isBrandPath = false, isOralPath
     }
   }, [state]);
 
+  // Oral path: if cached state restored at a skipped step, auto-advance to priority
+  useEffect(() => {
+    if (!isOralPath || showLanding || state.disqualified) return;
+    const stepId = STEPS[state.currentStep];
+    if (stepId === "card-education" || stepId === "needles" || stepId === "insurance-interest") {
+      setState((prev) => ({
+        ...prev,
+        needleComfort: "absolutely-not",
+        insuranceInterest: "no",
+        currentStep: STEPS.indexOf("priority"),
+      }));
+    }
+  }, [isOralPath, state.currentStep, showLanding, state.disqualified]);
+
   const currentStepId = STEPS[state.currentStep];
   const qNum = isOralPath ? ORAL_STEP_TO_QNUM[currentStepId] : STEP_TO_QNUM[currentStepId];
   const totalQuestions = isOralPath ? 7 : TOTAL_QUESTIONS;
@@ -493,11 +507,11 @@ export function QuizEngine({ forceReset = false, isBrandPath = false, isOralPath
           />
         )}
 
-        {currentStepId === "card-education" && (
+        {currentStepId === "card-education" && !isOralPath && (
           <InterstitialCard variant="education" locale={locale} onContinue={() => advance()} />
         )}
 
-        {currentStepId === "needles" && (
+        {currentStepId === "needles" && !isOralPath && (
           <QuizStep
             question={isEs ? "¿Cómo te sientes con las auto-inyecciones?" : "How do you feel about self-injections?"}
             options={[
@@ -518,7 +532,7 @@ export function QuizEngine({ forceReset = false, isBrandPath = false, isOralPath
           />
         )}
 
-        {currentStepId === "insurance-interest" && (
+        {currentStepId === "insurance-interest" && !isOralPath && (
           <QuizStep
             question={
               isEs
