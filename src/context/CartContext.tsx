@@ -42,6 +42,42 @@ const FLOW_LABELS: Record<string, string> = {
   "hair-loss":          "Hair Loss",
 };
 
+/**
+ * Infer a flow tag from a product ID for items saved before flow tagging was
+ * introduced. This runs once on localStorage load so replaceFlow can identify
+ * and remove stale items on quiz retakes.
+ */
+function inferFlow(productId: string): string | undefined {
+  const id = productId ?? "";
+  if (id.startsWith("WI-"))           return "wellness-injection";
+  if (id.startsWith("MW-"))           return "mental-health";
+  if (id.startsWith("HL-"))           return "hair-loss";
+  if (id === "WM-BRAND-MGMT")        return "branded-rx";
+  if (id.startsWith("WM-ORAL-"))     return "oral-glp1";
+  if (id.startsWith("WM-"))          return "compounded-glp1";
+  if (id.startsWith("INS-"))         return "insurance";
+  return undefined;
+}
+
+function migrateItems(items: CartItem[]): CartItem[] {
+  // 1. Backfill flow tags for items saved before flow-aware cart was introduced
+  const tagged = items.map((item) => {
+    if (item.flow) return item;
+    const flow = inferFlow(item.productId);
+    return flow ? { ...item, flow } : item;
+  });
+
+  // 2. Deduplicate: for each flow, keep only the most recent set of items.
+  //    If multiple items share the same flow, we keep only the LAST occurrence
+  //    of each variantId (most recently added wins). This fixes stale duplicates
+  //    from before replaceFlow was introduced.
+  const seen = new Map<string, CartItem>();
+  for (const item of tagged) {
+    seen.set(item.variantId, item);
+  }
+  return Array.from(seen.values());
+}
+
 const CartContext = createContext<CartContextType | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
@@ -59,7 +95,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const saved = localStorage.getItem("bg_cart");
     if (saved) {
       try {
-        setItems(JSON.parse(saved));
+        const parsed: CartItem[] = JSON.parse(saved);
+        // Backfill flow tags for items saved before flow-aware cart was introduced
+        const migrated = migrateItems(parsed);
+        setItems(migrated);
       } catch {}
     }
     setLoaded(true);
