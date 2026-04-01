@@ -21,14 +21,13 @@ interface OralOption {
   pros: string[];
   cons: string[];
   medsIncluded: boolean;
+  prices: Record<number, number>;
   pharmacyPrice: string | null;
   pharmacyNote: string | null;
   pharmacyUrl: string | null;
   accentColor: string;
   accentBg: string;
 }
-
-const ORAL_PRICES: Record<number, number> = { 1: 129, 3: 119, 6: 109 };
 
 const DURATION_LABELS: Record<number, string> = {
   1: "Monthly",
@@ -54,6 +53,7 @@ const OPTIONS: OralOption[] = [
       "Gradual results vs. injectable GLP-1s",
     ],
     medsIncluded: true,
+    prices: { 1: 129, 3: 119, 6: 109 },
     pharmacyPrice: null,
     pharmacyNote: null,
     pharmacyUrl: null,
@@ -77,6 +77,7 @@ const OPTIONS: OralOption[] = [
       "Gentler approach — not the highest % weight loss",
     ],
     medsIncluded: true,
+    prices: { 1: 129, 3: 119 },
     pharmacyPrice: null,
     pharmacyNote: null,
     pharmacyUrl: null,
@@ -100,6 +101,7 @@ const OPTIONS: OralOption[] = [
       "Lower bioavailability than injectable form",
     ],
     medsIncluded: false,
+    prices: { 1: 55 },
     pharmacyPrice: "~$1,349",
     pharmacyNote: "/month list price at pharmacy",
     pharmacyUrl: "https://www.novocarepro.com/wegovy",
@@ -117,13 +119,14 @@ export function OralRecommendationPage({ locale, recommended }: Props) {
     metabolic: 1,
   });
 
-  function getMonthlyPrice(id: string): number {
-    return ORAL_PRICES[selectedDuration[id] ?? 1] ?? 129;
+  function getMonthlyPrice(opt: OralOption): number {
+    const dur = selectedDuration[opt.id] ?? 1;
+    return opt.prices[dur] ?? Object.values(opt.prices)[0];
   }
 
-  function getTotalPrice(id: string): number {
-    const dur = selectedDuration[id] ?? 1;
-    return (ORAL_PRICES[dur] ?? 129) * dur;
+  function getTotalPrice(opt: OralOption): number {
+    const dur = selectedDuration[opt.id] ?? 1;
+    return (opt.prices[dur] ?? Object.values(opt.prices)[0]) * dur;
   }
 
   function handleSelect(opt: OralOption) {
@@ -133,7 +136,7 @@ export function OralRecommendationPage({ locale, recommended }: Props) {
     }
     const sku = opt.id === "appetite" ? "WM-ORAL-METCOMBO" : "WM-ORAL-LDN";
     const dur = selectedDuration[opt.id] ?? 1;
-    const monthly = ORAL_PRICES[dur] ?? 129;
+    const monthly = opt.prices[dur] ?? Object.values(opt.prices)[0];
     const totalCents = monthly * dur * 100;
     replaceMedPlan({
       productId: sku,
@@ -177,8 +180,9 @@ export function OralRecommendationPage({ locale, recommended }: Props) {
           const isRecommended = opt.id === recommended;
           const hasTiers = opt.medsIncluded;
           const dur = selectedDuration[opt.id] ?? 1;
-          const monthly = hasTiers ? getMonthlyPrice(opt.id) : (opt.id === "wegovy" ? 55 : 129);
-          const total = hasTiers ? getTotalPrice(opt.id) : null;
+          const monthly = hasTiers ? getMonthlyPrice(opt) : (opt.id === "wegovy" ? 55 : 129);
+          const total = hasTiers ? getTotalPrice(opt) : null;
+          const tierKeys = Object.keys(opt.prices).map(Number);
 
           return (
             <div
@@ -248,8 +252,8 @@ export function OralRecommendationPage({ locale, recommended }: Props) {
                       <div className="text-[10px] font-bold uppercase tracking-wider text-[#55575A] mb-1.5">
                         Choose your plan
                       </div>
-                      <div className="grid grid-cols-3 gap-1.5">
-                        {([1, 3, 6] as const).map((mo) => {
+                      <div className={`grid gap-1.5 ${tierKeys.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
+                        {tierKeys.map((mo) => {
                           const isSelected = dur === mo;
                           return (
                             <button
@@ -273,7 +277,7 @@ export function OralRecommendationPage({ locale, recommended }: Props) {
                                 className="text-[13px] font-bold"
                                 style={{ color: isSelected ? opt.accentColor : "#0C0D0F" }}
                               >
-                                ${ORAL_PRICES[mo]}/mo
+                                ${opt.prices[mo]}/mo
                               </span>
                               <span className="text-[9px] text-[#55575A] leading-tight mt-0.5">
                                 {mo === 1 ? "Monthly" : `${mo}-Mo Plan`}
@@ -284,7 +288,7 @@ export function OralRecommendationPage({ locale, recommended }: Props) {
                       </div>
                       {dur > 1 && (
                         <div className="text-[10px] text-[#55575A] mt-1 text-center">
-                          Billed as ${total} total &bull; Save ${(129 - monthly) * dur}/total vs monthly
+                          Billed as ${total} total &bull; Save ${((opt.prices[1] ?? 129) - monthly) * dur} vs monthly
                         </div>
                       )}
                     </div>

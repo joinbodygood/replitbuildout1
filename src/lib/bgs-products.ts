@@ -120,7 +120,7 @@ export const BGS_PRODUCTS: Record<string, BGSProduct> = {
     type: "compounded",
     description: "LDN 4.5mg capsules — cravings & inflammation",
     bestFor: "Emotional eating and food cravings",
-    prices: { 1: 129, 3: 119, 6: 109 },
+    prices: { 1: 129, 3: 119 },
   },
 
   // ── WEIGHT LOSS — BRANDED RX ──
