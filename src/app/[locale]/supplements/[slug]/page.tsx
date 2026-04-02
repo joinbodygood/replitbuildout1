@@ -95,29 +95,40 @@ export default async function SupplementProductPage({ params }: Props) {
                 {t.descriptionShort}
               </p>
 
-              {/* Pricing */}
-              {variant && (
-                <div className="space-y-1">
-                  <div className="flex items-center gap-3">
-                    <span className="font-heading text-heading text-3xl font-bold">
-                      {fmt(variant.price)}
-                    </span>
-                    {variant.compareAtPrice && (
-                      <span className="text-body-muted text-xl line-through">
-                        {fmt(variant.compareAtPrice)}
+              {/* Pricing — shows subscribe & save as primary */}
+              {variant && (() => {
+                const subscribePrice = Math.round(variant.price * 0.90);
+                const savings = variant.price - subscribePrice;
+                return (
+                  <div className="space-y-2">
+                    <div className="flex items-baseline gap-3">
+                      <span className="font-heading text-heading text-3xl font-bold">
+                        {fmt(subscribePrice)}
+                        <span className="text-base font-normal text-body-muted">/mo</span>
                       </span>
+                      <span className="text-body-muted text-lg line-through">{fmt(variant.price)}</span>
+                      <span className="bg-brand-red text-white text-sm font-bold px-2 py-0.5 rounded-full">
+                        {isEs ? "Ahorra 10%" : "Save 10%"}
+                      </span>
+                    </div>
+                    <p className="text-body-muted text-sm">
+                      {isEs
+                        ? `Suscripción mensual · o ${fmt(variant.price)} de pago único`
+                        : `Monthly subscription · or ${fmt(variant.price)} one-time`}
+                    </p>
+                    {variant.label && (
+                      <p className="text-body-muted text-xs">{variant.label}</p>
                     )}
                     {variant.compareAtPrice && (
-                      <span className="bg-brand-red text-white text-sm font-bold px-2 py-0.5 rounded-full">
-                        {isEs ? "Ahorra" : "Save"} {fmt(variant.compareAtPrice - variant.price)}
-                      </span>
+                      <p className="text-xs text-success font-medium">
+                        {isEs
+                          ? `Ahorra ${fmt(savings)} al mes con la suscripción`
+                          : `Save ${fmt(savings)}/mo with Subscribe & Save`}
+                      </p>
                     )}
                   </div>
-                  {variant.label && (
-                    <p className="text-body-muted text-sm">{variant.label}</p>
-                  )}
-                </div>
-              )}
+                );
+              })()}
 
               {/* Ships separately notice */}
               <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-card text-sm text-blue-800">

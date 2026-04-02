@@ -7,14 +7,17 @@ export type CartItem = {
   variantId: string;
   name: string;
   variantLabel: string;
-  price: number;        // cents — TOTAL plan cost, not per-month
+  price: number;        // cents — TOTAL plan cost, or monthly price when purchaseType === "subscribe"
   quantity: number;
   slug: string;
   productType?: "rx" | "supplement" | "consultation"; // fulfillment routing tag
   isMedPlan?: boolean;      // true for ship-to-me medication plans
-  monthlyPrice?: number;    // cents per month, for display purposes
+  monthlyPrice?: number;    // cents per month, for display purposes (Rx plans)
   durationMonths?: number;  // number of months in the plan
   flow?: string;            // quiz flow tag e.g. "wellness-injection", "mental-health"
+  // Supplement purchase options
+  purchaseType?: "one-time" | "subscribe"; // undefined means one-time
+  originalPrice?: number;   // full retail price in cents (for subscribe discount display)
 };
 
 export type FlowToast = { message: string; key: number };
@@ -26,6 +29,7 @@ type CartContextType = {
   replaceMedPlan: (item: Omit<CartItem, "quantity">) => boolean;
   removeItem: (variantId: string) => void;
   updateQuantity: (variantId: string, quantity: number) => void;
+  updateItem: (variantId: string, updates: Partial<Omit<CartItem, "variantId" | "productId" | "quantity">>) => void;
   clearCart: () => void;
   itemCount: number;
   total: number;
@@ -171,6 +175,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  const updateItem = useCallback(
+    (variantId: string, updates: Partial<Omit<CartItem, "variantId" | "productId" | "quantity">>) => {
+      setItems((prev) =>
+        prev.map((i) => (i.variantId === variantId ? { ...i, ...updates } : i))
+      );
+    },
+    []
+  );
+
   const clearCart = useCallback(() => setItems([]), []);
 
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
@@ -185,6 +198,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         replaceMedPlan,
         removeItem,
         updateQuantity,
+        updateItem,
         clearCart,
         itemCount,
         total,

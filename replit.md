@@ -244,11 +244,22 @@ Recurring billing infrastructure for all multi-month and monthly medication plan
 | `/api/admin/subscriptions/[id]/cancel` | POST | Cancel subscription on PayPal + mark order cancelled |
 
 ### Checkout Detection Logic
-- `isSubscriptionItem(item)` → `item.isMedPlan && item.monthlyPrice > 0`
-- 1-month plans: `paypalTotalCycles = 0` (infinite, cancel anytime)
-- 3/6-month plans: `paypalTotalCycles = durationMonths` (fixed-term billing)
+- `isSubscriptionItem(item)` → `item.isMedPlan && item.monthlyPrice > 0` OR `item.purchaseType === "subscribe"` (supplement subscription)
+- 1-month Rx plans: `paypalTotalCycles = 0` (infinite, cancel anytime)
+- 3/6-month Rx plans: `paypalTotalCycles = durationMonths` (fixed-term billing)
+- Supplement-only subscriptions: `paypalTotalCycles = 0` (infinite)
 - Mixed carts (subscription + one-time add-on): one-time items become `setup_fee` on first cycle
 - Discount codes show "not applicable" note when subscription items present
+
+### Subscribe & Save (Supplements)
+- All 24 supplements support "Subscribe & Save" (10% off, monthly auto-renewal)
+- Default option on product detail page is Subscribe & Save
+- `CartItem.purchaseType` → `"subscribe"` | `"one-time"` | undefined (undefined = one-time)
+- `CartItem.originalPrice` → full retail price in cents (for display alongside discounted price)
+- Changing purchase type on product page while item is in cart updates it in-place via `updateItem()`
+- Subscribe items in cart show green "Subscribe & Save" badge + `/mo` pricing + "10% off" tag
+- Subscribe items hide quantity +/- control (it's 1 unit/mo; quantity changes don't apply)
+- Checkout subscription summary shows per-item monthly amount correctly for both Rx and supplement subscriptions
 
 ### Subscription Products
 | Product | 1-mo | 3-mo | 6-mo |

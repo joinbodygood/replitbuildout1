@@ -465,14 +465,20 @@ export default function CheckoutPage() {
                         {isEs ? "Resumen de Suscripción" : "Subscription Summary"}
                       </h4>
                       <div className="space-y-2 text-sm">
-                        {classification.subscriptionItems.map((item) => (
-                          <div key={item.variantId} className="flex justify-between">
-                            <span className="text-body">{item.name} — {item.variantLabel}</span>
-                            <span className="font-semibold text-heading">
-                              {formatPrice(classification.monthlyPriceCents)}/mo
-                            </span>
-                          </div>
-                        ))}
+                        {classification.subscriptionItems.map((item) => {
+                          // Per-item monthly amount: Rx uses monthlyPrice, supplement uses price (already discounted)
+                          const itemMonthly = item.isMedPlan
+                            ? (item.monthlyPrice ?? item.price)
+                            : item.price * item.quantity;
+                          return (
+                            <div key={item.variantId} className="flex justify-between">
+                              <span className="text-body">{item.name} — {item.variantLabel}</span>
+                              <span className="font-semibold text-heading">
+                                {formatPrice(itemMonthly)}/mo
+                              </span>
+                            </div>
+                          );
+                        })}
                         {classification.hasMixed && classification.oneTimeItems.map((item) => (
                           <div key={item.variantId} className="flex justify-between text-body-muted">
                             <span>{item.name} ({isEs ? "cargo único" : "one-time"})</span>
