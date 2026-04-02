@@ -18,6 +18,7 @@ const CATEGORY_LABELS: Record<string, { en: string; es: string }> = {
   minerals:   { en: "Minerals",            es: "Minerales" },
   protein:    { en: "Protein & Collagen",  es: "Proteína y Colágeno" },
   wellness:   { en: "Adaptogens & Wellness", es: "Adaptógenos y Bienestar" },
+  bundle:     { en: "Curated Bundle",      es: "Paquete Curado" },
 };
 
 const fmt = (cents: number) => `$${(cents / 100).toFixed(2)}`;
@@ -26,8 +27,8 @@ export default async function SupplementProductPage({ params }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
 
-  const product = await db.product.findUnique({
-    where: { slug, productType: "supplement" },
+  const product = await db.product.findFirst({
+    where: { slug, productType: { in: ["supplement", "bundle"] } },
     include: {
       translations: { where: { locale } },
       variants: { where: { isAvailable: true }, orderBy: { sortOrder: "asc" } },
@@ -41,11 +42,21 @@ export default async function SupplementProductPage({ params }: Props) {
   if (!t) notFound();
 
   const isEs = locale === "es";
+  const isBundle = product.productType === "bundle";
   const variant = product.variants[0];
   const imageUrl = product.images[0]?.url ?? null;
   const catLabel = CATEGORY_LABELS[product.category];
 
   const longDescParagraphs = t.descriptionLong.split("\n").filter(Boolean);
+
+  const savings = variant?.compareAtPrice ? variant.compareAtPrice - variant.price : 0;
+  const savingsPct = variant?.compareAtPrice
+    ? Math.round(((variant.compareAtPrice - variant.price) / variant.compareAtPrice) * 100)
+    : 0;
+
+  const bundleItems = longDescParagraphs
+    .filter((p) => p.startsWith("•"))
+    .map((p) => p.replace(/^•\s*/, ""));
 
   return (
     <>
@@ -81,11 +92,18 @@ export default async function SupplementProductPage({ params }: Props) {
 
             {/* Details */}
             <div className="space-y-6">
-              {catLabel && (
-                <Badge variant="pink">
-                  {isEs ? catLabel.es : catLabel.en}
-                </Badge>
-              )}
+              <div className="flex items-center gap-2 flex-wrap">
+                {isBundle && (
+                  <span className="bg-brand-red text-white text-xs font-bold px-3 py-1 rounded-full">
+                    {isEs ? "Paquete" : "Bundle"}
+                  </span>
+                )}
+                {catLabel && (
+                  <Badge variant="pink">
+                    {isEs ? catLabel.es : catLabel.en}
+                  </Badge>
+                )}
+              </div>
 
               <h1 className="font-heading text-heading text-3xl sm:text-4xl font-bold">
                 {t.name}
@@ -95,40 +113,90 @@ export default async function SupplementProductPage({ params }: Props) {
                 {t.descriptionShort}
               </p>
 
-              {/* Pricing — shows subscribe & save as primary */}
-              {variant && (() => {
-                const subscribePrice = Math.round(variant.price * 0.90);
-                const savings = variant.price - subscribePrice;
-                return (
-                  <div className="space-y-2">
-                    <div className="flex items-baseline gap-3">
-                      <span className="font-heading text-heading text-3xl font-bold">
-                        {fmt(subscribePrice)}
-                        <span className="text-base font-normal text-body-muted">/mo</span>
-                      </span>
-                      <span className="text-body-muted text-lg line-through">{fmt(variant.price)}</span>
-                      <span className="bg-brand-red text-white text-sm font-bold px-2 py-0.5 rounded-full">
-                        {isEs ? "Ahorra 10%" : "Save 10%"}
-                      </span>
-                    </div>
-                    <p className="text-body-muted text-sm">
-                      {isEs
-                        ? `Suscripción mensual · o ${fmt(variant.price)} de pago único`
-                        : `Monthly subscription · or ${fmt(variant.price)} one-time`}
-                    </p>
-                    {variant.label && (
-                      <p className="text-body-muted text-xs">{variant.label}</p>
-                    )}
-                    {variant.compareAtPrice && (
-                      <p className="text-xs text-success font-medium">
-                        {isEs
-                          ? `Ahorra ${fmt(savings)} al mes con la suscripción`
-                          : `Save ${fmt(savings)}/mo with Subscribe & Save`}
+              {/* Pricing */}
+              {variant && (
+                <div className="space-y-2">
+                  {isBundle ? (
+                    <>
+                      <div className="flex items-baseline gap-3">
+                        <span className="font-heading text-heading text-3xl font-bold">
+                          {fmt(variant.price)}
+                        </span>
+                        {variant.compareAtPrice && (
+                          <>
+                            <span className="text-body-muted text-lg line-through">{fmt(variant.compareAtPrice)}</span>
+                            <span className="bg-green-600 text-white text-sm font-bold px-2 py-0.5 rounded-full">
+                              {isEs ? `Ahorra ${savingsPct}%` : `Save ${savingsPct}%`}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      {variant.compareAtPrice && (
+                        <p className="text-green-700 text-sm font-medium">
+                          {isEs
+                            ? `Ahorras ${fmt(savings)} frente a comprar por separado`
+                            : `You save ${fmt(savings)} vs. buying separately`}
+                        </p>
+                      )}
+                      {variant.label && (
+                        <p className="text-body-muted text-xs">{variant.label}</p>
+                      )}
+                      <p className="text-body-muted text-xs font-medium">
+                        {isEs ? "Compra única · Sin suscripción" : "One-time purchase · No subscription"}
                       </p>
-                    )}
-                  </div>
-                );
-              })()}
+                    </>
+                  ) : (() => {
+                    const subscribePrice = Math.round(variant.price * 0.90);
+                    const subscribeSavings = variant.price - subscribePrice;
+                    return (
+                      <>
+                        <div className="flex items-baseline gap-3">
+                          <span className="font-heading text-heading text-3xl font-bold">
+                            {fmt(subscribePrice)}
+                            <span className="text-base font-normal text-body-muted">/mo</span>
+                          </span>
+                          <span className="text-body-muted text-lg line-through">{fmt(variant.price)}</span>
+                          <span className="bg-brand-red text-white text-sm font-bold px-2 py-0.5 rounded-full">
+                            {isEs ? "Ahorra 10%" : "Save 10%"}
+                          </span>
+                        </div>
+                        <p className="text-body-muted text-sm">
+                          {isEs
+                            ? `Suscripción mensual · o ${fmt(variant.price)} de pago único`
+                            : `Monthly subscription · or ${fmt(variant.price)} one-time`}
+                        </p>
+                        {variant.label && (
+                          <p className="text-body-muted text-xs">{variant.label}</p>
+                        )}
+                        {variant.compareAtPrice && (
+                          <p className="text-xs text-success font-medium">
+                            {isEs
+                              ? `Ahorra ${fmt(subscribeSavings)} al mes con la suscripción`
+                              : `Save ${fmt(subscribeSavings)}/mo with Subscribe & Save`}
+                          </p>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* Bundle includes list */}
+              {isBundle && bundleItems.length > 0 && (
+                <div className="p-4 bg-lime-50 border border-lime-200 rounded-card">
+                  <p className="font-heading font-semibold text-heading text-sm mb-3">
+                    {isEs ? "El paquete incluye:" : "Bundle includes:"}
+                  </p>
+                  <ul className="space-y-1.5">
+                    {bundleItems.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-body-muted">
+                        <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               {/* Ships separately notice */}
               <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-card text-sm text-blue-800">
@@ -150,6 +218,7 @@ export default async function SupplementProductPage({ params }: Props) {
                   price={variant.price}
                   slug={product.slug}
                   isEs={isEs}
+                  forceOneTime={isBundle}
                 />
               )}
 
@@ -178,11 +247,28 @@ export default async function SupplementProductPage({ params }: Props) {
             {isEs ? "Descripción Completa" : "Full Description"}
           </h2>
           <div className="space-y-4">
-            {longDescParagraphs.map((para, i) => (
-              <p key={i} className="text-body-muted leading-relaxed">
-                {para}
-              </p>
-            ))}
+            {longDescParagraphs.map((para, i) => {
+              if (para.startsWith("•")) {
+                return (
+                  <div key={i} className="flex items-start gap-2 text-body-muted leading-relaxed">
+                    <CheckCircle className="w-4 h-4 text-green-600 mt-1 flex-shrink-0" />
+                    <span>{para.replace(/^•\s*/, "")}</span>
+                  </div>
+                );
+              }
+              if (para.endsWith(":") || para.toUpperCase() === para) {
+                return (
+                  <p key={i} className="font-heading text-heading font-semibold">
+                    {para}
+                  </p>
+                );
+              }
+              return (
+                <p key={i} className="text-body-muted leading-relaxed">
+                  {para}
+                </p>
+              );
+            })}
           </div>
 
           {/* Why Dr. Moleon recommends it */}

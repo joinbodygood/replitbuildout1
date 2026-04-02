@@ -7,6 +7,7 @@ import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { PayPalButton } from "@/components/checkout/PayPalButton";
 import { PayPalSubscribeButton } from "@/components/checkout/PayPalSubscribeButton";
+import { UpsellModal } from "@/components/checkout/UpsellModal";
 import { PharmacyDisclaimerBox } from "@/components/ui/PharmacyDisclaimerBox";
 import { classifyCart, buildSubscriptionDescription } from "@/lib/subscription-utils";
 
@@ -18,6 +19,8 @@ export default function CheckoutPage() {
   const isEs = locale === "es";
 
   const [step, setStep] = useState<CheckoutStep>("info");
+  const [showUpsell, setShowUpsell] = useState(true);
+  const [upsellDismissed, setUpsellDismissed] = useState(false);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [shippingName, setShippingName] = useState("");
@@ -215,6 +218,22 @@ export default function CheckoutPage() {
 
   return (
     <>
+      {/* Pre-checkout upsell modal — only shown once before checkout steps begin */}
+      {showUpsell && !upsellDismissed && itemCount > 0 && !orderId && (
+        <UpsellModal
+          locale={locale}
+          isEs={isEs}
+          onClose={() => {
+            setShowUpsell(false);
+            setUpsellDismissed(true);
+          }}
+          onProceed={() => {
+            setShowUpsell(false);
+            setUpsellDismissed(true);
+          }}
+        />
+      )}
+
       {/* Progress */}
       {step !== "confirmation" && (
         <div className="bg-surface-dim border-b border-border py-4">

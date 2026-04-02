@@ -16,6 +16,7 @@ type Props = {
   price: number; // full retail price in cents
   slug: string;
   isEs: boolean;
+  forceOneTime?: boolean; // bundles are one-time only
 };
 
 function fmt(cents: number) {
@@ -30,11 +31,12 @@ export function SupplementAddToCart({
   price,
   slug,
   isEs,
+  forceOneTime = false,
 }: Props) {
   const { addItem, items, updateItem } = useCart();
   const locale = useLocale();
   const router = useRouter();
-  const [purchaseType, setPurchaseType] = useState<"one-time" | "subscribe">("subscribe");
+  const [purchaseType, setPurchaseType] = useState<"one-time" | "subscribe">(forceOneTime ? "one-time" : "subscribe");
   const [added, setAdded] = useState(false);
 
   const subscribePrice = Math.round(price * (1 - DISCOUNT));
@@ -83,86 +85,88 @@ export function SupplementAddToCart({
 
   return (
     <div className="space-y-4">
-      {/* Purchase Type Selector */}
-      <div className="space-y-2">
-        <p className="text-sm font-medium text-heading">
-          {isEs ? "Opción de compra" : "Purchase option"}
-        </p>
+      {/* Purchase Type Selector — hidden for bundles (one-time only) */}
+      {!forceOneTime && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-heading">
+            {isEs ? "Opción de compra" : "Purchase option"}
+          </p>
 
-        {/* Subscribe & Save — default/highlighted */}
-        <label
-          className={`flex items-start gap-3 p-4 rounded-card border-2 cursor-pointer transition-all ${
-            purchaseType === "subscribe"
-              ? "border-brand-red bg-brand-pink-soft"
-              : "border-border hover:border-brand-red/40"
-          }`}
-        >
-          <input
-            type="radio"
-            name={`purchase-type-${variantId}`}
-            value="subscribe"
-            checked={purchaseType === "subscribe"}
-            onChange={() => handlePurchaseTypeChange("subscribe")}
-            className="mt-0.5 accent-brand-red"
-          />
-          <div className="flex-grow min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
+          {/* Subscribe & Save — default/highlighted */}
+          <label
+            className={`flex items-start gap-3 p-4 rounded-card border-2 cursor-pointer transition-all ${
+              purchaseType === "subscribe"
+                ? "border-brand-red bg-brand-pink-soft"
+                : "border-border hover:border-brand-red/40"
+            }`}
+          >
+            <input
+              type="radio"
+              name={`purchase-type-${variantId}`}
+              value="subscribe"
+              checked={purchaseType === "subscribe"}
+              onChange={() => handlePurchaseTypeChange("subscribe")}
+              className="mt-0.5 accent-brand-red"
+            />
+            <div className="flex-grow min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-heading text-heading font-semibold text-sm">
+                  {isEs ? "Suscribirse y Ahorrar" : "Subscribe & Save"}
+                </span>
+                <span className="inline-flex items-center gap-1 bg-brand-red text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  <Tag className="w-2.5 h-2.5" />
+                  {isEs ? "Ahorra 10%" : "Save 10%"}
+                </span>
+              </div>
+              <div className="flex items-baseline gap-2 mt-1">
+                <span className="font-heading text-heading font-bold text-lg">
+                  {fmt(subscribePrice)}<span className="text-sm font-normal text-body-muted">/mo</span>
+                </span>
+                <span className="text-body-muted text-sm line-through">{fmt(price)}</span>
+              </div>
+              <div className="flex items-center gap-1.5 mt-1.5">
+                <RefreshCw className="w-3 h-3 text-success shrink-0" />
+                <p className="text-xs text-body-muted">
+                  {isEs
+                    ? "Renovación mensual automática · Cancela cuando quieras"
+                    : "Auto-renews monthly · Cancel anytime"}
+                </p>
+              </div>
+            </div>
+          </label>
+
+          {/* One-Time Purchase */}
+          <label
+            className={`flex items-start gap-3 p-4 rounded-card border-2 cursor-pointer transition-all ${
+              purchaseType === "one-time"
+                ? "border-brand-red bg-brand-pink-soft"
+                : "border-border hover:border-brand-red/40"
+            }`}
+          >
+            <input
+              type="radio"
+              name={`purchase-type-${variantId}`}
+              value="one-time"
+              checked={purchaseType === "one-time"}
+              onChange={() => handlePurchaseTypeChange("one-time")}
+              className="mt-0.5 accent-brand-red"
+            />
+            <div className="flex-grow min-w-0">
               <span className="font-heading text-heading font-semibold text-sm">
-                {isEs ? "Suscribirse y Ahorrar" : "Subscribe & Save"}
+                {isEs ? "Compra única" : "One-time purchase"}
               </span>
-              <span className="inline-flex items-center gap-1 bg-brand-red text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                <Tag className="w-2.5 h-2.5" />
-                {isEs ? "Ahorra 10%" : "Save 10%"}
-              </span>
-            </div>
-            <div className="flex items-baseline gap-2 mt-1">
-              <span className="font-heading text-heading font-bold text-lg">
-                {fmt(subscribePrice)}<span className="text-sm font-normal text-body-muted">/mo</span>
-              </span>
-              <span className="text-body-muted text-sm line-through">{fmt(price)}</span>
-            </div>
-            <div className="flex items-center gap-1.5 mt-1.5">
-              <RefreshCw className="w-3 h-3 text-success shrink-0" />
-              <p className="text-xs text-body-muted">
-                {isEs
-                  ? "Renovación mensual automática · Cancela cuando quieras"
-                  : "Auto-renews monthly · Cancel anytime"}
+              <div className="mt-1">
+                <span className="font-heading text-heading font-bold text-lg">
+                  {fmt(price)}
+                </span>
+              </div>
+              <p className="text-xs text-body-muted mt-1">
+                {isEs ? "Pago único, sin compromiso" : "Single payment, no commitment"}
               </p>
             </div>
-          </div>
-        </label>
-
-        {/* One-Time Purchase */}
-        <label
-          className={`flex items-start gap-3 p-4 rounded-card border-2 cursor-pointer transition-all ${
-            purchaseType === "one-time"
-              ? "border-brand-red bg-brand-pink-soft"
-              : "border-border hover:border-brand-red/40"
-          }`}
-        >
-          <input
-            type="radio"
-            name={`purchase-type-${variantId}`}
-            value="one-time"
-            checked={purchaseType === "one-time"}
-            onChange={() => handlePurchaseTypeChange("one-time")}
-            className="mt-0.5 accent-brand-red"
-          />
-          <div className="flex-grow min-w-0">
-            <span className="font-heading text-heading font-semibold text-sm">
-              {isEs ? "Compra única" : "One-time purchase"}
-            </span>
-            <div className="mt-1">
-              <span className="font-heading text-heading font-bold text-lg">
-                {fmt(price)}
-              </span>
-            </div>
-            <p className="text-xs text-body-muted mt-1">
-              {isEs ? "Pago único, sin compromiso" : "Single payment, no commitment"}
-            </p>
-          </div>
-        </label>
-      </div>
+          </label>
+        </div>
+      )}
 
       {/* Subscribe savings callout */}
       {purchaseType === "subscribe" && (

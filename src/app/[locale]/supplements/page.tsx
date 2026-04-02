@@ -12,6 +12,7 @@ type Props = {
 };
 
 export const CATEGORY_META: Record<string, { label: { en: string; es: string }; color: string }> = {
+  "bundle":             { label: { en: "Bundles",                  es: "Paquetes" },                 color: "bg-lime-100 text-lime-800" },
   "stress-wellness":    { label: { en: "Stress & Wellness",       es: "Estrés y Bienestar" },      color: "bg-violet-100 text-violet-800" },
   "metabolism-support": { label: { en: "Metabolism Support",       es: "Apoyo Metabólico" },         color: "bg-orange-100 text-orange-800" },
   "daily-essentials":   { label: { en: "Daily Essentials",         es: "Esenciales Diarios" },       color: "bg-yellow-100 text-yellow-800" },
@@ -25,7 +26,6 @@ export const CATEGORY_META: Record<string, { label: { en: string; es: string }; 
   "womens-health":      { label: { en: "Women's Health",           es: "Salud Femenina" },           color: "bg-rose-100 text-rose-800" },
   "hair-care":          { label: { en: "Hair Care",                es: "Cuidado del Cabello" },      color: "bg-amber-100 text-amber-800" },
   "skincare":           { label: { en: "Skincare",                 es: "Cuidado de la Piel" },       color: "bg-teal-100 text-teal-800" },
-  "bundles":            { label: { en: "Bundles",                  es: "Paquetes" },                 color: "bg-lime-100 text-lime-800" },
   // legacy categories from placeholder seed (kept for backward-compat)
   "vitamins":           { label: { en: "Vitamins",                 es: "Vitaminas" },                color: "bg-yellow-100 text-yellow-800" },
   "probiotics":         { label: { en: "Probiotics",               es: "Probióticos" },              color: "bg-green-100 text-green-800" },
@@ -45,7 +45,7 @@ export default async function SupplementsPage({ params, searchParams }: Props) {
 
   const products = await db.product.findMany({
     where: {
-      productType: "supplement",
+      productType: { in: ["supplement", "bundle"] },
       isActive: true,
       ...(categoryParam ? { category: categoryParam } : {}),
     },
@@ -58,7 +58,7 @@ export default async function SupplementsPage({ params, searchParams }: Props) {
   });
 
   const allProducts = await db.product.findMany({
-    where: { productType: "supplement", isActive: true },
+    where: { productType: { in: ["supplement", "bundle"] }, isActive: true },
     select: { category: true },
   });
 
@@ -133,6 +133,11 @@ export default async function SupplementsPage({ params, searchParams }: Props) {
                 const catMeta = CATEGORY_META[product.category];
                 const imageUrl = product.images[0]?.url ?? null;
 
+                const isBundle = product.productType === "bundle";
+                const savingsPct = variant?.compareAtPrice
+                  ? Math.round(((variant.compareAtPrice - variant.price) / variant.compareAtPrice) * 100)
+                  : null;
+
                 return (
                   <Link
                     key={product.id}
@@ -152,9 +157,19 @@ export default async function SupplementsPage({ params, searchParams }: Props) {
                           <Leaf className="w-16 h-16 text-brand-red" />
                         </div>
                       )}
-                      {variant?.compareAtPrice && (
+                      {isBundle && (
+                        <div className="absolute top-3 left-3 bg-brand-red text-white text-xs font-bold px-2 py-1 rounded-full">
+                          {isEs ? "Paquete" : "Bundle"}
+                        </div>
+                      )}
+                      {!isBundle && variant?.compareAtPrice && (
                         <div className="absolute top-3 left-3 bg-brand-red text-white text-xs font-bold px-2 py-1 rounded-full">
                           {isEs ? "Oferta" : "Sale"}
+                        </div>
+                      )}
+                      {isBundle && savingsPct !== null && (
+                        <div className="absolute top-3 right-3 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                          {isEs ? `Ahorra ${savingsPct}%` : `Save ${savingsPct}%`}
                         </div>
                       )}
                     </div>
@@ -175,13 +190,22 @@ export default async function SupplementsPage({ params, searchParams }: Props) {
                       <div className="flex items-end justify-between mt-auto">
                         <div>
                           {variant ? (
-                            <div className="flex items-center gap-2">
-                              <span className="font-heading text-heading font-bold text-lg">
-                                {fmt(variant.price)}
-                              </span>
-                              {variant.compareAtPrice && (
-                                <span className="text-body-muted text-sm line-through">
-                                  {fmt(variant.compareAtPrice)}
+                            <div className="flex flex-col gap-0.5">
+                              <div className="flex items-center gap-2">
+                                <span className="font-heading text-heading font-bold text-lg">
+                                  {fmt(variant.price)}
+                                </span>
+                                {variant.compareAtPrice && (
+                                  <span className="text-body-muted text-sm line-through">
+                                    {fmt(variant.compareAtPrice)}
+                                  </span>
+                                )}
+                              </div>
+                              {isBundle && variant.compareAtPrice && (
+                                <span className="text-green-700 text-xs font-medium">
+                                  {isEs
+                                    ? `Ahorras ${fmt(variant.compareAtPrice - variant.price)}`
+                                    : `You save ${fmt(variant.compareAtPrice - variant.price)}`}
                                 </span>
                               )}
                             </div>

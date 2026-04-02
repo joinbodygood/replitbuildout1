@@ -2,6 +2,206 @@ import { PrismaClient } from "@prisma/client";
 
 const db = new PrismaClient();
 
+const BUNDLES = [
+  {
+    slug: "glp1-essentials-bundle",
+    sku: "BDL-GLP1-ESS",
+    category: "bundle",
+    productType: "bundle",
+    requiresPrescription: false,
+    fulfillment: "supliful",
+    sortOrder: 1,
+    programTag: "weight-loss",
+    nameEn: "GLP-1 Essentials Bundle",
+    nameEs: "Paquete Esenciales GLP-1",
+    descShortEn: "The complete supplement stack for GLP-1 weight loss patients. Save $26.69.",
+    descShortEs: "El paquete completo de suplementos para pacientes GLP-1. Ahorra $26.69.",
+    descLongEn: [
+      "Everything your body needs to thrive on GLP-1 therapy — bundled at a significant discount.",
+      "",
+      "BUNDLE INCLUDES:",
+      "• Vitamin D3 + K2 (5000 IU) — SUPP-D3K2-001",
+      "• B-Complex Ultra — SUPP-BCOM-001",
+      "• Probiotic Daily 50B CFU — SUPP-PRO-001",
+      "• Magnesium Glycinate 400mg — SUPP-MAG-001",
+      "",
+      "GLP-1 medications can deplete key nutrients. This bundle restores what your body needs: bone-supporting Vitamin D3+K2, energy-boosting B vitamins, gut-balancing probiotics, and sleep-supporting magnesium. Curated by Dr. Moleon specifically for GLP-1 program patients.",
+    ].join("\n"),
+    descLongEs: [
+      "Todo lo que tu cuerpo necesita para prosperar con la terapia GLP-1, a un precio con descuento significativo.",
+      "",
+      "EL PAQUETE INCLUYE:",
+      "• Vitamina D3 + K2 (5000 UI) — SUPP-D3K2-001",
+      "• Complejo B Ultra — SUPP-BCOM-001",
+      "• Probiótico Diario 50B UFC — SUPP-PRO-001",
+      "• Glicinato de Magnesio 400 mg — SUPP-MAG-001",
+      "",
+      "Los medicamentos GLP-1 pueden agotar nutrientes clave. Este paquete restaura lo que tu cuerpo necesita. Seleccionado por el Dr. Moleon para pacientes en programas GLP-1.",
+    ].join("\n"),
+    price: 9900,
+    compareAtPrice: 12569,
+    variantLabel: "4-product bundle / 1–2 month supply",
+  },
+  {
+    slug: "womens-wellness-bundle",
+    sku: "BDL-WMNS-WELL",
+    category: "bundle",
+    productType: "bundle",
+    requiresPrescription: false,
+    fulfillment: "supliful",
+    sortOrder: 2,
+    programTag: "feminine-health",
+    nameEn: "Women's Wellness Bundle",
+    nameEs: "Paquete Bienestar Femenino",
+    descShortEn: "Hormonal balance and feminine health support — all in one bundle. Save $22.50.",
+    descShortEs: "Apoyo al equilibrio hormonal y la salud femenina en un solo paquete. Ahorra $22.50.",
+    descLongEn: [
+      "A targeted supplement stack to support feminine health, hormonal balance, and overall wellness.",
+      "",
+      "BUNDLE INCLUDES:",
+      "• Myo-Inositol 2g — SUPP-MYO-001",
+      "• Vitamin D3 + K2 (5000 IU) — SUPP-D3K2-001",
+      "• Omega-3 Fish Oil (2,000mg) — SUPP-OMG-001",
+      "• B-Complex Ultra — SUPP-BCOM-001",
+      "",
+      "Myo-Inositol improves insulin signaling and hormonal balance (especially for PCOS). Paired with Vitamin D3+K2, Omega-3s, and a full B-complex, this bundle comprehensively supports women's health goals. Curated by Dr. Moleon for the Feminine Health program.",
+    ].join("\n"),
+    descLongEs: [
+      "Un paquete de suplementos dirigido a apoyar la salud femenina, el equilibrio hormonal y el bienestar general.",
+      "",
+      "EL PAQUETE INCLUYE:",
+      "• Mio-Inositol 2 g — SUPP-MYO-001",
+      "• Vitamina D3 + K2 (5000 UI) — SUPP-D3K2-001",
+      "• Aceite de Pescado Omega-3 (2,000 mg) — SUPP-OMG-001",
+      "• Complejo B Ultra — SUPP-BCOM-001",
+      "",
+      "El Mio-Inositol mejora la señalización de insulina y el equilibrio hormonal. Seleccionado por el Dr. Moleon para el programa de Salud Femenina.",
+    ].join("\n"),
+    price: 10900,
+    compareAtPrice: 13150,
+    variantLabel: "4-product bundle / 2-month supply",
+  },
+  {
+    slug: "hair-revival-bundle",
+    sku: "BDL-HAIR-REV",
+    category: "bundle",
+    productType: "bundle",
+    requiresPrescription: false,
+    fulfillment: "supliful",
+    sortOrder: 3,
+    programTag: "hair-loss",
+    nameEn: "Hair Revival Bundle",
+    nameEs: "Paquete Revitalización Capilar",
+    descShortEn: "A complete supplement protocol for hair loss — biotin, zinc, collagen & more. Save $29.90.",
+    descShortEs: "Un protocolo completo de suplementos para la pérdida de cabello. Ahorra $29.90.",
+    descLongEn: [
+      "The essential supplement stack for hair loss patients, targeting the root nutritional causes of thinning and shedding.",
+      "",
+      "BUNDLE INCLUDES:",
+      "• Biotin 10,000 mcg — SUPP-BIO-001",
+      "• Zinc + Copper Complex — SUPP-ZNC-001",
+      "• Collagen Peptides (Unflavored) — SUPP-COL-001",
+      "• Vitamin D3 + K2 (5000 IU) — SUPP-D3K2-001",
+      "",
+      "Hair thinning is often driven by nutritional deficiencies. This bundle delivers high-potency biotin for keratin production, zinc+copper for follicle health, collagen for hair structure, and Vitamin D3+K2 for overall cellular health. Curated by Dr. Moleon for Hair Loss program patients.",
+    ].join("\n"),
+    descLongEs: [
+      "El paquete esencial de suplementos para pacientes con pérdida de cabello, dirigido a las causas nutricionales del adelgazamiento.",
+      "",
+      "EL PAQUETE INCLUYE:",
+      "• Biotina 10,000 mcg — SUPP-BIO-001",
+      "• Complejo de Zinc + Cobre — SUPP-ZNC-001",
+      "• Péptidos de Colágeno (Sin Sabor) — SUPP-COL-001",
+      "• Vitamina D3 + K2 (5000 UI) — SUPP-D3K2-001",
+      "",
+      "La pérdida de cabello a menudo está impulsada por deficiencias nutricionales. Seleccionado por el Dr. Moleon para pacientes en el programa de Pérdida de Cabello.",
+    ].join("\n"),
+    price: 11900,
+    compareAtPrice: 14890,
+    variantLabel: "4-product bundle / 2–3 month supply",
+  },
+  {
+    slug: "performance-recovery-bundle",
+    sku: "BDL-PERF-REC",
+    category: "bundle",
+    productType: "bundle",
+    requiresPrescription: false,
+    fulfillment: "supliful",
+    sortOrder: 4,
+    programTag: "mental-health",
+    nameEn: "Performance + Recovery Bundle",
+    nameEs: "Paquete Rendimiento + Recuperación",
+    descShortEn: "Supports mental clarity, stress resilience, and recovery. Save $34.79.",
+    descShortEs: "Apoya la claridad mental, la resiliencia al estrés y la recuperación. Ahorra $34.79.",
+    descLongEn: [
+      "A carefully selected stack to support mental wellness, cognitive performance, and physical recovery.",
+      "",
+      "BUNDLE INCLUDES:",
+      "• Ashwagandha KSM-66 (300mg) — SUPP-ASH-001",
+      "• Omega-3 Fish Oil (2,000mg) — SUPP-OMG-001",
+      "• Magnesium Glycinate 400mg — SUPP-MAG-001",
+      "• B-Complex Ultra — SUPP-BCOM-001",
+      "• Vitamin D3 + K2 (5000 IU) — SUPP-D3K2-001",
+      "",
+      "KSM-66 Ashwagandha reduces cortisol and anxiety. Omega-3s support brain function. Magnesium promotes restful sleep and reduces stress. B-Complex supports neurotransmitter production. Vitamin D3+K2 supports mood and immunity. Curated by Dr. Moleon for Mental Health program patients.",
+    ].join("\n"),
+    descLongEs: [
+      "Un paquete cuidadosamente seleccionado para apoyar el bienestar mental, el rendimiento cognitivo y la recuperación física.",
+      "",
+      "EL PAQUETE INCLUYE:",
+      "• Ashwagandha KSM-66 (300 mg) — SUPP-ASH-001",
+      "• Aceite de Pescado Omega-3 (2,000 mg) — SUPP-OMG-001",
+      "• Glicinato de Magnesio 400 mg — SUPP-MAG-001",
+      "• Complejo B Ultra — SUPP-BCOM-001",
+      "• Vitamina D3 + K2 (5000 UI) — SUPP-D3K2-001",
+      "",
+      "Seleccionado por el Dr. Moleon para pacientes en el programa de Salud Mental.",
+    ].join("\n"),
+    price: 13900,
+    compareAtPrice: 17379,
+    variantLabel: "5-product bundle / 2-month supply",
+  },
+  {
+    slug: "glp1-hair-rescue-bundle",
+    sku: "BDL-GLP1-HAIR",
+    category: "bundle",
+    productType: "bundle",
+    requiresPrescription: false,
+    fulfillment: "supliful",
+    sortOrder: 5,
+    programTag: "hair-loss",
+    nameEn: "GLP-1 Hair Rescue Bundle",
+    nameEs: "Paquete Rescate Capilar GLP-1",
+    descShortEn: "For hair loss patients also on GLP-1 — addresses shedding caused by rapid weight loss. Save $28.80.",
+    descShortEs: "Para pacientes con pérdida de cabello en GLP-1 — combate la caída por pérdida de peso rápida. Ahorra $28.80.",
+    descLongEn: [
+      "Rapid weight loss on GLP-1 can trigger telogen effluvium (stress-related shedding). This bundle addresses both the hair loss and the GLP-1 nutritional gaps simultaneously.",
+      "",
+      "BUNDLE INCLUDES:",
+      "• Biotin 10,000 mcg — SUPP-BIO-001",
+      "• Collagen Peptides (Unflavored) — SUPP-COL-001",
+      "• Zinc + Copper Complex — SUPP-ZNC-001",
+      "• B-Complex Ultra — SUPP-BCOM-001",
+      "",
+      "Biotin and collagen support hair structure and growth. Zinc+Copper maintains follicle health. B-Complex replenishes nutrients depleted by GLP-1. Designed for patients managing both a Hair Loss program and GLP-1 therapy. Curated by Dr. Moleon.",
+    ].join("\n"),
+    descLongEs: [
+      "La pérdida de peso rápida con GLP-1 puede desencadenar efluvio telógeno. Este paquete aborda tanto la pérdida de cabello como las brechas nutricionales de GLP-1 simultáneamente.",
+      "",
+      "EL PAQUETE INCLUYE:",
+      "• Biotina 10,000 mcg — SUPP-BIO-001",
+      "• Péptidos de Colágeno (Sin Sabor) — SUPP-COL-001",
+      "• Complejo de Zinc + Cobre — SUPP-ZNC-001",
+      "• Complejo B Ultra — SUPP-BCOM-001",
+      "",
+      "Seleccionado por el Dr. Moleon para pacientes con pérdida de cabello en terapia GLP-1.",
+    ].join("\n"),
+    price: 10900,
+    compareAtPrice: 13780,
+    variantLabel: "4-product bundle / 2–3 month supply",
+  },
+];
+
 const SUPPLEMENTS = [
   {
     slug: "vitamin-d3-k2",
@@ -205,87 +405,124 @@ const SUPPLEMENTS = [
   },
 ];
 
-async function main() {
-  console.log("Seeding supplement products...");
+async function seedProduct(s: {
+  slug: string;
+  sku: string;
+  category: string;
+  productType: string;
+  requiresPrescription: boolean;
+  fulfillment: string;
+  sortOrder: number;
+  programTag?: string;
+  nameEn: string;
+  nameEs: string;
+  descShortEn: string;
+  descShortEs: string;
+  descLongEn: string;
+  descLongEs: string;
+  price: number;
+  compareAtPrice: number | null;
+  variantLabel: string;
+}) {
+  const product = await db.product.upsert({
+    where: { slug: s.slug },
+    update: {
+      productType: s.productType,
+      category: s.category,
+      fulfillment: s.fulfillment,
+      requiresPrescription: s.requiresPrescription,
+      programTag: s.programTag ?? null,
+      isActive: true,
+      sortOrder: s.sortOrder,
+    },
+    create: {
+      slug: s.slug,
+      sku: s.sku,
+      category: s.category,
+      productType: s.productType,
+      fulfillment: s.fulfillment,
+      requiresPrescription: s.requiresPrescription,
+      programTag: s.programTag ?? null,
+      isActive: true,
+      isFeatured: false,
+      sortOrder: s.sortOrder,
+    },
+  });
 
-  for (const s of SUPPLEMENTS) {
-    const product = await db.product.upsert({
-      where: { slug: s.slug },
-      update: {
-        productType: s.productType,
-        category: s.category,
-        fulfillment: s.fulfillment,
-        requiresPrescription: s.requiresPrescription,
-        isActive: true,
-        sortOrder: s.sortOrder,
-      },
-      create: {
-        slug: s.slug,
-        sku: s.sku,
-        category: s.category,
-        productType: s.productType,
-        fulfillment: s.fulfillment,
-        requiresPrescription: s.requiresPrescription,
-        isActive: true,
-        isFeatured: false,
-        sortOrder: s.sortOrder,
-      },
-    });
+  await db.productTranslation.upsert({
+    where: { productId_locale: { productId: product.id, locale: "en" } },
+    update: {
+      name: s.nameEn,
+      descriptionShort: s.descShortEn,
+      descriptionLong: s.descLongEn,
+    },
+    create: {
+      productId: product.id,
+      locale: "en",
+      name: s.nameEn,
+      descriptionShort: s.descShortEn,
+      descriptionLong: s.descLongEn,
+    },
+  });
 
-    await db.productTranslation.upsert({
-      where: { productId_locale: { productId: product.id, locale: "en" } },
-      update: {
-        name: s.nameEn,
-        descriptionShort: s.descShortEn,
-        descriptionLong: s.descLongEn,
-      },
-      create: {
+  await db.productTranslation.upsert({
+    where: { productId_locale: { productId: product.id, locale: "es" } },
+    update: {
+      name: s.nameEs,
+      descriptionShort: s.descShortEs,
+      descriptionLong: s.descLongEs,
+    },
+    create: {
+      productId: product.id,
+      locale: "es",
+      name: s.nameEs,
+      descriptionShort: s.descShortEs,
+      descriptionLong: s.descLongEs,
+    },
+  });
+
+  const existingVariant = await db.productVariant.findFirst({
+    where: { productId: product.id },
+  });
+
+  if (!existingVariant) {
+    await db.productVariant.create({
+      data: {
         productId: product.id,
-        locale: "en",
-        name: s.nameEn,
-        descriptionShort: s.descShortEn,
-        descriptionLong: s.descLongEn,
+        sku: `${s.sku}-VAR`,
+        label: s.variantLabel,
+        price: s.price,
+        compareAtPrice: s.compareAtPrice ?? null,
+        isAvailable: true,
+        sortOrder: 0,
       },
     });
-
-    await db.productTranslation.upsert({
-      where: { productId_locale: { productId: product.id, locale: "es" } },
-      update: {
-        name: s.nameEs,
-        descriptionShort: s.descShortEs,
-        descriptionLong: s.descLongEs,
-      },
-      create: {
-        productId: product.id,
-        locale: "es",
-        name: s.nameEs,
-        descriptionShort: s.descShortEs,
-        descriptionLong: s.descLongEs,
+  } else {
+    await db.productVariant.update({
+      where: { id: existingVariant.id },
+      data: {
+        price: s.price,
+        compareAtPrice: s.compareAtPrice ?? null,
+        label: s.variantLabel,
       },
     });
-
-    const existingVariant = await db.productVariant.findFirst({
-      where: { productId: product.id },
-    });
-
-    if (!existingVariant) {
-      await db.productVariant.create({
-        data: {
-          productId: product.id,
-          sku: `${s.sku}-VAR`,
-          label: s.variantLabel,
-          price: s.price,
-          compareAtPrice: s.compareAtPrice ?? null,
-          isAvailable: true,
-          sortOrder: 0,
-        },
-      });
-    }
-
-    console.log(`  ✓ ${s.nameEn}`);
   }
 
-  console.log(`\nDone! Seeded ${SUPPLEMENTS.length} supplement products.`);
+  console.log(`  ✓ ${s.nameEn}`);
+}
+
+async function main() {
+  console.log("Seeding bundle products...");
+  for (const b of BUNDLES) {
+    await seedProduct(b);
+  }
+
+  console.log("\nSeeding supplement products...");
+  for (const s of SUPPLEMENTS) {
+    await seedProduct({ ...s, programTag: undefined });
+  }
+
+  console.log(`\nDone! Seeded ${BUNDLES.length} bundles + ${SUPPLEMENTS.length} supplement products.`);
 }
 
 main()
