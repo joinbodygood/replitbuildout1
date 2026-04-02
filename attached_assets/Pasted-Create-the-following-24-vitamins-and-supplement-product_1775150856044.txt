@@ -1,0 +1,87 @@
+Create the following 24 vitamins and supplement products in the database. All of these are product_type: "supplement" (fulfilled via Supliful/Shopify, NOT pharmacy Rx). Import the product images from the Shopify CDN URLs provided.
+
+ORAL SUPPLEMENTS (17 products)
+
+Ashwagandha | $23.90 | SKU: VOX4ASHW | Category: Stress & Wellness | Capsule
+Description: Ancient Ayurvedic adaptogen that helps calm stress levels. Contains potent chemicals that support overall health including stress response, cognitive function, and energy levels.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769474719651-generated-label-image-0.jpg?v=1769474726
+Berberine | $39.90 | SKU: JTP4BERB | Category: Metabolism Support | Capsule
+Description: Supports normal blood sugar levels, promotes heart health, and assists with weight management. Contains Granular Berberine Hydrochloride. Take 2 capsules daily.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769474945780-generated-label-image-0.jpg?v=1769475719
+Complete Multivitamin | $32.90 | SKU: VOX4COMP | Category: Daily Essentials | Capsule
+Description: Loaded with all crucial vitamins and minerals including a vitamin B complex plus a full range of natural antioxidants. Comprehensive daily nutritional foundation.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769475504380-generated-label-image-0.jpg?v=1769475714
+Creatine Monohydrate | $33.90 | SKU: RLC4CREA | Category: Performance | Powder
+Description: Supports exercise performance, muscle preservation, and recovery. Clinical-grade creatine monohydrate for optimal skeletal muscle function.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769475608477-generated-label-image-0.jpg?v=1769475712
+Gentle Colon Cleanse | $35.00 | SKU: NRT5COLO | Category: Digestive Support | Capsule
+Description: Supports and maintains digestive health. Promotes regular bowel movements and eases digestive discomfort with a blend of fiber, natural extracts, and digestive enzymes.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769475746251-generated-label-image-0.jpg?v=1769475795
+Gut Detox (Acai Detox) | $29.90 | SKU: VOX4MAXD | Category: Digestive Support | Capsule
+Description: A detox supplement combining carefully selected natural ingredients traditionally used for gut cleansing and digestive support. Supports a healthy lifestyle through gentle cleansing.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769475406024-generated-label-image-0.jpg?v=1769475715
+Hair, Skin and Nails Essentials | $32.90 | SKU: VOX4HAIR | Category: Beauty | Capsule
+Description: Vitamin B6, Folate, and Biotin work together to maintain elastin in the hair, skin, and nails. Supports natural glow and healthy tissue function.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769475042133-generated-label-image-0.jpg?v=1769475713
+Hydration Powder (Passion Fruit) | $34.99 | SKU: OSM0PASS | Category: Hydration | Powder
+Description: Essential electrolyte hydration drink with a refreshing passion fruit flavor. Keeps you hydrated and energized for any activity level.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769474578832-generated-label-image-0.jpg?v=1769475711
+Hydration Powder (Peach Mango) | $34.99 | SKU: OSM0HYMA | Category: Hydration | Powder
+Description: Essential electrolyte hydration drink with a refreshing peach mango flavor. Keeps you hydrated and energized for any activity level.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1771949007157-generated-label-image-0.jpg?v=1771949019
+Magnesium Glycinate | $26.90 | SKU: VOX4MGNE | Category: Daily Essentials | Capsule
+Description: The most bioavailable form of magnesium, chelated with glycine for maximum absorption and zero digestive discomfort. Supports sleep, stress relief, and muscle recovery.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769474987438-generated-label-image-0.jpg?v=1769475715
+NAD+ (Oral Supplement) | $60.00 | SKU: JTP4NADP | Category: Anti-Aging | Capsule
+Description: 500mg NAD+ (Nicotinamide Adenine Dinucleotide) supporting cellular energy production, metabolic function, and cellular repair processes.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769474843918-generated-label-image-0.jpg?v=1769475717
+Plant Protein (Chocolate) | $44.90 | SKU: JTP7PPCH | Category: Protein | Powder
+Description: Delicious chocolate plant protein with a complete amino acid profile for muscle repair and growth. Vegan, ideal post-workout recovery shake.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769475692203-generated-label-image-0.jpg?v=1769475718
+Plant Protein (Vanilla) | $44.90 | SKU: JTP7PPVA | Category: Protein | Powder
+Description: Delicious vanilla plant protein with a complete amino acid profile for muscle repair and growth. Vegan, ideal post-workout recovery shake.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769475648164-generated-label-image-0.jpg?v=1769475719
+Probiotic 40 Billion with Prebiotics | $30.90 | SKU: VOX4PROB | Category: Digestive Support | Capsule
+Description: Blend of four probiotic strains (Lactobacillus Acidophilus, Bifidobacterium Lactis, Lactobacillus Plantarum, Lactobacillus Paracasei) with 40 billion CFU to support gut health and metabolic response.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769475548423-generated-label-image-0.jpg?v=1769475713
+Sleep Well Gummies | $24.90 | SKU: VOX4SLPW | Category: Sleep | Gummy | Status: DRAFT (out of stock)
+Description: Sleep support gummies with melatonin to help fall asleep and enter REM sleep. Supports rest and optimal body and mind functionality.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1746434739405-generated-label-image-0_9a0684b4-c282-4da2-80db-842881288309.webp?v=1761656651
+Vitamin D3 2,000 IU | $19.90 | SKU: RLC3VTD3 | Category: Daily Essentials | Capsule
+Description: Essential daily vitamin D3 (cholecalciferol) for immunity, bone health, and mood support. Over 40% of Americans are deficient.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769474647549-generated-label-image-0.jpg?v=1769474669
+Women's Hormone Balance | $30.50 | SKU: VTL4WOVI | Category: Women's Health | Capsule
+Description: Botanical blend of Dong Quai, Red Clover, and Black Cohosh to support normal hormonal balance, reproductive health, and overall well-being during natural hormonal changes.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769474532893-generated-label-image-0.jpg?v=1769475718
+TOPICAL / SKINCARE / HAIR CARE (6 products)
+
+Botanical Hair Growth Serum | $55.00 | SKU: FMN6ROHA | Category: Hair Care | Topical Serum
+Description: Infused with Rosemary Extract and Ginger Root Extract to support scalp health and enhance natural hair vitality and growth.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769475237252-generated-label-image-0.jpg?v=1769475711
+Gentle Cleansing Gel | $24.99 | SKU: EVL0GCGE | Category: Skincare | Topical Gel
+Description: Oil-free gel cleanser with watermelon and apple fruit extracts. Removes impurities and makeup without stripping skin's natural integrity.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769475150466-generated-label-image-0.jpg?v=1769475710
+Hair Oil for Scalp Health and Hair Growth | $28.90 | SKU: FMN0HAGR | Category: Hair Care | Topical Oil
+Description: Blend of Castor Oil, Jasmine Oil, Rosemary Oil, and Vitamin A to promote scalp health and support healthy hair growth.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769475294389-generated-label-image-0.jpg?v=1769475716
+Peptide Hair Growth Serum | $65.00 | SKU: FMN6PEHA | Category: Hair Care | Topical Serum
+Description: Powerful blend of five bioactive peptides and natural botanical extracts. sh-Polypeptide-1 and sh-Oligopeptide-10 support the appearance of thicker, more voluminous hair.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769475336010-generated-label-image-0.jpg?v=1769475712
+Peptide Moisturizer | $27.99 | SKU: EVL0PPMO | Category: Skincare | Topical Cream | Status: DRAFT
+Description: Combines antioxidant-rich cranberry extract with rejuvenating peptides to replenish and revitalize skin. Protects against environmental stressors.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769475089906-generated-label-image-0.jpg?v=1769475717
+Vitamin C Serum | $20.00 | SKU: FMN0VITC | Category: Skincare | Topical Serum
+Description: Enriched with Magnesium Ascorbyl Phosphate, Ferulic Acid, and Ascorbic Acid. Brightens complexion, reduces dark spots, and provides antioxidant protection.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/1769475193831-generated-label-image-0.jpg?v=1769475715
+BUNDLE (1 product)
+
+Body Transformation Wellness Essential Bundle | $179.00 | Compare at: $199.00 | Category: Bundles | Bundle
+Description: Complete nutritional support for your weight loss journey. Curated collection of 6 premium supplements providing the nutritional foundation for transformation. Includes: Creatine, Probiotic, Magnesium, Multivitamin, Protein, and Gut Health support.
+Image: https://cdn.shopify.com/s/files/1/0848/4808/3256/files/Body_Transformation_Wellness_Essential_Bundle.png?v=1768902510
+For all products:
+
+Set product_type: "supplement" in the database
+Download and store product images from the Shopify CDN URLs (don't just hotlink them — download and host them locally or in your own storage)
+Products marked as DRAFT should be created with status: "draft" (not visible to customers)
+All others should be status: "active"
+Categories should be used for filtering/navigation on the supplement store page

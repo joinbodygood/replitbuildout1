@@ -105,21 +105,38 @@ A physician-curated vitamins & supplements catalog alongside the existing Rx pro
 - All existing Rx products default to `"rx"`. All 10 seeded supplements are `"supplement"`.
 - Used for fulfillment routing — see TODO comments in `capture-order/route.ts` and `subscription-approved/route.ts`
 
-### Seeded Supplements (10 products)
-| Slug | Category | Price |
-|------|----------|-------|
-| `vitamin-d3-k2` | vitamins | $22.99 |
-| `b-complex-ultra` | vitamins | $19.99 |
-| `biotin-10000` | vitamins | $17.99 |
-| `probiotic-daily-50b` | probiotics | $29.99 |
-| `omega-3-fish-oil` | omega3 | $24.99 |
-| `magnesium-glycinate` | minerals | $19.99 |
-| `zinc-copper-complex` | minerals | $16.99 |
-| `collagen-peptides` | protein | $39.99 |
-| `ashwagandha-ksm66` | wellness | $27.99 |
-| `myo-inositol` | wellness | $24.99 |
+### Supliful Catalog (24 products — 22 active, 2 draft)
+All images downloaded locally to `public/images/supplements/{SKU}.jpg|webp|png`.
 
-Re-seed: `npx tsx prisma/seed-supplements.ts`
+| SKU | Name | Category | Price | Status |
+|-----|------|----------|-------|--------|
+| VOX4ASHW | Ashwagandha | stress-wellness | $23.90 | active |
+| JTP4BERB | Berberine | metabolism-support | $39.90 | active |
+| VOX4COMP | Complete Multivitamin | daily-essentials | $32.90 | active |
+| RLC4CREA | Creatine Monohydrate | performance | $33.90 | active |
+| NRT5COLO | Gentle Colon Cleanse | digestive-support | $35.00 | active |
+| VOX4MAXD | Gut Detox (Acai Detox) | digestive-support | $29.90 | active |
+| VOX4HAIR | Hair, Skin & Nails Essentials | beauty | $32.90 | active |
+| OSM0PASS | Hydration Powder — Passion Fruit | hydration | $34.99 | active |
+| OSM0HYMA | Hydration Powder — Peach Mango | hydration | $34.99 | active |
+| VOX4MGNE | Magnesium Glycinate | daily-essentials | $26.90 | active |
+| JTP4NADP | NAD+ (Oral Supplement) | anti-aging | $60.00 | active |
+| JTP7PPCH | Plant Protein — Chocolate | protein | $44.90 | active |
+| JTP7PPVA | Plant Protein — Vanilla | protein | $44.90 | active |
+| VOX4PROB | Probiotic 40 Billion with Prebiotics | digestive-support | $30.90 | active |
+| VOX4SLPW | Sleep Well Gummies | sleep | $24.90 | **DRAFT** (out of stock) |
+| RLC3VTD3 | Vitamin D3 2,000 IU | daily-essentials | $19.90 | active |
+| VTL4WOVI | Women's Hormone Balance | womens-health | $30.50 | active |
+| FMN6ROHA | Botanical Hair Growth Serum | hair-care | $55.00 | active |
+| EVL0GCGE | Gentle Cleansing Gel | skincare | $24.99 | active |
+| FMN0HAGR | Hair Oil for Scalp Health & Growth | hair-care | $28.90 | active |
+| FMN6PEHA | Peptide Hair Growth Serum | hair-care | $65.00 | active |
+| EVL0PPMO | Peptide Moisturizer | skincare | $27.99 | **DRAFT** |
+| FMN0VITC | Vitamin C Serum | skincare | $20.00 | active |
+| BUNDLE-BTWEB | Body Transformation Bundle | bundles | $179.00 | active |
+
+Re-seed: `npx tsx prisma/seed-supliful.ts`
+Old placeholder products (SUPP-* SKUs) have been deactivated — do NOT delete them (they may appear in historical orders).
 
 ### Key Files
 - `src/app/[locale]/supplements/page.tsx` — listing page with sticky category filter tabs

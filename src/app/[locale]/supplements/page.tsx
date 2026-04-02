@@ -2,23 +2,36 @@ import { setRequestLocale } from "next-intl/server";
 import { db } from "@/lib/db";
 import { Container } from "@/components/ui/Container";
 import Link from "next/link";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 import { SupplementCategoryTabs } from "@/components/supplements/SupplementCategoryTabs";
 import { Truck, ShieldCheck, Leaf } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
 
 type Props = {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ category?: string }>;
 };
 
-const CATEGORY_META: Record<string, { label: { en: string; es: string }; color: string }> = {
-  vitamins:  { label: { en: "Vitamins & Minerals", es: "Vitaminas y Minerales" }, color: "bg-yellow-100 text-yellow-800" },
-  probiotics: { label: { en: "Probiotics", es: "Probióticos" }, color: "bg-green-100 text-green-800" },
-  omega3:    { label: { en: "Omega-3 & Fatty Acids", es: "Omega-3 y Ácidos Grasos" }, color: "bg-blue-100 text-blue-800" },
-  minerals:  { label: { en: "Minerals", es: "Minerales" }, color: "bg-orange-100 text-orange-800" },
-  protein:   { label: { en: "Protein & Collagen", es: "Proteína y Colágeno" }, color: "bg-purple-100 text-purple-800" },
-  wellness:  { label: { en: "Adaptogens & Wellness", es: "Adaptógenos y Bienestar" }, color: "bg-teal-100 text-teal-800" },
+export const CATEGORY_META: Record<string, { label: { en: string; es: string }; color: string }> = {
+  "stress-wellness":    { label: { en: "Stress & Wellness",       es: "Estrés y Bienestar" },      color: "bg-violet-100 text-violet-800" },
+  "metabolism-support": { label: { en: "Metabolism Support",       es: "Apoyo Metabólico" },         color: "bg-orange-100 text-orange-800" },
+  "daily-essentials":   { label: { en: "Daily Essentials",         es: "Esenciales Diarios" },       color: "bg-yellow-100 text-yellow-800" },
+  "performance":        { label: { en: "Performance",              es: "Rendimiento" },              color: "bg-blue-100 text-blue-800" },
+  "digestive-support":  { label: { en: "Digestive Support",        es: "Apoyo Digestivo" },          color: "bg-green-100 text-green-800" },
+  "beauty":             { label: { en: "Beauty",                   es: "Belleza" },                  color: "bg-pink-100 text-pink-800" },
+  "hydration":          { label: { en: "Hydration",                es: "Hidratación" },              color: "bg-cyan-100 text-cyan-800" },
+  "anti-aging":         { label: { en: "Anti-Aging",               es: "Anti-Envejecimiento" },      color: "bg-purple-100 text-purple-800" },
+  "protein":            { label: { en: "Protein & Shakes",         es: "Proteína y Batidos" },       color: "bg-red-100 text-red-800" },
+  "sleep":              { label: { en: "Sleep",                    es: "Sueño" },                    color: "bg-indigo-100 text-indigo-800" },
+  "womens-health":      { label: { en: "Women's Health",           es: "Salud Femenina" },           color: "bg-rose-100 text-rose-800" },
+  "hair-care":          { label: { en: "Hair Care",                es: "Cuidado del Cabello" },      color: "bg-amber-100 text-amber-800" },
+  "skincare":           { label: { en: "Skincare",                 es: "Cuidado de la Piel" },       color: "bg-teal-100 text-teal-800" },
+  "bundles":            { label: { en: "Bundles",                  es: "Paquetes" },                 color: "bg-lime-100 text-lime-800" },
+  // legacy categories from placeholder seed (kept for backward-compat)
+  "vitamins":           { label: { en: "Vitamins",                 es: "Vitaminas" },                color: "bg-yellow-100 text-yellow-800" },
+  "probiotics":         { label: { en: "Probiotics",               es: "Probióticos" },              color: "bg-green-100 text-green-800" },
+  "omega3":             { label: { en: "Omega-3",                  es: "Omega-3" },                  color: "bg-blue-100 text-blue-800" },
+  "minerals":           { label: { en: "Minerals",                 es: "Minerales" },                color: "bg-orange-100 text-orange-800" },
+  "wellness":           { label: { en: "Adaptogens & Wellness",    es: "Adaptógenos y Bienestar" },  color: "bg-teal-100 text-teal-800" },
 };
 
 const fmt = (cents: number) => `$${(cents / 100).toFixed(2)}`;
@@ -61,7 +74,7 @@ export default async function SupplementsPage({ params, searchParams }: Props) {
         <Container>
           <div className="text-center max-w-2xl mx-auto">
             <Badge variant="pink" className="mb-4">
-              {isEs ? "Nuevo" : "New"}
+              {isEs ? "Exclusivo" : "New"}
             </Badge>
             <h1 className="font-heading text-heading text-4xl sm:text-5xl font-bold mb-4">
               {isEs ? "Vitaminas y Suplementos" : "Vitamins & Supplements"}
@@ -89,7 +102,7 @@ export default async function SupplementsPage({ params, searchParams }: Props) {
         </Container>
       </section>
 
-      {/* Category Filter */}
+      {/* Sticky Category Filter */}
       <section className="sticky top-0 z-30 bg-white border-b border-border shadow-sm py-3">
         <Container>
           <SupplementCategoryTabs
@@ -135,7 +148,7 @@ export default async function SupplementsPage({ params, searchParams }: Props) {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       ) : (
-                        <div className="flex flex-col items-center justify-center gap-2 opacity-40">
+                        <div className="flex flex-col items-center justify-center gap-2 opacity-30">
                           <Leaf className="w-16 h-16 text-brand-red" />
                         </div>
                       )}
@@ -153,13 +166,13 @@ export default async function SupplementsPage({ params, searchParams }: Props) {
                           {isEs ? catMeta.label.es : catMeta.label.en}
                         </span>
                       )}
-                      <h3 className="font-heading text-heading font-semibold text-base mb-1 group-hover:text-brand-red transition-colors">
+                      <h3 className="font-heading text-heading font-semibold text-base mb-1 group-hover:text-brand-red transition-colors line-clamp-2">
                         {t.name}
                       </h3>
                       <p className="text-body-muted text-sm line-clamp-2 flex-grow mb-3">
                         {t.descriptionShort}
                       </p>
-                      <div className="flex items-center justify-between mt-auto">
+                      <div className="flex items-end justify-between mt-auto">
                         <div>
                           {variant ? (
                             <div className="flex items-center gap-2">
@@ -175,11 +188,8 @@ export default async function SupplementsPage({ params, searchParams }: Props) {
                           ) : (
                             <span className="text-body-muted text-sm">{isEs ? "Ver opciones" : "See options"}</span>
                           )}
-                          {variant?.label && (
-                            <p className="text-xs text-body-muted mt-0.5">{variant.label}</p>
-                          )}
                         </div>
-                        <span className="text-xs font-medium text-brand-red group-hover:underline">
+                        <span className="text-xs font-medium text-brand-red group-hover:underline shrink-0">
                           {isEs ? "Ver más" : "View"}
                         </span>
                       </div>
