@@ -49,7 +49,6 @@ async function getOrCreatePayPalProduct(token: string): Promise<string> {
       name: "Body Good Studio — Telehealth Programs",
       description: "Physician-led GLP-1, wellness, and specialty health programs",
       type: "SERVICE",
-      category: "HEALTH_AND_BEAUTY_APPS",
     }),
   });
 
