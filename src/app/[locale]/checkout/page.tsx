@@ -6,6 +6,7 @@ import { useCart } from "@/context/CartContext";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { PayPalButton } from "@/components/checkout/PayPalButton";
+import { PharmacyDisclaimerBox } from "@/components/ui/PharmacyDisclaimerBox";
 
 type CheckoutStep = "info" | "shipping" | "payment" | "confirmation";
 
@@ -581,6 +582,11 @@ export default function CheckoutPage() {
                     <span className="text-xl">{formatPrice(finalTotal)}</span>
                   </div>
                 </div>
+
+                {/* Pharmacy disclaimer — shown when any item is a consult-only order */}
+                {items.some((i) => i.variantId.endsWith("-pharmacy")) && (
+                  <PharmacyDisclaimerBox className="mt-4" />
+                )}
               </div>
             )}
           </div>

@@ -67,13 +67,6 @@ const MORE_ITEMS = [
     iconColor: "#ec4899",
   },
   {
-    label: { en: "Hair & Skin", es: "Cabello y Piel" },
-    desc:  { en: "Anti-aging & brightening formulas", es: "Fórmulas anti-envejecimiento y piel" },
-    href:  { en: "/en/quiz/hair", es: "/es/quiz/hair" },
-    icon: Sparkles,
-    iconColor: "#10b981",
-  },
-  {
     label: { en: "Pricing", es: "Precios" },
     desc:  { en: "Transparent, all-inclusive pricing", es: "Precios transparentes y todo incluido" },
     href:  { en: "/en/pricing", es: "/es/pricing" },
@@ -120,25 +113,11 @@ const NAV_ITEMS = [
     desc: { en: "NAD+, Sermorelin, Glutathione & more — shipped to you", es: "NAD+, Sermorelina, Glutatión y más" },
   },
   {
-    id: "hair",
-    label: { en: "Hair Loss", es: "Pérdida de Cabello" },
-    icon: Sparkles, iconColor: "#f59e0b", hasChildren: false,
-    href: { en: "/en/quiz/hair", es: "/es/quiz/hair" },
-    desc: { en: "Hair restoration formulas — physician-prescribed", es: "Fórmulas para restauración capilar" },
-  },
-  {
     id: "feminine",
     label: { en: "Feminine Health", es: "Salud Femenina" },
     icon: Heart, iconColor: "#ec4899", hasChildren: false,
     href: { en: "/en/quiz/feminine-health", es: "/es/quiz/feminine-health" },
     desc: { en: "Infections, vaginal dryness & intimate wellness", es: "Infecciones, sequedad vaginal y bienestar íntimo" },
-  },
-  {
-    id: "skin",
-    label: { en: "Hair & Skin", es: "Cabello y Piel" },
-    icon: Sparkles, iconColor: "#10b981", hasChildren: false,
-    href: { en: "/en/quiz/hair", es: "/es/quiz/hair" },
-    desc: { en: "Anti-aging, brightening & skin health formulas", es: "Fórmulas anti-envejecimiento y de cuidado de piel" },
   },
   {
     id: "mental",
@@ -296,15 +275,6 @@ export function Header() {
                 <DesktopDropdown items={WEIGHT_LOSS_ITEMS} isEs={isEs} onClose={closeDesktop} />
               )}
             </div>
-
-            {/* Hair Loss — direct link */}
-            <Link
-              href={`/${locale}/quiz/hair`}
-              className="px-3.5 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-[#ed1b1b] hover:bg-red-50 transition-colors"
-              onClick={closeDesktop}
-            >
-              {isEs ? "Pérdida de Cabello" : "Hair Loss"}
-            </Link>
 
             {/* Mental Health — direct link */}
             <Link

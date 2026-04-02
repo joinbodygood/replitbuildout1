@@ -1,0 +1,28 @@
+Two site-wide UX updates:
+
+A. Header Navigation — Remove Hair and Skin
+
+Remove "Hair Loss" and any "Skin" or "Dermatology" links from the main header navigation dropdown menus. These programs are not ready for public launch visibility. Remove them from:
+
+The top-level header nav bar
+Any dropdown menus under "Weight Loss", "More", or wherever they currently appear
+The mobile hamburger menu
+Do NOT delete the actual pages or routes — just remove the navigation links so visitors can't discover them through the header. The pages should still be accessible via direct URL for internal testing.
+
+B. Local Pickup / Pharmacy Disclaimer — All Programs
+
+Anywhere on the site where a "local pharmacy pickup" or "consult-only / prescription-only" option appears, add a prominent disclaimer. This applies to: the Self-Pay Compounded flow, Brand Rx (Cash Pay) flow, Mental Health flow, Hair Loss (if/when visible), and any other flow that offers a doctor consultation + e-prescription without shipping medication.
+
+The disclaimer text:
+
+"This option includes your medical doctor consultation and electronic prescription sent to your local pharmacy. It does NOT include the cost of the medication. All medications are to be paid for at the pharmacy. You may use your health insurance to pay for the medication at the pharmacy."
+
+Implementation requirements:
+
+Display this as a highlighted callout box — not fine print. Use a light background color (e.g., light blue or light yellow info box) with a clear icon (info icon or prescription icon) to make it stand out
+Show this disclaimer in TWO places:
+On the recommendation page — when the local pickup / pharmacy option is shown or selected
+On the checkout page — in the order summary area when the order is a consultation-only item (no medication shipped)
+Bold the key phrase: "does NOT include the cost of the medication"
+Apply this consistently across ALL flows that have a pharmacy pickup option. Do not hardcode it per-flow — create a reusable disclaimer component that can be included wherever the pharmacy option appears
+On mobile, the disclaimer should still be fully visible — do not collapse or hide it behind an accordion or "learn more" link

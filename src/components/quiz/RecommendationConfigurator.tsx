@@ -16,6 +16,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import type { BGSProduct } from "@/lib/bgs-products";
+import { PharmacyDisclaimerBox } from "@/components/ui/PharmacyDisclaimerBox";
 
 interface Props {
   product: BGSProduct;
@@ -602,6 +603,11 @@ export function RecommendationConfigurator({ product, locale }: Props) {
                 </div>
               </div>
             </div>
+          )}
+
+          {/* ── PHARMACY DISCLAIMER ── */}
+          {fulfillment === "pharmacy" && (
+            <PharmacyDisclaimerBox className="mt-3" />
           )}
         </div>
 

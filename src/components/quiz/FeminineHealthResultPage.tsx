@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
+import { PharmacyDisclaimerBox } from "@/components/ui/PharmacyDisclaimerBox";
 import { useCart } from "@/context/CartContext";
 
 // ── Product display catalog ───────────────────────────────────────────────
@@ -353,17 +354,20 @@ function SingleRecommendation({
 
       {/* Pricing */}
       {product.isPharmacy ? (
-        <div className="border-2 border-[#E5E5E5] rounded-2xl p-5 mb-6">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
-            Consultation fee
-          </p>
-          <p className="text-[#0C0D0F] text-3xl font-bold mb-1">
-            ${product.pharmacyFee}
-          </p>
-          <p className="text-[#55575A] text-sm">
-            Doctor review + e-prescription · Medication paid at pharmacy (insurance often accepted)
-          </p>
-        </div>
+        <>
+          <div className="border-2 border-[#E5E5E5] rounded-2xl p-5 mb-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
+              Consultation fee
+            </p>
+            <p className="text-[#0C0D0F] text-3xl font-bold mb-1">
+              ${product.pharmacyFee}
+            </p>
+            <p className="text-[#55575A] text-sm">
+              Doctor review + e-prescription sent to your local pharmacy
+            </p>
+          </div>
+          <PharmacyDisclaimerBox className="mb-6" />
+        </>
       ) : (
         <div className="mb-6">
           <p className="text-xs font-semibold uppercase tracking-wider text-[#AAAAAA] mb-3">
