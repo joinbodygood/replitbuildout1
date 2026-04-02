@@ -10,6 +10,7 @@ export type CartItem = {
   price: number;        // cents — TOTAL plan cost, not per-month
   quantity: number;
   slug: string;
+  productType?: "rx" | "supplement" | "consultation"; // fulfillment routing tag
   isMedPlan?: boolean;      // true for ship-to-me medication plans
   monthlyPrice?: number;    // cents per month, for display purposes
   durationMonths?: number;  // number of months in the plan

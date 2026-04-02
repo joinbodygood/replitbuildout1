@@ -12,6 +12,7 @@ model Product {
   slug                String              @unique
   sku                 String?             @unique
   category            String
+  productType         String              @default("rx") // rx | supplement | consultation
   programTag          String?
   fulfillment         String              @default("direct_ship")
   dosageForm          String?
@@ -180,10 +181,12 @@ model OrderItem {
   sku         String?
   price       Int    // cents
   quantity    Int
+  productType String @default("rx") // rx | supplement | consultation — used for fulfillment routing
 
   order       Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
+  @@index([productType])
 }
 
 // ─── Discount Codes ─────────────────────────────────

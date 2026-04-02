@@ -52,6 +52,7 @@ export default async function AdminProductsPage({ params }: Props) {
     slug: p.slug,
     sku: p.sku,
     category: p.category,
+    productType: p.productType,
     fulfillment: p.fulfillment,
     dosageForm: p.dosageForm,
     forGender: p.forGender,

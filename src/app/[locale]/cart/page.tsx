@@ -4,6 +4,7 @@ import { useCart } from "@/context/CartContext";
 import { useLocale } from "next-intl";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
+import { Truck } from "lucide-react";
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, total, itemCount } = useCart();
@@ -11,6 +12,10 @@ export default function CartPage() {
   const isEs = locale === "es";
 
   const formatPrice = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+
+  const hasSupplements = items.some((i) => i.productType === "supplement");
+  const hasMixedTypes =
+    hasSupplements && items.some((i) => i.productType !== "supplement");
 
   if (itemCount === 0) {
     return (
@@ -52,6 +57,17 @@ export default function CartPage() {
 
       <section className="py-12">
         <Container>
+          {hasMixedTypes && (
+            <div className="flex items-start gap-3 p-4 mb-6 bg-blue-50 border border-blue-200 rounded-card text-sm text-blue-800">
+              <Truck className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <p>
+                {isEs
+                  ? "Tu carrito contiene medicamentos Rx y suplementos. Los suplementos se enviarán por separado desde nuestro almacén."
+                  : "Your cart contains Rx medications and supplements. Supplements will ship separately from our warehouse."}
+              </p>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4">
@@ -61,7 +77,15 @@ export default function CartPage() {
                   className="flex items-center justify-between p-4 rounded-card border border-border"
                 >
                   <div className="flex-grow">
-                    <h3 className="font-heading text-heading font-semibold">{item.name}</h3>
+                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                      <h3 className="font-heading text-heading font-semibold">{item.name}</h3>
+                      {item.productType === "supplement" && (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                          <Truck className="w-3 h-3" />
+                          {isEs ? "Envío separado" : "Ships separately"}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-body-muted text-sm">{item.variantLabel}</p>
                     <p className="font-heading text-heading font-bold mt-1">
                       {formatPrice(item.price)}
@@ -104,6 +128,11 @@ export default function CartPage() {
                   <div key={item.variantId} className="flex justify-between text-sm">
                     <span className="text-body-muted">
                       {item.name} x{item.quantity}
+                      {item.productType === "supplement" && (
+                        <span className="ml-1 text-xs text-blue-600">
+                          {isEs ? "(sep.)" : "(sep.)"}
+                        </span>
+                      )}
                     </span>
                     <span className="text-heading font-medium">
                       {formatPrice(item.price * item.quantity)}
@@ -111,7 +140,7 @@ export default function CartPage() {
                   </div>
                 ))}
               </div>
-              <div className="border-t border-border pt-4 mb-6">
+              <div className="border-t border-border pt-4 mb-4">
                 <div className="flex justify-between">
                   <span className="font-heading text-heading font-bold">Total</span>
                   <span className="font-heading text-heading text-xl font-bold">
@@ -119,6 +148,14 @@ export default function CartPage() {
                   </span>
                 </div>
               </div>
+              {hasSupplements && (
+                <p className="text-xs text-body-muted mb-4 flex items-start gap-1">
+                  <Truck className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                  {isEs
+                    ? "Los suplementos se envían por separado."
+                    : "Supplements ship separately."}
+                </p>
+              )}
               <Button href={`/${locale}/checkout`} size="lg" className="w-full">
                 {isEs ? "Proceder al Pago" : "Proceed to Checkout"}
               </Button>

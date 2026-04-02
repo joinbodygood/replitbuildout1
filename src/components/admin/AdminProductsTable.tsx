@@ -7,6 +7,7 @@ type Product = {
   slug: string;
   sku: string | null;
   category: string;
+  productType: string;
   fulfillment: string | null;
   dosageForm: string | null;
   forGender: string | null;
@@ -42,6 +43,7 @@ export function AdminProductsTable({ products, categoryLabels, fulfillmentLabels
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [fulfillmentFilter, setFulfillmentFilter] = useState("all");
+  const [productTypeFilter, setProductTypeFilter] = useState("all");
   const [isPending, startTransition] = useTransition();
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -52,6 +54,7 @@ export function AdminProductsTable({ products, categoryLabels, fulfillmentLabels
       if (statusFilter === "active" && !p.isActive) return false;
       if (statusFilter === "inactive" && p.isActive) return false;
       if (fulfillmentFilter !== "all" && p.fulfillment !== fulfillmentFilter) return false;
+      if (productTypeFilter !== "all" && p.productType !== productTypeFilter) return false;
       if (search) {
         const q = search.toLowerCase();
         return (
@@ -63,7 +66,7 @@ export function AdminProductsTable({ products, categoryLabels, fulfillmentLabels
       }
       return true;
     });
-  }, [items, activeCategory, search, statusFilter, fulfillmentFilter]);
+  }, [items, activeCategory, search, statusFilter, fulfillmentFilter, productTypeFilter]);
 
   async function toggle(id: string, field: "isActive" | "isFeatured") {
     setTogglingId(id + field);
@@ -123,6 +126,17 @@ export function AdminProductsTable({ products, categoryLabels, fulfillmentLabels
             <option value="direct_ship">Direct Ship</option>
             <option value="pharmacy_rx">Pharmacy Rx</option>
             <option value="dual_path">Dual Path</option>
+            <option value="supliful">Supliful</option>
+          </select>
+          <select
+            value={productTypeFilter}
+            onChange={(e) => setProductTypeFilter(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-red"
+          >
+            <option value="all">All Types</option>
+            <option value="rx">Rx</option>
+            <option value="supplement">Supplement</option>
+            <option value="consultation">Consultation</option>
           </select>
         </div>
 
@@ -202,7 +216,13 @@ export function AdminProductsTable({ products, categoryLabels, fulfillmentLabels
                                 {p.sku}
                               </span>
                             )}
-                            {p.requiresPrescription && (
+                            {p.productType === "supplement" && (
+                              <span className="text-xs text-green-700 bg-green-50 px-1.5 py-0.5 rounded font-medium">Supplement</span>
+                            )}
+                            {p.productType === "consultation" && (
+                              <span className="text-xs text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded font-medium">Consult</span>
+                            )}
+                            {p.requiresPrescription && p.productType !== "supplement" && (
                               <span className="text-xs text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">Rx</span>
                             )}
                             {p.forGender && p.forGender !== "all" && (

@@ -54,19 +54,26 @@ export async function POST(req: NextRequest) {
         shippingZip: shippingZip || null,
         locale: locale || "en",
         items: {
-          create: (items as { name: string; variantLabel: string; sku?: string; price: number; quantity: number }[]).map(
+          create: (items as { name: string; variantLabel: string; sku?: string; price: number; quantity: number; productType?: string }[]).map(
             (item) => ({
               productName: item.name,
               variantLabel: item.variantLabel,
               sku: item.sku || null,
               price: item.price,
               quantity: item.quantity,
+              productType: item.productType ?? "rx",
             })
           ),
         },
       },
       include: { items: true },
     });
+
+    // TODO: When order contains supplement items (productType === 'supplement'),
+    // create a corresponding order in Shopify via Admin API for Supliful fulfillment.
+    // Ayush will build this integration. For now, supplement orders are recorded in
+    // the DB and visible in admin under Orders with productType === 'supplement' on
+    // each OrderItem — marked for manual handling until Shopify automation is built.
 
     if (referralCode) {
       const cleanCode = (referralCode as string).trim().toUpperCase();

@@ -69,7 +69,7 @@ A custom telehealth e-commerce platform for Body Good Studio, a physician-led we
 | Dashboard | `/admin` | ✅ KPIs + Revenue chart + Recent orders |
 | Orders | `/admin/orders` | ✅ List + Detail + Status edit |
 | Patients | `/admin/patients` | ✅ List with LTV + Order data |
-| Products | `/admin/products` | ✅ Full catalog — 74 products, 125 variants, category filters, Active/Featured toggles, expandable detail rows |
+| Products | `/admin/products` | ✅ Full catalog — 74 Rx products + 10 supplement products, category/type/fulfillment filters, Active/Featured toggles, productType badges |
 | Discounts | `/admin/discounts` | ✅ List + Create codes |
 | Team | `/admin/settings/team` | ✅ Member list |
 | Subscriptions | `/admin/subscriptions` | 🔄 Stub — awaiting PayPal recurring |
@@ -91,6 +91,60 @@ Edit `prisma/seed-admin.ts` and add a new entry, then run:
 ```
 npx ts-node --compiler-options '{"module":"CommonJS"}' prisma/seed-admin.ts
 ```
+
+## Supplement Store (Phase 1)
+
+**Route:** `/[locale]/supplements` and `/[locale]/supplements/[slug]`
+
+### Overview
+A physician-curated vitamins & supplements catalog alongside the existing Rx programs. Phase 1 covers DB products, storefront pages, cart integration, and order tracking. Fulfillment routing to Shopify/Supliful is Phase 2 (Ayush will build).
+
+### Product Type System
+- **`productType` field on `Product`** — `"rx" | "supplement" | "consultation"` (default `"rx"`)
+- **`productType` field on `OrderItem`** — same values, propagated from cart at checkout
+- All existing Rx products default to `"rx"`. All 10 seeded supplements are `"supplement"`.
+- Used for fulfillment routing — see TODO comments in `capture-order/route.ts` and `subscription-approved/route.ts`
+
+### Seeded Supplements (10 products)
+| Slug | Category | Price |
+|------|----------|-------|
+| `vitamin-d3-k2` | vitamins | $22.99 |
+| `b-complex-ultra` | vitamins | $19.99 |
+| `biotin-10000` | vitamins | $17.99 |
+| `probiotic-daily-50b` | probiotics | $29.99 |
+| `omega-3-fish-oil` | omega3 | $24.99 |
+| `magnesium-glycinate` | minerals | $19.99 |
+| `zinc-copper-complex` | minerals | $16.99 |
+| `collagen-peptides` | protein | $39.99 |
+| `ashwagandha-ksm66` | wellness | $27.99 |
+| `myo-inositol` | wellness | $24.99 |
+
+Re-seed: `npx tsx prisma/seed-supplements.ts`
+
+### Key Files
+- `src/app/[locale]/supplements/page.tsx` — listing page with sticky category filter tabs
+- `src/app/[locale]/supplements/[slug]/page.tsx` — product detail with Add to Cart
+- `src/components/supplements/SupplementCategoryTabs.tsx` — client-side category filter (URL search params)
+- `src/components/supplements/SupplementAddToCart.tsx` — adds with `productType: "supplement"` 
+- `prisma/seed-supplements.ts` — supplement product seeder
+
+### Cart Behavior
+- Supplements can coexist with Rx items (no conflict guard — they have no `flow` tag)
+- "Ships separately" blue badge shows on supplement cart items
+- Mixed-cart banner explains separate shipment when both types are present
+- `CartItem.productType` → persisted to `OrderItem.productType` at checkout
+
+### Fulfillment Placeholder
+```typescript
+// TODO: When order contains supplement items (productType === 'supplement'),
+// create a corresponding order in Shopify via Admin API for Supliful fulfillment.
+// Ayush will build this integration.
+```
+Until then, supplement orders appear in admin → Orders with `productType === 'supplement'` on each line item.
+
+### Navigation
+- "Vitamins & Supplements" added to the "More" dropdown (desktop) with Leaf icon
+- Also in the mobile slide-in panel nav
 
 ## Design System
 

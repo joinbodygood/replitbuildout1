@@ -9,7 +9,7 @@ import {
   X, Menu, ChevronDown, ChevronRight,
   Scale, Syringe, Sparkles, Heart, Brain,
   FileText, User, Shield, Pill, Tag, FlaskConical,
-  ShoppingCart, DollarSign, HelpCircle, Gift,
+  ShoppingCart, DollarSign, HelpCircle, Gift, Leaf,
 } from "lucide-react";
 
 // ─── Desktop dropdown definitions ────────────────────────────────────────────
@@ -45,6 +45,13 @@ const WEIGHT_LOSS_ITEMS = [
 ];
 
 const MORE_ITEMS = [
+  {
+    label: { en: "Vitamins & Supplements", es: "Vitaminas y Suplementos" },
+    desc:  { en: "Physician-curated supplements for your program", es: "Suplementos seleccionados por médicos para tu programa" },
+    href:  { en: "/en/supplements", es: "/es/supplements" },
+    icon: Leaf,
+    iconColor: "#16a34a",
+  },
   {
     label: { en: "Wellness Injections", es: "Inyecciones de Bienestar" },
     desc:  { en: "NAD+, Sermorelin, Glutathione & more", es: "NAD+, Sermorelina, Glutatión y más" },
@@ -125,6 +132,13 @@ const NAV_ITEMS = [
     icon: Brain, iconColor: "#6366f1", hasChildren: false,
     href: { en: "/en/quiz/mental-wellness", es: "/es/quiz/mental-wellness" },
     desc: { en: "Anxiety, sleep, mood & motivation — non-addictive", es: "Ansiedad, sueño y motivación — sin medicamentos adictivos" },
+  },
+  {
+    id: "supplements",
+    label: { en: "Vitamins & Supplements", es: "Vitaminas y Suplementos" },
+    icon: Leaf, iconColor: "#16a34a", hasChildren: false,
+    href: { en: "/en/supplements", es: "/es/supplements" },
+    desc: { en: "Physician-curated supplements for your program", es: "Suplementos seleccionados por médicos para tu programa" },
   },
   {
     id: "refer",

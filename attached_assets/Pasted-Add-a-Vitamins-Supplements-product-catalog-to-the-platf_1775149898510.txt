@@ -1,0 +1,59 @@
+Add a Vitamins & Supplements product catalog to the platform. This is Phase 1 — building out the products in the database and on the frontend. The fulfillment routing (Shopify/Supliful integration) will be built separately later.
+
+1. Database — Product Type Flag
+
+Add a product_type field to the product model/schema. Every product must be tagged as one of:
+
+rx — prescription medications fulfilled through pharmacy (existing products)
+supplement — vitamins and supplements fulfilled through Supliful/Shopify (new products)
+consultation — doctor review / e-prescription only (existing $25/$55 items)
+This flag is critical — it will be used later to route orders to the correct fulfillment system. Tag all existing products appropriately. All new vitamin/supplement products should be tagged as supplement.
+
+2. Admin Dashboard — Product Management
+
+In the admin dashboard under Products, allow creating and managing supplement products with:
+
+Product name
+Description (short + long)
+Product type (rx / supplement / consultation) — required field
+Category (e.g., Vitamins, Probiotics, Protein, Greens, Wellness)
+Price (retail price)
+Compare-at price (optional, for showing savings)
+Images (upload support)
+SKU
+Inventory tracking (optional for now)
+Subscription eligible (yes/no — some supplements may be offered as monthly subscriptions)
+Status (active / draft / archived)
+3. Frontend — Supplement Store
+
+Build a supplements section on the customer-facing site:
+
+Add "Supplements" or "Vitamins" to the site navigation under "More" or as its own top-level nav item
+Category listing page showing all supplement categories
+Product listing page for each category with product cards (image, name, price, short description)
+Individual product detail page with full description, images, pricing, and "Add to Cart" button
+Support for subscription options on eligible products (e.g., "Subscribe & save — $X/month" vs "One-time purchase — $X")
+4. Cart & Checkout Compatibility
+
+Supplements should work with the existing cart and checkout:
+
+Supplements CAN be added alongside Rx products in the same cart (this is an intentional cross-sell/upsell)
+The cart should visually distinguish product types (e.g., show "Ships separately" or a small badge on supplement items)
+Checkout processes payment for everything in one PayPal transaction
+In the order record, store the product_type for each line item so the order can be split later for fulfillment routing
+5. Upsell Integration
+
+Supplements should be available as upsell options in existing flows:
+
+Pre-checkout: "Add to your program" upsell screen showing relevant supplements based on what program the customer is purchasing (e.g., probiotic upsell for GLP-1 customers, biotin for hair loss customers)
+Post-checkout: "One-click add" on the order confirmation/success page
+In the patient portal: "Recommended supplements" section
+6. Future-proofing (do NOT build yet, just prepare)
+
+Add a placeholder/comment in the order processing code where fulfillment routing will happen later. Something like:
+
+
+// TODO: When order contains supplement items (product_type === 'supplement'),
+// create a corresponding order in Shopify via Admin API for Supliful fulfillment.
+// Ayush will build this integration.
+For now, supplement orders should be recorded in the database and visible in the admin dashboard under Orders, marked as "Awaiting Fulfillment (Supplement)" so the team knows they need manual handling until the Shopify automation is built.
