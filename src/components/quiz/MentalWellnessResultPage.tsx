@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/context/CartContext";
+import { useCartConflictGuard } from "@/hooks/useCartConflictGuard";
+import { CartConflictModal } from "@/components/cart/CartConflictModal";
 import {
   CheckCircle2,
   ShieldCheck,
@@ -95,7 +96,7 @@ export function MentalWellnessResultPage({
   flagged,
 }: Props) {
   const router = useRouter();
-  const { replaceFlow } = useCart();
+  const { conflict, dismissConflict, guardedReplaceFlow } = useCartConflictGuard();
   const [loading, setLoading] = useState(false);
 
   const fee = product.pharmacyFee ?? 25;
@@ -103,18 +104,23 @@ export function MentalWellnessResultPage({
 
   function handleGetStarted() {
     setLoading(true);
-    replaceFlow("mental-health", [{
-      productId: product.sku,
-      variantId: `${product.sku}-pharmacy`,
-      name: `${product.name} — Doctor Consultation`,
-      variantLabel: "Doctor Review + E-Prescription",
-      price: fee * 100,
-      slug: product.slug ?? product.sku.toLowerCase(),
-    }]);
-    router.push(`/${locale}/checkout`);
+    const ok = guardedReplaceFlow(
+      "mental-health",
+      [{
+        productId: product.sku,
+        variantId: `${product.sku}-pharmacy`,
+        name: `${product.name} — Doctor Consultation`,
+        variantLabel: "Doctor Review + E-Prescription",
+        price: fee * 100,
+        slug: product.slug ?? product.sku.toLowerCase(),
+      }],
+      () => router.push(`/${locale}/checkout`),
+    );
+    if (!ok) setLoading(false);
   }
 
   return (
+    <>
     <section className="bg-white min-h-[80vh] py-12">
       <Container narrow>
         <div className="max-w-xl mx-auto">
@@ -302,5 +308,14 @@ export function MentalWellnessResultPage({
         </div>
       </Container>
     </section>
+
+    {conflict && (
+      <CartConflictModal
+        existingProgram={conflict.existingProgram}
+        onKeep={dismissConflict}
+        onReplace={conflict.onReplace}
+      />
+    )}
+  </>
   );
 }

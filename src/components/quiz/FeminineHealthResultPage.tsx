@@ -16,7 +16,8 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { PharmacyDisclaimerBox } from "@/components/ui/PharmacyDisclaimerBox";
-import { useCart } from "@/context/CartContext";
+import { useCartConflictGuard } from "@/hooks/useCartConflictGuard";
+import { CartConflictModal } from "@/components/cart/CartConflictModal";
 
 // ── Product display catalog ───────────────────────────────────────────────
 
@@ -265,7 +266,7 @@ function SingleRecommendation({
   locale,
 }: SingleCardProps) {
   const router = useRouter();
-  const { replaceFlow } = useCart();
+  const { conflict, dismissConflict, guardedReplaceFlow } = useCartConflictGuard();
   const [tier, setTier] = useState(product.tiers?.[0] ?? 1);
   const [loading, setLoading] = useState(false);
 
@@ -276,36 +277,38 @@ function SingleRecommendation({
 
   function handleGetStarted() {
     setLoading(true);
-
-    if (product.isPharmacy) {
-      replaceFlow("feminine-health", [{
-        productId:    product.sku,
-        variantId:    `${product.sku}-pharmacy`,
-        name:         `${product.name} — Doctor Consultation`,
-        variantLabel: "Doctor Review + E-Prescription",
-        price:        (product.pharmacyFee ?? 35) * 100,
-        slug:         product.slug,
-      }]);
-    } else {
-      replaceFlow("feminine-health", [{
-        productId:      product.sku,
-        variantId:      `${product.sku}-${tier}mo`,
-        name:           product.name,
-        variantLabel:   tier === 1 ? "1-month supply" : `${tier}-month supply`,
-        price:          totalPrice * 100,
-        slug:           product.slug,
-        isMedPlan:      true,
-        monthlyPrice:   pricePerMonth * 100,
-        durationMonths: tier,
-      }]);
-    }
-
-    router.push(`/${locale}/checkout`);
+    const cartItem = product.isPharmacy
+      ? {
+          productId:    product.sku,
+          variantId:    `${product.sku}-pharmacy`,
+          name:         `${product.name} — Doctor Consultation`,
+          variantLabel: "Doctor Review + E-Prescription",
+          price:        (product.pharmacyFee ?? 35) * 100,
+          slug:         product.slug,
+        }
+      : {
+          productId:      product.sku,
+          variantId:      `${product.sku}-${tier}mo`,
+          name:           product.name,
+          variantLabel:   tier === 1 ? "1-month supply" : `${tier}-month supply`,
+          price:          totalPrice * 100,
+          slug:           product.slug,
+          isMedPlan:      true,
+          monthlyPrice:   pricePerMonth * 100,
+          durationMonths: tier,
+        };
+    const ok = guardedReplaceFlow(
+      "feminine-health",
+      [cartItem],
+      () => router.push(`/${locale}/checkout`),
+    );
+    if (!ok) setLoading(false);
   }
 
   const { Icon } = product;
 
   return (
+    <>
     <div className="max-w-xl mx-auto">
       {/* Product header */}
       <div className="flex items-center gap-4 mb-6">
@@ -438,6 +441,14 @@ function SingleRecommendation({
         ))}
       </div>
     </div>
+    {conflict && (
+      <CartConflictModal
+        existingProgram={conflict.existingProgram}
+        onKeep={dismissConflict}
+        onReplace={conflict.onReplace}
+      />
+    )}
+    </>
   );
 }
 
@@ -454,7 +465,7 @@ interface CompareProps {
 
 function TwoOptionComparison({ products, locale, concern, lifeStage, severity, duration }: CompareProps) {
   const router = useRouter();
-  const { replaceFlow } = useCart();
+  const { conflict, dismissConflict, guardedReplaceFlow } = useCartConflictGuard();
   const [selected, setSelected] = useState<string | null>(null);
   const [tier, setTier] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -474,21 +485,26 @@ function TwoOptionComparison({ products, locale, concern, lifeStage, severity, d
     setLoading(true);
     const pricePerMonth = product.prices?.[tier] ?? 0;
     const totalPrice    = pricePerMonth * tier;
-    replaceFlow("feminine-health", [{
-      productId:      product.sku,
-      variantId:      `${product.sku}-${tier}mo`,
-      name:           product.name,
-      variantLabel:   tier === 1 ? "1-month supply" : `${tier}-month supply`,
-      price:          totalPrice * 100,
-      slug:           product.slug,
-      isMedPlan:      true,
-      monthlyPrice:   pricePerMonth * 100,
-      durationMonths: tier,
-    }]);
-    router.push(`/${locale}/checkout`);
+    const ok = guardedReplaceFlow(
+      "feminine-health",
+      [{
+        productId:      product.sku,
+        variantId:      `${product.sku}-${tier}mo`,
+        name:           product.name,
+        variantLabel:   tier === 1 ? "1-month supply" : `${tier}-month supply`,
+        price:          totalPrice * 100,
+        slug:           product.slug,
+        isMedPlan:      true,
+        monthlyPrice:   pricePerMonth * 100,
+        durationMonths: tier,
+      }],
+      () => router.push(`/${locale}/checkout`),
+    );
+    if (!ok) setLoading(false);
   }
 
   return (
+    <>
     <div className="max-w-2xl mx-auto">
       <div className="text-center mb-8">
         <h1 className="font-heading text-[#0C0D0F] text-2xl md:text-3xl font-bold mb-3">
@@ -597,6 +613,14 @@ function TwoOptionComparison({ products, locale, concern, lifeStage, severity, d
         ))}
       </div>
     </div>
+    {conflict && (
+      <CartConflictModal
+        existingProgram={conflict.existingProgram}
+        onKeep={dismissConflict}
+        onReplace={conflict.onReplace}
+      />
+    )}
+    </>
   );
 }
 

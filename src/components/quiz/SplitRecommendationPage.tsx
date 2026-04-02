@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/context/CartContext";
+import { useCartConflictGuard } from "@/hooks/useCartConflictGuard";
+import { CartConflictModal } from "@/components/cart/CartConflictModal";
 import {
   Check,
   Truck,
@@ -48,7 +49,7 @@ interface Props {
 }
 
 export function SplitRecommendationPage({ config, locale }: Props) {
-  const { addItem, replaceFlow } = useCart();
+  const { conflict, dismissConflict, guardedReplaceFlow } = useCartConflictGuard();
   const router = useRouter();
   const [pharmacyModalOpen, setPharmacyModalOpen] = useState(false);
   const [pharmacyName, setPharmacyName] = useState("");
@@ -61,16 +62,20 @@ export function SplitRecommendationPage({ config, locale }: Props) {
     : null;
 
   function handleShipToMe() {
-    replaceFlow("compounded-glp1", [{
-      productId: config.shipCartData.productId,
-      variantId: config.shipCartData.variantId,
-      name: config.productName,
-      variantLabel: config.shipCartData.variantLabel,
-      price: config.shipCartData.priceInCents,
-      slug: config.shipCartData.slug,
-      isMedPlan: true,
-    }]);
-    router.push(`/${locale}/cart/upsell`);
+    const ok = guardedReplaceFlow(
+      "compounded-glp1",
+      [{
+        productId: config.shipCartData.productId,
+        variantId: config.shipCartData.variantId,
+        name: config.productName,
+        variantLabel: config.shipCartData.variantLabel,
+        price: config.shipCartData.priceInCents,
+        slug: config.shipCartData.slug,
+        isMedPlan: true,
+      }],
+      () => router.push(`/${locale}/cart/upsell`),
+    );
+    void ok;
   }
 
   function handlePharmacyPickup() {
@@ -87,16 +92,23 @@ export function SplitRecommendationPage({ config, locale }: Props) {
         phone: pharmacyPhone,
       })
     );
-    replaceFlow("compounded-glp1", [{
-      productId: config.pharmacyCartData.productId,
-      variantId: config.pharmacyCartData.variantId,
-      name: `${config.productName} — Pharmacy Pickup`,
-      variantLabel: config.pharmacyCartData.variantLabel,
-      price: config.pharmacyCartData.priceInCents,
-      slug: config.pharmacyCartData.slug,
-    }], { silent: true });
-    setPharmacyModalOpen(false);
-    router.push(`/${locale}/checkout`);
+    const ok = guardedReplaceFlow(
+      "compounded-glp1",
+      [{
+        productId: config.pharmacyCartData.productId,
+        variantId: config.pharmacyCartData.variantId,
+        name: `${config.productName} — Pharmacy Pickup`,
+        variantLabel: config.pharmacyCartData.variantLabel,
+        price: config.pharmacyCartData.priceInCents,
+        slug: config.pharmacyCartData.slug,
+      }],
+      () => {
+        setPharmacyModalOpen(false);
+        router.push(`/${locale}/checkout`);
+      },
+      { silent: true },
+    );
+    if (!ok) setPharmacyModalOpen(false);
   }
 
   const faqs = [
@@ -144,6 +156,7 @@ export function SplitRecommendationPage({ config, locale }: Props) {
   ];
 
   return (
+    <>
     <div className="min-h-screen bg-white font-body">
       {/* ── TOP BAR ── */}
       <div className="bg-[#0C0D0F] text-white text-center py-2.5 px-4 text-[13px] font-medium tracking-wide">
@@ -570,6 +583,14 @@ export function SplitRecommendationPage({ config, locale }: Props) {
         </div>
       )}
     </div>
+    {conflict && (
+      <CartConflictModal
+        existingProgram={conflict.existingProgram}
+        onKeep={dismissConflict}
+        onReplace={conflict.onReplace}
+      />
+    )}
+  </>
   );
 }
 

@@ -149,6 +149,25 @@ Redirect to Zoho/GLOW for medical intake
 | Insurance Approval | $85 one-time | — | — |
 | Insurance Ongoing | $75/mo | — | — |
 
+## Cart Conflict Guard
+
+One-program-per-checkout enforcement with exception for GLP-1 + Wellness Injection coexistence.
+
+### Files
+| File | Role |
+|------|------|
+| `src/lib/cart-utils.ts` | `detectCartConflict(targetFlow, items)` — returns label of conflicting program or null |
+| `src/hooks/useCartConflictGuard.ts` | `useCartConflictGuard()` hook — wraps `replaceFlow` with conflict detection; `guardedReplaceFlow()` returns `boolean` (false if conflict shown) |
+| `src/components/cart/CartConflictModal.tsx` | Modal with "Keep current cart" / "Replace with new selection" actions |
+
+### Flow Groups
+- **weight-loss:** `compounded-glp1`, `oral-glp1`, `branded-rx`, `insurance`
+- **wellness-injection:** allowed alongside any weight-loss flow (GLP-1 intake covers both)
+- **Isolated programs:** `mental-health`, `feminine-health`, `hair-loss`
+
+### Integrated In
+`RecommendationConfigurator`, `SplitRecommendationPage`, `OralRecommendationPage`, `MentalWellnessResultPage`, `FeminineHealthResultPage` (both sub-components), `WellnessInjectionUpsell` (3 call sites + useEffect auto-nav).
+
 ## What's Built (Complete)
 
 ### Foundation

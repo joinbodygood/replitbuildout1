@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, X, Pill, ShieldCheck, Star, ExternalLink, Package } from "lucide-react";
-import { useCart } from "@/context/CartContext";
+import { useCartConflictGuard } from "@/hooks/useCartConflictGuard";
+import { CartConflictModal } from "@/components/cart/CartConflictModal";
 
 type Recommended = "appetite" | "metabolic" | "wegovy";
 
@@ -112,7 +113,7 @@ const OPTIONS: OralOption[] = [
 
 export function OralRecommendationPage({ locale, recommended }: Props) {
   const router = useRouter();
-  const { replaceFlow } = useCart();
+  const { conflict, dismissConflict, guardedReplaceFlow } = useCartConflictGuard();
 
   const [selectedDuration, setSelectedDuration] = useState<Record<string, number>>({
     appetite: 1,
@@ -138,21 +139,25 @@ export function OralRecommendationPage({ locale, recommended }: Props) {
     const dur = selectedDuration[opt.id] ?? 1;
     const monthly = opt.prices[dur] ?? Object.values(opt.prices)[0];
     const totalCents = monthly * dur * 100;
-    replaceFlow("oral-glp1", [{
-      productId: sku,
-      variantId: `${sku}-${dur}mo`,
-      name: opt.name,
-      variantLabel: `${opt.tagline} — ${DURATION_LABELS[dur]}`,
-      price: totalCents,
-      slug: opt.id === "appetite" ? "appetite-control" : "metabolic-reset",
-      isMedPlan: true,
-      monthlyPrice: monthly * 100,
-      durationMonths: dur,
-    }]);
-    router.push(`/${locale}/cart/upsell?flow=oral`);
+    guardedReplaceFlow(
+      "oral-glp1",
+      [{
+        productId: sku,
+        variantId: `${sku}-${dur}mo`,
+        name: opt.name,
+        variantLabel: `${opt.tagline} — ${DURATION_LABELS[dur]}`,
+        price: totalCents,
+        slug: opt.id === "appetite" ? "appetite-control" : "metabolic-reset",
+        isMedPlan: true,
+        monthlyPrice: monthly * 100,
+        durationMonths: dur,
+      }],
+      () => router.push(`/${locale}/cart/upsell?flow=oral`),
+    );
   }
 
   return (
+    <>
     <div className="min-h-screen bg-white" style={{ fontFamily: "Manrope, sans-serif" }}>
       <div className="bg-[#0C0D0F] text-white text-center py-2.5 px-4 text-[12px] font-medium tracking-wide">
         Board-Certified Doctors &bull; Oral Medications Only &bull; No Injections Required
@@ -398,5 +403,13 @@ export function OralRecommendationPage({ locale, recommended }: Props) {
         </div>
       </div>
     </div>
+    {conflict && (
+      <CartConflictModal
+        existingProgram={conflict.existingProgram}
+        onKeep={dismissConflict}
+        onReplace={conflict.onReplace}
+      />
+    )}
+    </>
   );
 }

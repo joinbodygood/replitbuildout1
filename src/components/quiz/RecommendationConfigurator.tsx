@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import type { BGSProduct } from "@/lib/bgs-products";
 import { PharmacyDisclaimerBox } from "@/components/ui/PharmacyDisclaimerBox";
+import { useCartConflictGuard } from "@/hooks/useCartConflictGuard";
+import { CartConflictModal } from "@/components/cart/CartConflictModal";
 
 interface Props {
   product: BGSProduct;
@@ -33,7 +35,8 @@ interface PriceDisplay {
 }
 
 export function RecommendationConfigurator({ product, locale }: Props) {
-  const { addItem, replaceFlow, items } = useCart();
+  const { addItem, items } = useCart();
+  const { conflict, dismissConflict, guardedReplaceFlow } = useCartConflictGuard();
   const router = useRouter();
 
   const hasDoses = !!product.doses;
@@ -273,16 +276,22 @@ export function RecommendationConfigurator({ product, locale }: Props) {
     const isHairLoss = product.program === "Hair Loss";
     const flowTag = isHairLoss ? "hair-loss" : "compounded-glp1";
     const hadExisting = items.some((i) => i.flow === flowTag);
-    replaceFlow(flowTag, [cartItem], { silent: true });
-    if (hadExisting) {
-      showToast("Your plan has been updated");
-      setTimeout(
-        () => router.push(isHairLoss ? `/${locale}/checkout` : `/${locale}/cart/upsell`),
-        1200
-      );
-    } else {
-      router.push(isHairLoss ? `/${locale}/checkout` : `/${locale}/cart/upsell`);
-    }
+    guardedReplaceFlow(
+      flowTag,
+      [cartItem],
+      () => {
+        if (hadExisting) {
+          showToast("Your plan has been updated");
+          setTimeout(
+            () => router.push(isHairLoss ? `/${locale}/checkout` : `/${locale}/cart/upsell`),
+            1200
+          );
+        } else {
+          router.push(isHairLoss ? `/${locale}/checkout` : `/${locale}/cart/upsell`);
+        }
+      },
+      { silent: true },
+    );
   }
 
   function handlePharmacyConfirm() {
@@ -294,19 +303,27 @@ export function RecommendationConfigurator({ product, locale }: Props) {
     const priceInCents =
       pd.price !== "—" ? Math.round((pd.price as number) * 100) : 0;
     const pharmacyFlow = product.program === "Hair Loss" ? "hair-loss" : "compounded-glp1";
-    replaceFlow(pharmacyFlow, [{
-      productId: product.sku,
-      variantId: `${product.sku}-pharmacy`,
-      name: `${product.name} — Pharmacy Pickup`,
-      variantLabel: "Doctor Consultation + E-Prescription",
-      price: priceInCents,
-      slug: product.slug ?? product.sku.toLowerCase(),
-    }], { silent: true });
-    setPharmacyModalOpen(false);
-    router.push(`/${locale}/checkout`);
+    const ok = guardedReplaceFlow(
+      pharmacyFlow,
+      [{
+        productId: product.sku,
+        variantId: `${product.sku}-pharmacy`,
+        name: `${product.name} — Pharmacy Pickup`,
+        variantLabel: "Doctor Consultation + E-Prescription",
+        price: priceInCents,
+        slug: product.slug ?? product.sku.toLowerCase(),
+      }],
+      () => {
+        setPharmacyModalOpen(false);
+        router.push(`/${locale}/checkout`);
+      },
+      { silent: true },
+    );
+    if (!ok) setPharmacyModalOpen(false);
   }
 
   return (
+    <>
     <div className="min-h-screen bg-white" style={{ fontFamily: "Manrope, sans-serif" }}>
       {/* TOAST */}
       {toast && (
@@ -832,6 +849,14 @@ export function RecommendationConfigurator({ product, locale }: Props) {
         </div>
       )}
     </div>
+    {conflict && (
+      <CartConflictModal
+        existingProgram={conflict.existingProgram}
+        onKeep={dismissConflict}
+        onReplace={conflict.onReplace}
+      />
+    )}
+    </>
   );
 }
 

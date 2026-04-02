@@ -540,9 +540,18 @@ export default function CheckoutPage() {
                     </Button>
                   </div>
 
-                  <Button href={`/${locale}/programs`} variant="outline" size="md">
-                    {isEs ? "Explorar Más Programas" : "Explore More Programs"}
-                  </Button>
+                  <div className="flex flex-col sm:flex-row justify-center gap-3 mt-4">
+                    <Button href={`/${locale}/programs`} variant="outline" size="md">
+                      {isEs ? "Explorar Más Programas" : "Explore More Programs"}
+                    </Button>
+                    <Button
+                      href="https://glow.bodygoodstudio.com"
+                      variant="outline"
+                      size="md"
+                    >
+                      {isEs ? "Ir al Portal del Paciente" : "Go to Patient Portal"}
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>

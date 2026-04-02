@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/context/CartContext";
+import { useCartConflictGuard } from "@/hooks/useCartConflictGuard";
+import { CartConflictModal } from "@/components/cart/CartConflictModal";
 import {
   CheckCircle2,
   ShieldCheck,
@@ -162,7 +163,7 @@ interface Props {
 
 export function WellnessInjectionUpsell({ handle, tier, locale }: Props) {
   const router = useRouter();
-  const { replaceFlow } = useCart();
+  const { conflict, dismissConflict, guardedReplaceFlow } = useCartConflictGuard();
   const [actionLoading, setActionLoading] = useState<"bundle" | "skip" | null>(null);
 
   // ── Main product values ──
@@ -204,7 +205,80 @@ export function WellnessInjectionUpsell({ handle, tier, locale }: Props) {
   // ── If no bundle for this handle, go straight to checkout ──
   useEffect(() => {
     if (!hasBundle) {
-      replaceFlow("wellness-injection", [{
+      guardedReplaceFlow(
+        "wellness-injection",
+        [{
+          productId:      mainSku,
+          variantId:      `${mainSku}-${tier}mo`,
+          name:           mainName,
+          variantLabel:   `${tier}-month supply`,
+          price:          mainTotal * 100,
+          slug:           handle,
+          isMedPlan:      true,
+          monthlyPrice:   mainMonthly * 100,
+          durationMonths: tier,
+        }],
+        () => router.push(`/${locale}/checkout`),
+      );
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasBundle]);
+
+  if (!hasBundle) {
+    return (
+      <>
+        <section className="min-h-[60vh] flex items-center justify-center">
+          <p className="text-[#55575A] text-sm">Preparing your checkout…</p>
+        </section>
+        {conflict && (
+          <CartConflictModal
+            existingProgram={conflict.existingProgram}
+            onKeep={dismissConflict}
+            onReplace={conflict.onReplace}
+          />
+        )}
+      </>
+    );
+  }
+
+  function handleAddBundle() {
+    setActionLoading("bundle");
+    const ok = guardedReplaceFlow(
+      "wellness-injection",
+      [
+        {
+          productId:      mainSku,
+          variantId:      `${mainSku}-${tier}mo-bundle`,
+          name:           mainName,
+          variantLabel:   `${tier}-month supply (bundle)`,
+          price:          mainBundleTotal * 100,
+          slug:           handle,
+          isMedPlan:      true,
+          monthlyPrice:   mainBundleMonthly * 100,
+          durationMonths: tier,
+        },
+        {
+          productId:      partnerSku,
+          variantId:      `${partnerSku}-${tier}mo-bundle`,
+          name:           partnerName,
+          variantLabel:   `${tier}-month supply (bundle)`,
+          price:          partnerBundleTotal * 100,
+          slug:           partnerHandle,
+          isMedPlan:      true,
+          monthlyPrice:   partnerBundleMonthly * 100,
+          durationMonths: tier,
+        },
+      ],
+      () => router.push(`/${locale}/checkout`),
+    );
+    if (!ok) setActionLoading(null);
+  }
+
+  function handleSkip() {
+    setActionLoading("skip");
+    const ok = guardedReplaceFlow(
+      "wellness-injection",
+      [{
         productId:      mainSku,
         variantId:      `${mainSku}-${tier}mo`,
         name:           mainName,
@@ -214,66 +288,14 @@ export function WellnessInjectionUpsell({ handle, tier, locale }: Props) {
         isMedPlan:      true,
         monthlyPrice:   mainMonthly * 100,
         durationMonths: tier,
-      }]);
-      router.push(`/${locale}/checkout`);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasBundle]);
-
-  if (!hasBundle) {
-    return (
-      <section className="min-h-[60vh] flex items-center justify-center">
-        <p className="text-[#55575A] text-sm">Preparing your checkout…</p>
-      </section>
+      }],
+      () => router.push(`/${locale}/checkout`),
     );
-  }
-
-  function handleAddBundle() {
-    setActionLoading("bundle");
-    replaceFlow("wellness-injection", [
-      {
-        productId:      mainSku,
-        variantId:      `${mainSku}-${tier}mo-bundle`,
-        name:           mainName,
-        variantLabel:   `${tier}-month supply (bundle)`,
-        price:          mainBundleTotal * 100,
-        slug:           handle,
-        isMedPlan:      true,
-        monthlyPrice:   mainBundleMonthly * 100,
-        durationMonths: tier,
-      },
-      {
-        productId:      partnerSku,
-        variantId:      `${partnerSku}-${tier}mo-bundle`,
-        name:           partnerName,
-        variantLabel:   `${tier}-month supply (bundle)`,
-        price:          partnerBundleTotal * 100,
-        slug:           partnerHandle,
-        isMedPlan:      true,
-        monthlyPrice:   partnerBundleMonthly * 100,
-        durationMonths: tier,
-      },
-    ]);
-    router.push(`/${locale}/checkout`);
-  }
-
-  function handleSkip() {
-    setActionLoading("skip");
-    replaceFlow("wellness-injection", [{
-      productId:      mainSku,
-      variantId:      `${mainSku}-${tier}mo`,
-      name:           mainName,
-      variantLabel:   `${tier}-month supply`,
-      price:          mainTotal * 100,
-      slug:           handle,
-      isMedPlan:      true,
-      monthlyPrice:   mainMonthly * 100,
-      durationMonths: tier,
-    }]);
-    router.push(`/${locale}/checkout`);
+    if (!ok) setActionLoading(null);
   }
 
   return (
+    <>
     <section className="min-h-[80vh] bg-[#F8F9FA] py-12">
       <Container narrow>
         <div className="max-w-lg mx-auto">
@@ -469,5 +491,13 @@ export function WellnessInjectionUpsell({ handle, tier, locale }: Props) {
         </div>
       </Container>
     </section>
+    {conflict && (
+      <CartConflictModal
+        existingProgram={conflict.existingProgram}
+        onKeep={dismissConflict}
+        onReplace={conflict.onReplace}
+      />
+    )}
+    </>
   );
 }

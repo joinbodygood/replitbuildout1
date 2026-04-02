@@ -1,0 +1,32 @@
+Update the cart and checkout logic based on the following rules:
+
+1. One program flow per checkout — no cross-flow stacking
+
+A customer can only check out with ONE program flow at a time. The program flows are:
+
+Compounded GLP-1 (Weight Loss)
+Brand Rx (Cash Pay)
+Mental Health
+Wellness Injection
+Feminine Health
+Hair Loss
+If a customer has a Weight Loss product in their cart and then goes through the Mental Health quiz, the Mental Health product should NOT be added to the same cart. Instead, show a message: "You already have a [Weight Loss] plan in your cart. Complete that checkout first, or replace it with this new selection." Give them two options: [Keep current cart] or [Replace with new selection].
+
+Other program flows (Mental Health, Feminine Health, Hair Loss, etc.) will be available to add later from inside the patient portal after they become a patient. This keeps the initial checkout focused and simple.
+
+2. Exception: Wellness Injections + GLP-1 Weight Loss CAN coexist
+
+The ONE exception to the above rule: If a customer has a GLP-1 Weight Loss plan in their cart, they ARE allowed to also add Wellness Injection products. This is because the Weight Management medical intake form already covers all the questions that the Wellness Injection intake would ask — so no additional medical intake is needed.
+
+When this happens:
+
+Do NOT require a separate wellness injection medical intake — the GLP-1 intake covers it
+The wellness injection items should appear alongside the GLP-1 plan in the cart and checkout
+The flow-aware replacement rule still applies WITHIN wellness injections (retaking the wellness quiz replaces the previous wellness item, not stacks)
+3. Within a single flow, replacement rules still apply
+
+Retaking any quiz replaces the previous product from that same flow
+Upsell items are tied to their parent flow and get replaced if the parent is replaced
+4. Patient portal for additional services
+
+After checkout and becoming a patient, customers can access other program flows from their patient portal. Add a note or CTA in the post-checkout/success page: "Want to explore more programs? Access Mental Health, Feminine Health, and more from your patient portal."
