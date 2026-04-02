@@ -174,54 +174,59 @@ export function SupplementAddToCart({
         </p>
       )}
 
-      {/* Add to Cart / In Cart button */}
+      {/* Primary CTA: adds to cart then goes to checkout */}
       {isInCart ? (
         <div className="space-y-2">
-          <div className="w-full flex items-center justify-center gap-2 font-heading font-semibold px-8 py-4 rounded-pill text-lg bg-success text-white">
-            <Check className="w-5 h-5" />
-            {isEs ? "En tu carrito" : "In your cart"}
-          </div>
+          <button
+            onClick={() => router.push(`/${locale}/checkout`)}
+            className="w-full flex items-center justify-center gap-2 font-heading font-semibold px-8 py-4 rounded-pill text-lg bg-brand-red text-white shadow-btn hover:bg-brand-red-hover hover:shadow-btn-hover transition-all duration-200"
+          >
+            {isEs ? "Proceder al Pago" : "Proceed to Checkout"}
+          </button>
           <button
             onClick={() => router.push(`/${locale}/cart`)}
             className="w-full text-center text-sm font-medium text-brand-red hover:underline"
           >
-            {purchaseType === "subscribe"
-              ? (isEs ? "Ver carrito — Suscripción activa" : "View cart — Subscription active")
-              : (isEs ? "Ver carrito" : "View cart")}
+            {isEs ? "Ver carrito" : "View cart"}
           </button>
         </div>
       ) : (
         <div className="space-y-2">
+          {/* Main CTA — adds to cart and navigates to checkout */}
+          <button
+            onClick={() => {
+              handleAdd();
+              router.push(`/${locale}/checkout`);
+            }}
+            className="w-full flex items-center justify-center gap-2 font-heading font-semibold px-8 py-4 rounded-pill text-lg bg-brand-red text-white shadow-btn hover:bg-brand-red-hover hover:shadow-btn-hover transition-all duration-200"
+          >
+            <ShoppingCart className="w-5 h-5" />
+            {purchaseType === "subscribe"
+              ? (isEs ? "Suscribirse y Ahorrar" : "Subscribe & Save")
+              : (isEs ? "Comprar Ahora" : "Buy Now")}
+          </button>
+          {/* Secondary: add to cart only */}
           <button
             onClick={handleAdd}
-            className={`w-full flex items-center justify-center gap-2 font-heading font-semibold px-8 py-4 rounded-pill text-lg transition-all duration-200 ${
+            disabled={added}
+            className={`w-full flex items-center justify-center gap-2 font-heading font-semibold px-8 py-3 rounded-pill text-base border-2 transition-all duration-200 ${
               added
-                ? "bg-success text-white"
-                : "bg-brand-red text-white shadow-btn hover:bg-brand-red-hover hover:shadow-btn-hover"
+                ? "border-success text-success bg-success/5 cursor-default"
+                : "border-brand-red text-brand-red hover:bg-brand-pink-soft"
             }`}
           >
             {added ? (
               <>
-                <Check className="w-5 h-5" />
+                <Check className="w-4 h-4" />
                 {isEs ? "Agregado al carrito" : "Added to cart"}
               </>
             ) : (
               <>
-                <ShoppingCart className="w-5 h-5" />
-                {purchaseType === "subscribe"
-                  ? (isEs ? "Suscribirse y Ahorrar" : "Subscribe & Save")
-                  : (isEs ? "Agregar al Carrito" : "Add to Cart")}
+                <ShoppingCart className="w-4 h-4" />
+                {isEs ? "Agregar al Carrito" : "Add to Cart"}
               </>
             )}
           </button>
-          {added && (
-            <button
-              onClick={() => router.push(`/${locale}/cart`)}
-              className="w-full text-center text-sm font-medium text-brand-red hover:underline"
-            >
-              {isEs ? "Ver carrito" : "View cart"}
-            </button>
-          )}
         </div>
       )}
     </div>
