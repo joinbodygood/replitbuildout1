@@ -6,7 +6,9 @@ import { useCart } from "@/context/CartContext";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { PayPalButton } from "@/components/checkout/PayPalButton";
+import { PayPalSubscribeButton } from "@/components/checkout/PayPalSubscribeButton";
 import { PharmacyDisclaimerBox } from "@/components/ui/PharmacyDisclaimerBox";
+import { classifyCart, buildSubscriptionDescription } from "@/lib/subscription-utils";
 
 type CheckoutStep = "info" | "shipping" | "payment" | "confirmation";
 
@@ -31,6 +33,7 @@ export default function CheckoutPage() {
   const [processing, setProcessing] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [intakeRoute, setIntakeRoute] = useState<string | null>(null);
+  const [paypalSubscriptionId, setPaypalSubscriptionId] = useState<string | null>(null);
 
   function resolveIntakeRoute(cartItems: typeof items): string | null {
     const inj = cartItems.find(
@@ -73,6 +76,8 @@ export default function CheckoutPage() {
   }
 
   const formatPrice = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+
+  const classification = classifyCart(items);
 
   const discountAmount = discountApplied
     ? discountApplied.type === "percentage"
@@ -435,62 +440,193 @@ export default function CheckoutPage() {
                     )}
                   </div>
 
+                  {/* Subscription billing summary */}
+                  {classification.hasSubscription && (
+                    <div className="mb-6 p-4 rounded-card border border-brand-red/30 bg-brand-pink-soft">
+                      <h4 className="font-heading font-semibold text-heading text-sm mb-3">
+                        {isEs ? "Resumen de Suscripción" : "Subscription Summary"}
+                      </h4>
+                      <div className="space-y-2 text-sm">
+                        {classification.subscriptionItems.map((item) => (
+                          <div key={item.variantId} className="flex justify-between">
+                            <span className="text-body">{item.name} — {item.variantLabel}</span>
+                            <span className="font-semibold text-heading">
+                              {formatPrice(classification.monthlyPriceCents)}/mo
+                            </span>
+                          </div>
+                        ))}
+                        {classification.hasMixed && classification.oneTimeItems.map((item) => (
+                          <div key={item.variantId} className="flex justify-between text-body-muted">
+                            <span>{item.name} ({isEs ? "cargo único" : "one-time"})</span>
+                            <span>{formatPrice(item.price * item.quantity)}</span>
+                          </div>
+                        ))}
+                        <div className="border-t border-brand-red/20 pt-2 mt-2 flex justify-between font-semibold text-heading">
+                          <span>{isEs ? "Cargo de hoy" : "Due today"}</span>
+                          <span>
+                            {formatPrice(classification.monthlyPriceCents + classification.setupFeeCents)}
+                          </span>
+                        </div>
+                        <p className="text-xs text-body-muted pt-1">
+                          {classification.paypalTotalCycles === 0
+                            ? isEs
+                              ? "Se le cobrará mensualmente hasta que cancele."
+                              : "You will be billed monthly until you cancel."
+                            : isEs
+                              ? `Se le cobrará ${formatPrice(classification.monthlyPriceCents)}/mes por ${classification.displayTotalCycles} meses.`
+                              : `You will be billed ${formatPrice(classification.monthlyPriceCents)}/month for ${classification.displayTotalCycles} months.`
+                          }
+                        </p>
+                        {discountApplied && (
+                          <p className="text-xs text-warning">
+                            {isEs
+                              ? "Los códigos de descuento no aplican a planes de suscripción."
+                              : "Discount codes do not apply to subscription plans."}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/* PayPal Payment */}
                   <div className="mb-6">
-                    <PayPalButton
-                      amount={finalTotal}
-                      discountCode={discountApplied?.code}
-                      disabled={processing}
-                      onApprove={async (paypalOrderId) => {
-                        setProcessing(true);
-                        try {
-                          const res = await fetch("/api/paypal/capture-order", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                              paypalOrderId,
-                              email,
-                              phone: phone || null,
-                              subtotal: total,
-                              discountAmount,
-                              finalTotal,
-                              discountCode: discountApplied?.code || null,
-                              referralCode: referralCode.trim() || null,
-                              shippingName,
-                              shippingAddress,
-                              shippingCity,
-                              shippingState,
-                              shippingZip,
-                              locale,
-                              items: items.map((item) => ({
-                                name: item.name,
-                                variantLabel: item.variantLabel,
-                                sku: item.variantId,
-                                price: item.price,
-                                quantity: item.quantity,
-                              })),
-                            }),
-                          });
-                          const data = await res.json();
-                          if (data.success) {
-                            setIntakeRoute(resolveIntakeRoute(items));
-                            setOrderId(data.orderId);
-                            setStep("confirmation");
-                            clearCart();
-                          } else {
-                            alert(isEs ? "Error al procesar el pago. Contacta soporte." : "Payment processing error. Please contact support.");
+                    {classification.hasSubscription ? (
+                      <PayPalSubscribeButton
+                        monthlyPriceCents={classification.monthlyPriceCents}
+                        paypalTotalCycles={classification.paypalTotalCycles}
+                        setupFeeCents={classification.setupFeeCents}
+                        description={buildSubscriptionDescription(classification)}
+                        disabled={processing}
+                        onApprove={async (subscriptionId) => {
+                          setProcessing(true);
+                          try {
+                            const res = await fetch("/api/paypal/subscription-approved", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                subscriptionId,
+                                email,
+                                phone: phone || null,
+                                monthlyPriceCents: classification.monthlyPriceCents,
+                                displayTotalCycles: classification.displayTotalCycles,
+                                setupFeeCents: classification.setupFeeCents,
+                                referralCode: referralCode.trim() || null,
+                                shippingName,
+                                shippingAddress,
+                                shippingCity,
+                                shippingState,
+                                shippingZip,
+                                locale,
+                                items: items.map((item) => ({
+                                  name: item.name,
+                                  variantLabel: item.variantLabel,
+                                  sku: item.variantId,
+                                  price: item.price,
+                                  quantity: item.quantity,
+                                })),
+                              }),
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                              setPaypalSubscriptionId(subscriptionId);
+                              setIntakeRoute(resolveIntakeRoute(items));
+                              setOrderId(data.orderId);
+                              setStep("confirmation");
+                              clearCart();
+                            } else {
+                              alert(
+                                isEs
+                                  ? "Error al activar la suscripción. Contacta soporte."
+                                  : "Subscription activation error. Please contact support."
+                              );
+                            }
+                          } catch (error) {
+                            console.error(error);
+                            alert(
+                              isEs
+                                ? "Error inesperado. Intenta de nuevo."
+                                : "Unexpected error. Please try again."
+                            );
+                          } finally {
+                            setProcessing(false);
                           }
-                        } catch (error) {
-                          console.error(error);
-                          alert(isEs ? "Error inesperado. Intenta de nuevo." : "Unexpected error. Please try again.");
-                        } finally {
-                          setProcessing(false);
-                        }
-                      }}
-                      onError={() => {
-                        alert(isEs ? "Error con PayPal. Intenta de nuevo." : "PayPal error. Please try again.");
-                      }}
-                    />
+                        }}
+                        onError={() => {
+                          alert(
+                            isEs
+                              ? "Error con PayPal. Intenta de nuevo."
+                              : "PayPal error. Please try again."
+                          );
+                        }}
+                      />
+                    ) : (
+                      <PayPalButton
+                        amount={finalTotal}
+                        discountCode={discountApplied?.code}
+                        disabled={processing}
+                        onApprove={async (paypalOrderId) => {
+                          setProcessing(true);
+                          try {
+                            const res = await fetch("/api/paypal/capture-order", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                paypalOrderId,
+                                email,
+                                phone: phone || null,
+                                subtotal: total,
+                                discountAmount,
+                                finalTotal,
+                                discountCode: discountApplied?.code || null,
+                                referralCode: referralCode.trim() || null,
+                                shippingName,
+                                shippingAddress,
+                                shippingCity,
+                                shippingState,
+                                shippingZip,
+                                locale,
+                                items: items.map((item) => ({
+                                  name: item.name,
+                                  variantLabel: item.variantLabel,
+                                  sku: item.variantId,
+                                  price: item.price,
+                                  quantity: item.quantity,
+                                })),
+                              }),
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                              setIntakeRoute(resolveIntakeRoute(items));
+                              setOrderId(data.orderId);
+                              setStep("confirmation");
+                              clearCart();
+                            } else {
+                              alert(
+                                isEs
+                                  ? "Error al procesar el pago. Contacta soporte."
+                                  : "Payment processing error. Please contact support."
+                              );
+                            }
+                          } catch (error) {
+                            console.error(error);
+                            alert(
+                              isEs
+                                ? "Error inesperado. Intenta de nuevo."
+                                : "Unexpected error. Please try again."
+                            );
+                          } finally {
+                            setProcessing(false);
+                          }
+                        }}
+                        onError={() => {
+                          alert(
+                            isEs
+                              ? "Error con PayPal. Intenta de nuevo."
+                              : "PayPal error. Please try again."
+                          );
+                        }}
+                      />
+                    )}
                   </div>
 
                   <button
@@ -517,6 +653,12 @@ export default function CheckoutPage() {
                     {isEs ? "Número de pedido:" : "Order number:"}{" "}
                     <span className="font-mono text-heading font-medium">{orderId}</span>
                   </p>
+                  {paypalSubscriptionId && (
+                    <p className="text-body-muted text-sm mb-2">
+                      {isEs ? "Suscripción activa:" : "Subscription active:"}{" "}
+                      <span className="font-mono text-heading text-xs">{paypalSubscriptionId}</span>
+                    </p>
+                  )}
                   <p className="text-body-muted mb-8">
                     {isEs
                       ? "Recibirás un email de confirmación en breve."

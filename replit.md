@@ -149,6 +149,51 @@ Redirect to Zoho/GLOW for medical intake
 | Insurance Approval | $85 one-time | — | — |
 | Insurance Ongoing | $75/mo | — | — |
 
+## PayPal Subscriptions
+
+Recurring billing infrastructure for all multi-month and monthly medication plans.
+
+### Architecture
+- **`src/lib/paypal-subscriptions.ts`** — PayPal Catalog Product creation (lazy/cached), Plan creation (lazy/cached), subscription verification, cancel
+- **`src/lib/subscription-utils.ts`** — Cart classification (subscription items vs one-time), billing terms display logic
+- **`src/components/checkout/PayPalSubscribeButton.tsx`** — PayPal Subscribe button (uses `vault: true`, `intent: subscription`); creates plan server-side, uses `actions.subscription.create()` client-side
+
+### DB Models
+- **`PaypalPlan`** — caches created plan IDs keyed by `(pricePerCycleCents, totalCycles, setupFeeCents)`. Plans are created lazily on first checkout, then reused for all future customers with the same billing parameters.
+- **`PaypalWebhookEvent`** — idempotency log for PayPal subscription webhooks
+- **`Order.paypalSubscriptionId`** — set on subscription orders (null for one-time orders)
+
+### API Routes
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/api/paypal/create-subscription` | POST | Get or create PayPal plan → return `planId` |
+| `/api/paypal/subscription-approved` | POST | After PayPal approval: verify subscription, create Order in DB, fire webhook, send Chatwoot welcome |
+| `/api/paypal/subscription-webhook` | POST | Handle BILLING.SUBSCRIPTION.CANCELLED/EXPIRED/SUSPENDED and PAYMENT.SALE.COMPLETED events |
+| `/api/admin/subscriptions` | GET | List all subscription orders |
+| `/api/admin/subscriptions/[id]/cancel` | POST | Cancel subscription on PayPal + mark order cancelled |
+
+### Checkout Detection Logic
+- `isSubscriptionItem(item)` → `item.isMedPlan && item.monthlyPrice > 0`
+- 1-month plans: `paypalTotalCycles = 0` (infinite, cancel anytime)
+- 3/6-month plans: `paypalTotalCycles = durationMonths` (fixed-term billing)
+- Mixed carts (subscription + one-time add-on): one-time items become `setup_fee` on first cycle
+- Discount codes show "not applicable" note when subscription items present
+
+### Subscription Products
+| Product | 1-mo | 3-mo | 6-mo |
+|---------|------|------|------|
+| Semaglutide Injection | $169/mo ∞ | $149/mo × 3 | $139/mo × 6 |
+| Tirzepatide Starter | $299/mo ∞ | $279/mo × 3 | $259/mo × 6 |
+| Tirzepatide Maintenance | $349/mo ∞ | $329/mo × 3 | $319/mo × 6 |
+| Oral GLP-1 products | varies | varies | varies |
+| Wellness Injections w/ multi-mo pricing | varies | varies | varies |
+| Hair Loss products w/ multi-mo pricing | varies | varies | varies |
+
+### Admin Subscriptions Page
+- `/admin/subscriptions` — lists all subscription orders with expandable rows; filter by active/cancelled/all
+- Shows PayPal subscription ID, status, patient email, products, MRR summary
+- Cancel button calls PayPal API + marks order cancelled in DB
+
 ## Cart Conflict Guard
 
 One-program-per-checkout enforcement with exception for GLP-1 + Wellness Injection coexistence.
@@ -215,7 +260,8 @@ One-program-per-checkout enforcement with exception for GLP-1 + Wellness Injecti
 - **Upsell page** (`/cart/upsell`) — shown after Add to Cart; offers Ongoing Care Plan (+$55/mo) and Insurance Coverage Check (+$25); proceed to checkout CTA with cart summary
 - **MedicationChoiceCard** + **MedicationChoiceCardInline** — price-tier selector cards with plan variant picker, Add to Cart, badges, and X/✓ tradeoffs
 - Multi-step checkout (Info → Shipping → Payment → Confirmation)
-- Real PayPal SDK integration (sandbox) — **NOTE: server-side verification not yet built**
+- Real PayPal SDK integration (sandbox, server-side verification complete)
+- **PayPal Subscriptions** (full recurring billing infrastructure — see dedicated section below)
 - Order API (creates order in DB), discount code system
 - 3 discount codes seeded (WELCOME25, SAVE10, FRIEND25)
 - Confirmation page with "Complete Medical Intake" CTA — routes to correct intake form per SKU via `resolveIntakeRoute()`

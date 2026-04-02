@@ -9,10 +9,13 @@ type WebhookEvent =
   | "insurance.favorable"
   | "insurance.unfavorable"
   | "referral.created"
+  | "referral.credited"
   | "review.submitted"
   | "lead.captured"
   | "intake.submitted"
-  | "coverage_check.completed";
+  | "coverage_check.completed"
+  | "subscription.cancelled"
+  | "subscription.payment";
 
 type WebhookPayload = {
   event: WebhookEvent;

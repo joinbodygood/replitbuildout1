@@ -1,0 +1,63 @@
+Integrate PayPal Subscriptions for all products that have a recurring/subscription component. This needs to be built out before we migrate anything from Shopify.
+
+1. PayPal Subscription Setup
+
+Integrate PayPal's Subscription API to handle all recurring payments. Every product that offers a multi-month plan (3-month, 6-month) or ongoing monthly subscription should use PayPal's subscription billing — not one-time payments.
+
+2. Products that need subscription billing
+
+Map out and connect PayPal subscriptions for every product that has a recurring component. This includes:
+
+Weight Loss (Compounded GLP-1):
+
+Monthly plan: $169/mo recurring
+3-month plan: $149/mo recurring (billed monthly for 3 months)
+6-month plan: $139/mo recurring (billed monthly for 6 months)
+Wellness Injections:
+
+Any product offered on a monthly or multi-month recurring basis
+Hair Loss:
+
+Any product offered on a monthly or multi-month recurring basis
+Feminine Health:
+
+Any product offered on a monthly or multi-month recurring basis
+For each subscription product, create a corresponding PayPal Subscription Plan with:
+
+The correct billing cycle (monthly)
+The correct number of cycles (1 for monthly, 3 for 3-month, 6 for 6-month — or ongoing if it auto-renews)
+The correct price per cycle
+3. One-time payment products (NOT subscriptions)
+
+These should remain as standard PayPal one-time payments, NOT subscriptions:
+
+Brand Rx consultation fee ($55) — one-time
+Mental Health consultation fee ($25) — one-time
+Ondansetron upsell ($10) — one-time
+Any other single-purchase items
+4. Checkout integration
+
+Update the checkout page to use PayPal's subscription buttons/flow for subscription products:
+
+When the cart contains a subscription product, render the PayPal Subscribe button (not the standard Pay button)
+Show the billing terms clearly before the customer confirms: "You will be billed $149/month for 3 months" or "$169/month (cancel anytime)" depending on the plan
+After successful PayPal subscription creation, store the PayPal Subscription ID in the order record and the patient's account
+Handle subscription webhooks from PayPal: payment success, payment failed, subscription cancelled, subscription expired
+5. Subscription management
+
+In the admin dashboard:
+
+Show each patient's active subscriptions with PayPal Subscription ID, status, next billing date, and amount
+Allow admins to view, pause, or cancel subscriptions
+In the patient portal:
+
+Show the patient their active subscription details
+Allow patients to cancel their subscription (with a confirmation step)
+6. Mixed carts (subscription + one-time)
+
+If the cart has both a subscription item (e.g., 3-month GLP-1 plan) and a one-time item (e.g., Ondansetron upsell):
+
+Process the subscription through PayPal Subscriptions
+Process the one-time item as a separate PayPal one-time payment, OR add it as a setup fee on the subscription (first payment = subscription price + one-time item)
+Clearly show both charges in the checkout summary
+Build this subscription infrastructure first. Once PayPal subscriptions are working and tested, we will proceed with the Shopify migration.

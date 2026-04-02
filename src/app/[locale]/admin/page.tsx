@@ -10,7 +10,7 @@ export default async function AdminPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [orderCount, productCount, reviewCount, leadCount, blogCount, referralCount] =
+  const [orderCount, productCount, reviewCount, leadCount, blogCount, referralCount, subscriptionCount] =
     await Promise.all([
       db.order.count(),
       db.product.count({ where: { isActive: true } }),
@@ -18,6 +18,7 @@ export default async function AdminPage({ params }: Props) {
       db.quizLead.count(),
       db.blogPost.count({ where: { isPublished: true } }),
       db.referral.count(),
+      db.order.count({ where: { paypalSubscriptionId: { not: null }, status: { not: "cancelled" } } }),
     ]);
 
   const recentOrders = await db.order.findMany({
@@ -30,10 +31,10 @@ export default async function AdminPage({ params }: Props) {
 
   const stats = [
     { label: "Orders", value: orderCount, href: `/${locale}/admin/orders` },
+    { label: "Subscriptions", value: subscriptionCount, href: `/${locale}/admin/subscriptions` },
     { label: "Products", value: productCount, href: `/${locale}/admin/products` },
     { label: "Quiz Leads", value: leadCount, href: `/${locale}/admin` },
     { label: "Reviews", value: reviewCount, sub: pendingReviews > 0 ? `${pendingReviews} pending` : null, href: `/${locale}/admin` },
-    { label: "Blog Posts", value: blogCount, href: `/${locale}/admin` },
     { label: "Referrals", value: referralCount, href: `/${locale}/admin` },
   ];
 

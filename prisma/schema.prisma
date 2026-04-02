@@ -144,30 +144,32 @@ model FaqTranslation {
 // ─── Orders ─────────────────────────────────────────
 
 model Order {
-  id              String      @id @default(cuid())
-  email           String
-  phone           String?
-  status          String      @default("pending_intake") // pending_intake, processing, shipped, delivered, cancelled, refunded
-  subtotal        Int         // cents
-  discount        Int         @default(0) // cents
-  total           Int         // cents
-  discountCode    String?
-  paypalOrderId   String?
-  shippingName    String?
-  shippingAddress String?
-  shippingCity    String?
-  shippingState   String?
-  shippingZip     String?
-  locale          String      @default("en")
-  notes           String?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  id                   String      @id @default(cuid())
+  email                String
+  phone                String?
+  status               String      @default("pending_intake") // pending_intake, processing, shipped, delivered, cancelled, refunded
+  subtotal             Int         // cents
+  discount             Int         @default(0) // cents
+  total                Int         // cents
+  discountCode         String?
+  paypalOrderId        String?
+  paypalSubscriptionId String?     // set for subscription orders
+  shippingName         String?
+  shippingAddress      String?
+  shippingCity         String?
+  shippingState        String?
+  shippingZip          String?
+  locale               String      @default("en")
+  notes                String?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
 
-  items           OrderItem[]
+  items                OrderItem[]
 
   @@index([email])
   @@index([status])
   @@index([createdAt])
+  @@index([paypalSubscriptionId])
 }
 
 model OrderItem {
@@ -323,4 +325,33 @@ model BlogPostTranslation {
   post        BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@unique([postId, locale])
+}
+
+// ─── PayPal Subscriptions ────────────────────────────
+
+model PaypalPlan {
+  id                 String   @id @default(cuid())
+  paypalPlanId       String   @unique
+  paypalProductId    String
+  pricePerCycleCents Int
+  totalCycles        Int      // 0 = infinite (ongoing monthly), 3 or 6 for fixed-term
+  setupFeeCents      Int      @default(0)
+  description        String
+  status             String   @default("ACTIVE")
+  createdAt          DateTime @default(now())
+
+  @@unique([pricePerCycleCents, totalCycles, setupFeeCents])
+  @@index([pricePerCycleCents, totalCycles])
+}
+
+model PaypalWebhookEvent {
+  id          String   @id @default(cuid())
+  eventId     String   @unique
+  eventType   String
+  resourceId  String?
+  payload     String
+  processedAt DateTime @default(now())
+
+  @@index([eventId])
+  @@index([resourceId])
 }
