@@ -34,6 +34,10 @@ export default function CheckoutPage() {
   const [orderId, setOrderId] = useState<string | null>(null);
   const [intakeRoute, setIntakeRoute] = useState<string | null>(null);
   const [paypalSubscriptionId, setPaypalSubscriptionId] = useState<string | null>(null);
+  // "local" = has a local intake form route
+  // "portal" = Rx program that uses the external patient portal for intake
+  // "none" = supplements only — no intake needed
+  const [confirmedIntakeMode, setConfirmedIntakeMode] = useState<"local" | "portal" | "none">("none");
 
   function resolveIntakeRoute(cartItems: typeof items): string | null {
     const inj = cartItems.find(
@@ -73,6 +77,18 @@ export default function CheckoutPage() {
       return `/${locale}/intake/specialty?program=mental&fulfillment=pharm`;
     }
     return null;
+  }
+
+  function resolveIntakeMode(
+    cartItems: typeof items,
+    route: string | null
+  ): "local" | "portal" | "none" {
+    const hasRx = cartItems.some(
+      (i) => i.productType === undefined || i.productType === "rx" || i.productType === "consultation"
+    );
+    if (!hasRx) return "none";
+    if (route) return "local";
+    return "portal";
   }
 
   const formatPrice = (cents: number) => `$${(cents / 100).toFixed(2)}`;
@@ -174,7 +190,9 @@ export default function CheckoutPage() {
 
       const data = await res.json();
       if (data.success) {
-        setIntakeRoute(resolveIntakeRoute(items));
+        const route = resolveIntakeRoute(items);
+        setIntakeRoute(route);
+        setConfirmedIntakeMode(resolveIntakeMode(items, route));
         setOrderId(data.orderId);
         setStep("confirmation");
         clearCart();
@@ -529,7 +547,9 @@ export default function CheckoutPage() {
                             const data = await res.json();
                             if (data.success) {
                               setPaypalSubscriptionId(subscriptionId);
-                              setIntakeRoute(resolveIntakeRoute(items));
+                              const route = resolveIntakeRoute(items);
+                              setIntakeRoute(route);
+                              setConfirmedIntakeMode(resolveIntakeMode(items, route));
                               setOrderId(data.orderId);
                               setStep("confirmation");
                               clearCart();
@@ -596,7 +616,9 @@ export default function CheckoutPage() {
                             });
                             const data = await res.json();
                             if (data.success) {
-                              setIntakeRoute(resolveIntakeRoute(items));
+                              const route = resolveIntakeRoute(items);
+                              setIntakeRoute(route);
+                              setConfirmedIntakeMode(resolveIntakeMode(items, route));
                               setOrderId(data.orderId);
                               setStep("confirmation");
                               clearCart();
@@ -665,22 +687,51 @@ export default function CheckoutPage() {
                       : "You'll receive a confirmation email shortly."}
                   </p>
 
-                  <div className="bg-brand-pink-soft rounded-card p-6 max-w-md mx-auto mb-8">
-                    <h3 className="font-heading text-heading font-bold mb-2">
-                      {isEs ? "Próximo Paso" : "Next Step"}
-                    </h3>
-                    <p className="text-body text-sm mb-4">
-                      {isEs
-                        ? "Completa tu formulario de ingreso médico para que nuestro equipo pueda revisar tu caso."
-                        : "Complete your medical intake form so our team can review your case."}
-                    </p>
-                    <Button
-                      href={intakeRoute ?? "https://glow.bodygoodstudio.com"}
-                      size="md"
-                    >
-                      {isEs ? "Completar Formulario Médico →" : "Complete Medical Intake →"}
-                    </Button>
-                  </div>
+                  {/* Next Step block — adapts to order type */}
+                  {confirmedIntakeMode === "local" && (
+                    <div className="bg-brand-pink-soft rounded-card p-6 max-w-md mx-auto mb-8">
+                      <h3 className="font-heading text-heading font-bold mb-2">
+                        {isEs ? "Próximo Paso" : "Next Step"}
+                      </h3>
+                      <p className="text-body text-sm mb-4">
+                        {isEs
+                          ? "Completa tu formulario de ingreso médico para que nuestro equipo pueda revisar tu caso."
+                          : "Complete your medical intake form so our team can review your case."}
+                      </p>
+                      <Button href={intakeRoute!} size="md">
+                        {isEs ? "Completar Formulario Médico →" : "Complete Medical Intake →"}
+                      </Button>
+                    </div>
+                  )}
+
+                  {confirmedIntakeMode === "portal" && (
+                    <div className="bg-brand-pink-soft rounded-card p-6 max-w-md mx-auto mb-8">
+                      <h3 className="font-heading text-heading font-bold mb-2">
+                        {isEs ? "Próximo Paso" : "Next Step"}
+                      </h3>
+                      <p className="text-body text-sm mb-4">
+                        {isEs
+                          ? "El equipo del Dr. Moleon revisará tu caso. Inicia sesión en el portal del paciente para completar tu consulta médica y que podamos procesar tu receta."
+                          : "Dr. Moleon's team will review your case. Log in to the patient portal to complete your medical consultation so we can process your prescription."}
+                      </p>
+                      <Button href="https://glow.bodygoodstudio.com" size="md">
+                        {isEs ? "Ir al Portal del Paciente →" : "Go to Patient Portal →"}
+                      </Button>
+                    </div>
+                  )}
+
+                  {confirmedIntakeMode === "none" && (
+                    <div className="bg-surface-dim rounded-card p-6 max-w-md mx-auto mb-8 border border-border">
+                      <h3 className="font-heading text-heading font-bold mb-2">
+                        {isEs ? "Tu Pedido Está en Camino" : "Your Order Is on Its Way"}
+                      </h3>
+                      <p className="text-body text-sm">
+                        {isEs
+                          ? "Recibirás un correo de confirmación de envío cuando tu pedido salga de nuestro almacén."
+                          : "You'll receive a shipping confirmation email once your order leaves our warehouse."}
+                      </p>
+                    </div>
+                  )}
 
                   <div className="flex flex-col sm:flex-row justify-center gap-3 mt-4">
                     <Button href={`/${locale}/programs`} variant="outline" size="md">
