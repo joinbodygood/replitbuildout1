@@ -386,3 +386,60 @@ export async function regenerateLetter(submissionId: string) {
     data: { letterText, letterVersion: { increment: 1 } },
   });
 }
+
+export function getDenialRebuttal(reason: string, drug: string, diagnoses: string[]): string {
+  const drugDisplay = DRUG_DISPLAY[drug] ?? drug;
+  const dxCount = diagnoses.length;
+
+  const rebuttals: Record<string, string> = {
+    "Non-Formulary": `${drugDisplay} may not appear on the plan's standard formulary, but formulary exclusions do not override medical necessity. The patient has ${dxCount} documented diagnoses requiring GLP-1 therapy. The ADA Standards of Care (2026) and Endocrine Society guidelines explicitly recommend GLP-1 receptor agonists for patients with this clinical profile. Formulary placement is a cost management tool, not a clinical determination. We request a formulary exception based on medical necessity.`,
+    "Not Medically Necessary": `The denial of ${drugDisplay} as "not medically necessary" is contradicted by the patient's clinical profile: ${dxCount} documented diagnoses, elevated HOMA-IR confirming insulin resistance, and failure of prior conservative treatments. The ADA Standards of Care (2026), SELECT Trial, and SURMOUNT Trials all establish GLP-1 therapy as the standard of care for this patient population. The insurer's medical director is invited to a peer-to-peer review to discuss the clinical evidence.`,
+    "Step Therapy Required": `The patient has completed extensive step therapy including physician-supervised diet and exercise, lifestyle counseling, and prior pharmacotherapy. These interventions have been documented as insufficient. Requiring additional step therapy delays medically necessary treatment and exposes the patient to progressive metabolic deterioration. We request a step therapy exception based on documented prior treatment failure.`,
+    "Weight Loss Excluded": `This medication is NOT prescribed for cosmetic weight loss. It is prescribed for the treatment of serious metabolic endocrine disease — specifically prediabetes with metabolic syndrome, insulin resistance, and obesity-related comorbidities. The patient has ${dxCount} documented ICD-10 diagnoses. Blanket "weight loss exclusion" policies do not apply to the treatment of metabolic disease with FDA-approved medications.`,
+    "Missing Documentation": `All required documentation has been provided with this submission, including: complete medical records, lab results with metabolic panel, documented prior treatment history, ICD-10 diagnosis codes, and physician certification of medical necessity. If specific additional documentation is required, please specify exactly what is needed so we can provide it immediately.`,
+    "Off-Label": `${drugDisplay} is FDA-approved for the treatment of obesity and/or type 2 diabetes. This patient's documented diagnoses fall within the FDA-approved indications. This is NOT off-label use. If the insurer is classifying this as off-label, we request clarification on which specific indication they consider off-label, as the patient's clinical profile aligns with approved indications.`,
+    "Quantity Limit": `The prescribed dosage follows the manufacturer's recommended titration schedule and FDA-approved dosing guidelines. The quantity requested is clinically appropriate for this patient's treatment plan. We request a quantity limit exception based on the prescribing physician's clinical judgment and established dosing protocols.`,
+  };
+
+  return rebuttals[reason] ?? `The denial of ${drugDisplay} for "${reason}" is not supported by the patient's clinical profile. The patient has ${dxCount} documented diagnoses requiring GLP-1 therapy per ADA Standards of Care (2026). We request reconsideration with peer-to-peer review.`;
+}
+
+export function analyzeBestPathway(denials: { drug: string; status: string; round: number; indication: string }[]): { drug: string; indication: string; reasoning: string } {
+  // Metabolic-indication drugs (Ozempic/Mounjaro) have 93-94% approval rates
+  // Weight-indication drugs (Wegovy/Zepbound) have 8-16% approval rates
+  // Prefer the drug with the fewest denials under the metabolic indication
+
+  const metabolicDenials = denials.filter(d => d.indication === "metabolic" && d.status === "denied");
+  const weightDenials = denials.filter(d => (d.indication === "weight_cv" || d.indication === "weight_osa") && d.status === "denied");
+
+  // If any metabolic drug was approved, use that
+  const metabolicApproved = denials.find(d => d.indication === "metabolic" && d.status === "approved");
+  if (metabolicApproved) {
+    return { drug: metabolicApproved.drug, indication: "metabolic", reasoning: `${DRUG_DISPLAY[metabolicApproved.drug]} was already approved under metabolic indication.` };
+  }
+
+  // Prefer Mounjaro (93% approval) over Ozempic (94%) for external review — tirzepatide is dual-agonist
+  const mourjaroDenied = metabolicDenials.find(d => d.drug === "mounjaro");
+  const ozempicDenied = metabolicDenials.find(d => d.drug === "ozempic");
+
+  if (mourjaroDenied && ozempicDenied) {
+    // Both denied — use Mounjaro for external review (stronger clinical argument with dual GIP/GLP-1 mechanism)
+    return { drug: "mounjaro", indication: "metabolic", reasoning: "Mounjaro (tirzepatide) selected for external review — dual GIP/GLP-1 agonist provides stronger clinical argument for metabolic disease treatment." };
+  }
+
+  if (ozempicDenied) {
+    return { drug: "ozempic", indication: "metabolic", reasoning: "Ozempic (semaglutide) selected — denied under metabolic indication, strong evidence base from SELECT Trial." };
+  }
+
+  if (mourjaroDenied) {
+    return { drug: "mounjaro", indication: "metabolic", reasoning: "Mounjaro (tirzepatide) selected — denied under metabolic indication, SURMOUNT Trial evidence." };
+  }
+
+  // Fallback: if only weight-indication denials exist, use the weight drug with most evidence
+  if (weightDenials.length > 0) {
+    return { drug: "wegovy", indication: "weight_cv", reasoning: "Wegovy (semaglutide) selected — weight/CV indication with SELECT Trial cardiovascular benefit data." };
+  }
+
+  // Default
+  return { drug: "mounjaro", indication: "metabolic", reasoning: "Default selection — Mounjaro (tirzepatide) under metabolic indication has highest approval rate (93%)." };
+}

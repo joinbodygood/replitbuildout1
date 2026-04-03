@@ -93,3 +93,47 @@ export async function runEligibilityCheck(input: {
 
   return { case: insuranceCase, results };
 }
+
+export async function recheckBenefits(caseId: string) {
+  const insuranceCase = await prisma.insuranceCase.findUnique({ where: { id: caseId } });
+  if (!insuranceCase) throw new Error("Case not found");
+  if (!insuranceCase.carrierName || !insuranceCase.memberId) {
+    throw new Error("Case missing carrier or member ID for benefit recheck");
+  }
+
+  const subscriberName = insuranceCase.subscriberName ?? insuranceCase.patientName;
+  const nameParts = subscriberName.trim().split(/\s+/);
+  const firstName = nameParts[0] || "Unknown";
+  const lastName = nameParts.slice(1).join(" ") || "Unknown";
+
+  const [stediResult] = await Promise.all([
+    runStediCheck({
+      insurerName: insuranceCase.carrierName,
+      memberId: insuranceCase.memberId,
+      groupNumber: insuranceCase.groupNumber ?? undefined,
+      firstName,
+      lastName,
+      dob: insuranceCase.subscriberDob ?? insuranceCase.patientDob ?? "",
+    }).catch(() => null),
+  ]);
+
+  if (stediResult) {
+    await prisma.insuranceCase.update({
+      where: { id: caseId },
+      data: {
+        eligibilityData: stediResult as object,
+        eligibilityCheckedAt: new Date(),
+      },
+    });
+
+    await addNote(
+      caseId,
+      null,
+      `Benefits rechecked — pharmacy benefit ${stediResult.pharmacyBenefitActive ? "ACTIVE" : "INACTIVE"}`,
+      "system",
+      { pharmacyBenefitActive: stediResult.pharmacyBenefitActive }
+    );
+  }
+
+  return stediResult;
+}

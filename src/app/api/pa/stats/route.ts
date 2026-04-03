@@ -7,7 +7,7 @@ export async function GET() {
   const user = await getAdminUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const [casesByStage, approvalData, totalCases, teamWorkload] = await Promise.all([
+  const [casesByStage, approvalData, totalCases, teamWorkload, avgProcessing] = await Promise.all([
     prisma.insuranceCase.groupBy({ by: ["stage"], _count: { id: true } }),
     prisma.pASubmission.groupBy({
       by: ["drug", "status"],
@@ -16,6 +16,10 @@ export async function GET() {
     }),
     prisma.insuranceCase.count(),
     getWorkload(),
+    prisma.insuranceCase.findMany({
+      where: { approvedAt: { not: null } },
+      select: { createdAt: true, approvedAt: true },
+    }),
   ]);
 
   const byStage: Record<string, number> = {};
@@ -37,10 +41,20 @@ export async function GET() {
     d.rate = d.total > 0 ? Math.round((d.approved / d.total) * 100) : 0;
   }
 
+  let avgProcessingDays = 0;
+  if (avgProcessing.length > 0) {
+    const totalDays = avgProcessing.reduce((sum, c) => {
+      const days = (c.approvedAt!.getTime() - c.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+      return sum + days;
+    }, 0);
+    avgProcessingDays = Math.round(totalDays / avgProcessing.length);
+  }
+
   return NextResponse.json({
     byStage,
     approvalRates,
     totalCases,
     teamWorkload,
+    avgProcessingDays,
   });
 }
