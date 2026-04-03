@@ -1,4 +1,3 @@
-import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { Container } from "@/components/ui/Container";
 import { Accordion } from "@/components/ui/Accordion";
@@ -11,46 +10,150 @@ export default async function FaqPage({ params }: Props) {
   return <FaqContent />;
 }
 
+const sections = [
+  {
+    heading: "Safety & Efficacy",
+    items: [
+      {
+        question: "Is compounded semaglutide as effective as Ozempic or Wegovy?",
+        answer: "Yes, absolutely. The active ingredient — semaglutide — is chemically identical whether it's compounded by a pharmacy or manufactured by Novo Nordisk (Ozempic/Wegovy). The difference is in the delivery method and manufacturing process, not the medication's efficacy. In Dr. Moleon's clinical practice, she has prescribed both brand-name and compounded semaglutide to hundreds of patients, and the weight loss results are equivalent. Compounding offers the same therapeutic effect at a fraction of the cost.",
+      },
+      {
+        question: "How quickly will I see weight loss results?",
+        answer: "Most patients notice reduced appetite within the first 1–2 weeks and see initial weight loss (2–5 pounds) within the first month. However, GLP-1 medications work gradually — we start at a low dose and increase slowly to minimize side effects and optimize results. Peak weight loss typically occurs around 16–20 weeks as we reach therapeutic doses. On average, patients lose 1–2 pounds per week, with total weight loss of 15–20% of their body weight over 6–12 months.",
+      },
+      {
+        question: "Is semaglutide safe for long-term use?",
+        answer: "Yes. Clinical trials demonstrate semaglutide's safety for at least 2+ years of continuous use, and many patients have been on it longer with excellent tolerance. Obesity is a chronic condition, much like high blood pressure or diabetes, and long-term medication is often necessary for sustained results. We monitor patients regularly with lab work and check-ins to ensure ongoing safety.",
+      },
+      {
+        question: "Does semaglutide cause thyroid cancer in humans?",
+        answer: "No. This is a common concern because the FDA requires a \"black box\" warning based on animal studies showing thyroid tumors in rodents at extremely high doses. However, there is no evidence that semaglutide causes thyroid cancer in humans. Millions of people have used GLP-1 medications since 2017, and human clinical trials have not shown increased thyroid cancer risk. As a precaution, we don't prescribe semaglutide to patients with a personal or family history of medullary thyroid carcinoma or MEN2 syndrome.",
+      },
+      {
+        question: "What are the most common side effects, and how do you manage them?",
+        answer: "The most common side effects are nausea (20–30% of patients), diarrhea or constipation (10–15%), fatigue, and headaches. These are typically mild and resolve within 4–8 weeks as your body adjusts to the medication. We manage side effects by starting at a low dose and increasing gradually (slow titration), recommending smaller protein-rich meals, staying hydrated, and avoiding greasy or spicy foods. If nausea persists, we may slow down dose increases or prescribe anti-nausea medication.",
+      },
+      {
+        question: "What's the typical dosing schedule for semaglutide?",
+        answer: "We start patients at 0.25 mg weekly for the first 4 weeks to minimize side effects. Then we increase to 0.5 mg for 4 weeks, then 1.0 mg, 1.7 mg, and finally 2.4 mg if needed for optimal weight loss. This gradual titration allows your body to adjust comfortably. Some patients achieve excellent results at 1.0–1.7 mg and don't need the maximum dose. Dosing is personalized based on individual response, tolerance, and weight loss goals.",
+      },
+      {
+        question: "Does it matter what time of day I inject semaglutide?",
+        answer: "No, you can inject semaglutide at any time of day, with or without food. The medication stays active in your system for about a week, so the specific timing doesn't significantly impact efficacy. We recommend choosing a consistent day and time each week (e.g., Sunday morning) to make it part of your routine.",
+      },
+      {
+        question: "What happens if I miss a dose?",
+        answer: "If you realize you missed your dose within 5 days, take it as soon as you remember and resume your regular weekly schedule. If it's been more than 5 days, skip the missed dose and take your next dose on your regular day. Never double up on doses to \"catch up.\" Missing one dose won't ruin your progress, but try to maintain consistency for best results.",
+      },
+      {
+        question: "Can I inject semaglutide anywhere on my body?",
+        answer: "Semaglutide is injected subcutaneously (under the skin) in areas with more fatty tissue — primarily the abdomen, thighs, or upper arms. The abdomen (around the belly button area, avoiding the 2-inch radius directly around your navel) tends to have the most consistent absorption. We recommend rotating injection sites each week to prevent irritation or lumps under the skin. The injection itself is quick and relatively painless using the thin needles provided.",
+      },
+      {
+        question: "Is tirzepatide better than semaglutide?",
+        answer: "Tirzepatide (Mounjaro/Zepbound) is a dual GIP/GLP-1 agonist, meaning it activates two hormone receptors instead of one. Clinical trials show slightly higher average weight loss with tirzepatide (20–25% of body weight) compared to semaglutide (15–20%). However, individual response varies significantly. Some patients respond better to semaglutide, while others prefer tirzepatide. Cost is also a factor — compounded semaglutide is often more affordable. We'll recommend the best option based on your health history and goals.",
+      },
+      {
+        question: "Can I switch from Ozempic to compounded semaglutide?",
+        answer: "Yes, absolutely. Many patients have switched from brand-name Ozempic or Wegovy to compounded semaglutide to save money — the active ingredient is identical, so the transition is seamless. We simply match your current dose and continue your treatment without interruption. Your results and side effect profile should remain the same, but you'll save significantly on cost.",
+      },
+      {
+        question: "What if I've tried other weight loss medications and they didn't work?",
+        answer: "GLP-1 medications like semaglutide and tirzepatide represent a breakthrough in obesity treatment. They work differently than older weight loss drugs (like phentermine or orlistat) by targeting the hormones that regulate appetite, blood sugar, and metabolism. Many patients who had minimal success with previous medications achieve significant weight loss with GLP-1 therapy. Clinical trial data shows 80–85% of patients lose ≥5% of their body weight on these medications.",
+      },
+      {
+        question: "Can I use GLP-1 medications if I don't have diabetes?",
+        answer: "Yes! Wegovy (semaglutide) and Zepbound (tirzepatide) are FDA-approved specifically for weight loss in people without diabetes. The criteria are: BMI ≥30, or BMI ≥27 with at least one weight-related condition (high blood pressure, high cholesterol, sleep apnea, etc.). Many patients use GLP-1 medications solely for weight management and metabolic health, not diabetes treatment.",
+      },
+      {
+        question: "Do I still need to diet and exercise on semaglutide?",
+        answer: "While semaglutide will help you lose weight even without major lifestyle changes (by reducing appetite and cravings), combining the medication with healthy eating and regular exercise significantly enhances results and long-term success. We recommend focusing on protein-rich meals (to preserve muscle mass), resistance training 2–3x per week, and daily movement.",
+      },
+      {
+        question: "What happens when I stop taking semaglutide?",
+        answer: "Many patients regain some weight after stopping semaglutide because appetite regulation returns to baseline. To maintain your weight loss, you'll need to continue healthy eating habits, regular exercise, and the metabolic awareness you developed during treatment. Many patients choose to stay on a maintenance dose of semaglutide indefinitely — the same way someone with high blood pressure stays on their medication long-term.",
+      },
+      {
+        question: "How much protein should I eat while on semaglutide?",
+        answer: "We recommend at least 0.8–1.0 grams of protein per pound of ideal body weight daily to preserve muscle mass during weight loss. For most patients, this means 80–120 grams of protein per day spread across meals. Since semaglutide reduces appetite, it's important to prioritize protein-rich foods first at each meal before filling up on carbohydrates or fats.",
+      },
+      {
+        question: "Can I drink alcohol while on semaglutide?",
+        answer: "Moderate alcohol consumption is generally safe on semaglutide, but many patients report reduced alcohol tolerance and less interest in drinking. Alcohol may increase nausea and gastrointestinal side effects, especially when you're first starting treatment. We recommend limiting alcohol to 1–2 drinks per week, staying well-hydrated, and avoiding drinking on an empty stomach.",
+      },
+    ],
+  },
+  {
+    heading: "Cost & Insurance",
+    items: [
+      {
+        question: "Why is compounded semaglutide so much cheaper than Wegovy?",
+        answer: "Compounding pharmacies prepare custom formulations for individual patients using the same FDA-approved active ingredient (semaglutide). They don't carry the massive R&D, marketing, and patent costs of brand-name manufacturers, which allows them to offer the medication at $229/month instead of $1,000–1,500/month. The quality is excellent — compounding pharmacies are regulated by state boards of pharmacy and follow strict sterility and quality standards.",
+      },
+      {
+        question: "Does insurance cover compounded semaglutide?",
+        answer: "Most insurance plans do not cover compounded medications. However, at $229/month, compounded semaglutide is often cheaper than insurance copays for brand-name Wegovy. You can use HSA/FSA funds to pay for compounded semaglutide since it's a prescription medication for a diagnosed medical condition. Many patients find the self-pay compounded route more convenient and affordable than dealing with insurance prior authorization.",
+      },
+      {
+        question: "How long does insurance prior authorization take?",
+        answer: "At Body Good, we handle all prior authorization paperwork for you. Typical turnaround is 48–72 hours, though some plans take up to 5–7 business days. We submit all necessary documentation (BMI, weight-related conditions, medical necessity) to maximize approval chances. If your insurance denies coverage, you have two options: appeal the decision (which we can help with) or switch to our affordable self-pay compounded program at $229/month.",
+      },
+      {
+        question: "What if I can't afford $229/month?",
+        answer: "We understand that cost is a barrier for many patients. Here are some options: (1) Check if your insurance covers brand-name Wegovy/Zepbound — we'll handle prior authorization, (2) Use HSA/FSA funds if available, (3) Some patients start with every-other-week dosing to reduce costs (though this may slow results). At $229/month, compounded semaglutide is already one of the most affordable GLP-1 options available — compare that to $1,500/month for brand-name without insurance.",
+      },
+    ],
+  },
+  {
+    heading: "Who Can Use It",
+    items: [
+      {
+        question: "Is semaglutide safe for women with PCOS?",
+        answer: "Yes! Semaglutide is often very beneficial for women with PCOS (polycystic ovary syndrome). Many patients see improvements in insulin resistance, menstrual regularity, testosterone levels, and fertility in addition to weight loss. However, if you're planning to conceive, you should stop semaglutide at least 2 months before trying to get pregnant, as there's insufficient data on pregnancy safety. Use reliable contraception while on treatment.",
+      },
+      {
+        question: "Can men use semaglutide for weight loss?",
+        answer: "Absolutely! Semaglutide is FDA-approved and highly effective for weight loss in both men and women. Clinical trials included both sexes, and men often achieve excellent results with GLP-1 therapy. Men may even lose weight slightly faster than women due to higher baseline metabolic rates and muscle mass. The dosing, side effects, and benefits are the same regardless of gender.",
+      },
+      {
+        question: "What's the minimum age for semaglutide?",
+        answer: "Semaglutide is FDA-approved for weight loss in adults (18+) and adolescents (12+) with obesity. For patients under 18, we require parental consent and often recommend a more conservative approach focusing on lifestyle modification first. For adults of any age, semaglutide is safe and effective — age alone is not a barrier to GLP-1 therapy.",
+      },
+      {
+        question: "Can I use semaglutide if I have high blood pressure or diabetes?",
+        answer: "Yes! In fact, semaglutide often helps improve both conditions. Many patients see reduced blood pressure and better blood sugar control with weight loss. We may need to adjust your blood pressure or diabetes medications as you lose weight to prevent hypoglycemia or low blood pressure. Regular monitoring is important, but these conditions don't disqualify you from GLP-1 therapy — they're often the very reasons we prescribe it.",
+      },
+    ],
+  },
+];
+
 function FaqContent() {
-  const t = useTranslations("faq");
-
-  const faqItems = [
-    {
-      question: "What are GLP-1 medications?",
-      answer: "GLP-1 medications (like semaglutide and tirzepatide) are FDA-approved treatments that help regulate appetite and blood sugar. They work by mimicking a natural hormone that signals fullness to your brain, helping you eat less and lose weight effectively.",
-    },
-    {
-      question: "How much weight can I expect to lose?",
-      answer: "Clinical studies show patients lose 15-20% of their body weight on average with GLP-1 medications. Individual results vary based on medication type, dosage, diet, and activity level.",
-    },
-    {
-      question: "Do you accept insurance?",
-      answer: "Yes! We offer an Insurance Navigation Program that helps determine if your insurance covers GLP-1 medications. Start with our free insurance coverage probability check, or purchase a full eligibility verification for $25.",
-    },
-    {
-      question: "What's the difference between compounded and branded medications?",
-      answer: "Branded medications (Wegovy, Zepbound) are manufactured by pharmaceutical companies and are FDA-approved. Compounded medications contain the same active ingredients but are prepared by licensed compounding pharmacies at lower cost. Both are prescribed by our licensed providers.",
-    },
-    {
-      question: "How does the $45 branded prescription work?",
-      answer: "For $45, one of our board-certified providers writes you a prescription for Wegovy or Zepbound. You then fill the prescription at your pharmacy or through the manufacturer (NovoCare for Wegovy, LillyDirect for Zepbound) and pay them directly for the medication.",
-    },
-  ];
-
   return (
     <>
       <section className="py-20 bg-brand-pink-soft">
         <Container narrow>
           <h1 className="font-heading text-heading text-4xl font-bold text-center mb-4">
-            {t("title")}
+            Frequently Asked Questions
           </h1>
-          <p className="text-body-muted text-lg text-center">{t("subtitle")}</p>
+          <p className="text-body-muted text-lg text-center">
+            Expert answers from Dr. Linda Moleon, MD — Board-Certified Obesity Medicine Specialist
+          </p>
         </Container>
       </section>
 
       <section className="py-16">
         <Container narrow>
-          <Accordion items={faqItems} />
+          <div className="space-y-14">
+            {sections.map((section) => (
+              <div key={section.heading}>
+                <h2 className="font-heading text-heading text-2xl font-semibold mb-6 pb-3 border-b border-gray-200">
+                  {section.heading}
+                </h2>
+                <Accordion items={section.items} />
+              </div>
+            ))}
+          </div>
         </Container>
       </section>
     </>
