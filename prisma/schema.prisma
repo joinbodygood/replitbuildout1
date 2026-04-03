@@ -288,8 +288,9 @@ model AdminUser {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  sessions     AdminSession[]
-  auditLogs    AdminAuditLog[]
+  sessions      AdminSession[]
+  auditLogs     AdminAuditLog[]
+  assignedCases InsuranceCase[]
 
   @@index([email])
   @@index([role])
@@ -484,4 +485,116 @@ model ShopifyOrder {
   @@index([orderId])
   @@index([shopifyOrderId])
   @@index([status])
+}
+
+// ─── Insurance PA Module ─────────────────────────────
+
+model InsuranceCase {
+  id                    String    @id @default(cuid())
+  patientEmail          String
+  patientName           String
+  patientDob            String?
+  patientPhone          String?
+  patientState          String
+  carrierId             String?
+  carrierName           String?
+  memberId              String?
+  groupNumber           String?
+  planName              String?
+  planType              String?
+  subscriberName        String?
+  subscriberDob         String?
+  subscriberRelation    String?
+  insuranceCardFrontUrl String?
+  insuranceCardBackUrl  String?
+  idCardFrontUrl        String?
+  idCardBackUrl         String?
+  probabilityScore      Float?
+  probabilityBucket     String?
+  qualifiedAt           DateTime?
+  eligibilityData       Json?
+  eligibilityCheckedAt  DateTime?
+  eligibilityConfirmedAt DateTime?
+  eligibilityConfirmedBy String?
+  stage                 String    @default("probability")
+  paRound               Int       @default(0)
+  assignedToId          String?
+  assignedTo            AdminUser? @relation(fields: [assignedToId], references: [id])
+  orderId               String?
+  quizLeadId            String?
+  zohoContactId         String?
+  zohoCrmRecordId       String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  approvedAt            DateTime?
+  closedAt              DateTime?
+  statusToken           String    @unique @default(cuid())
+  submissions           PASubmission[]
+  clinicalData          PatientClinicalData?
+  notes                 CaseNote[]
+
+  @@index([patientEmail])
+  @@index([stage])
+  @@index([assignedToId])
+  @@index([statusToken])
+}
+
+model PASubmission {
+  id                String    @id @default(cuid())
+  caseId            String
+  case              InsuranceCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  drug              String
+  round             Int
+  indication        String
+  status            String    @default("drafted")
+  letterText        String?   @db.Text
+  letterVersion     Int       @default(1)
+  denialReason      String?
+  denialRef         String?
+  denialDate        DateTime?
+  denialText        String?   @db.Text
+  draftedAt         DateTime  @default(now())
+  submittedAt       DateTime?
+  respondedAt       DateTime?
+  externalReviewOutcome String?
+  stateComplaintFiled   Boolean @default(false)
+  stateComplaintOutcome String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([caseId])
+  @@index([drug])
+  @@index([round])
+  @@index([status])
+}
+
+model PatientClinicalData {
+  id              String    @id @default(cuid())
+  caseId          String    @unique
+  case            InsuranceCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  bmi             Float?
+  a1c             Float?
+  fastingGlucose  Float?
+  fastingInsulin  Float?
+  triglycerides   Float?
+  hdl             Float?
+  homaIr          Float?
+  diagnoses       Json      @default("[]")
+  priorTreatments Json      @default("[]")
+  clinicalNotes   String?   @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model CaseNote {
+  id        String    @id @default(cuid())
+  caseId    String
+  case      InsuranceCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  authorId  String?
+  content   String    @db.Text
+  type      String    @default("note")
+  metadata  Json?
+  createdAt DateTime  @default(now())
+
+  @@index([caseId])
 }
