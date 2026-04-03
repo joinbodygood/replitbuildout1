@@ -26,6 +26,8 @@ import {
   Mail,
   Database,
   Scale,
+  ClipboardCheck,
+  Shield,
 } from "lucide-react";
 
 const NAV = [
@@ -34,6 +36,8 @@ const NAV = [
   { label: "Products",            href: "/admin/products",                            icon: Package,         badge: false },
   { label: "Shopify Mapping",     href: "/admin/products/shopify-mapping",            icon: Link2,           badge: false },
   { label: "Patients",            href: "/admin/patients",                            icon: Users,           badge: false },
+  { label: "PA Work Queue",       href: "/admin/prior-auth",                          icon: ClipboardCheck,  badge: false },
+  { label: "All PA Cases",        href: "/admin/prior-auth/cases",                    icon: Shield,          badge: false },
   { label: "Subscriptions",       href: "/admin/subscriptions",                       icon: RefreshCw,       badge: false },
   { label: "Discounts",           href: "/admin/discounts",                           icon: Tag,             badge: false },
   { label: "Referral Members",    href: "/admin/referrals",                           icon: Gift,            badge: false },

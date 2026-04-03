@@ -31,9 +31,9 @@ export const ROLE_LABELS: Record<string, string> = {
 
 export const PERMISSIONS: Record<string, string[]> = {
   super_admin: ["*"],
-  clinical_admin: ["patients", "orders", "dashboard", "messaging", "discounts"],
+  clinical_admin: ["patients", "orders", "dashboard", "messaging", "discounts", "prior_auth"],
   provider: ["patients.read", "messaging"],
-  support: ["orders", "patients.read", "messaging", "dashboard"],
+  support: ["orders", "patients.read", "messaging", "dashboard", "prior_auth"],
   marketing: ["content", "discounts", "analytics.read", "dashboard"],
   developer: ["*"],
 };
