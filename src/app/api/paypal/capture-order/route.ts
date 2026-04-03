@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { fireWebhook } from "@/lib/webhooks";
 import { upsertContact, openConversation } from "@/lib/chatwoot";
 import { routeSupplementsToShopify } from "@/lib/shopify";
+import { handleInsurancePayment } from "@/lib/pa/payment-triggers";
 
 export async function POST(req: NextRequest) {
   try {
@@ -90,6 +91,18 @@ export async function POST(req: NextRequest) {
       shippingZip:     order.shippingZip,
       items:           order.items,
     });
+
+    // Wire insurance SKUs to PA case stage advancement (fire-and-forget)
+    await handleInsurancePayment({
+      email: order.email,
+      items: order.items.map((i: { sku?: string; productName: string }) => ({
+        sku: i.sku,
+        productName: i.productName,
+      })),
+      id: order.id,
+      shippingName: order.shippingName ?? undefined,
+      shippingState: order.shippingState ?? undefined,
+    }).catch((err: Error) => console.warn("[pa-payment-trigger]", err.message));
 
     if (discountCode) {
       await db.discountCode.updateMany({
