@@ -1,36 +1,34 @@
 import Link from "next/link";
-import { useTranslations, useLocale } from "next-intl";
+import { useLocale } from "next-intl";
 
 export function Footer() {
-  const t = useTranslations("footer");
   const locale = useLocale();
+  const isEs = locale === "es";
 
   const columns = [
     {
-      title: t("company"),
+      title: isEs ? "Compañía" : "Company",
       links: [
-        { label: t("about"), href: `/${locale}/about` },
-        { label: t("howItWorks"), href: `/${locale}/how-it-works` },
-        { label: t("pricing"), href: `/${locale}/pricing` },
-        { label: t("faq"), href: `/${locale}/faq` },
+        { label: isEs ? "Sobre Nosotros" : "About Us",       href: `/${locale}/about` },
+        { label: isEs ? "Cómo Funciona" : "How It Works",    href: `/${locale}/how-it-works` },
+        { label: isEs ? "Precios" : "Pricing",               href: `/${locale}/pricing` },
       ],
     },
     {
-      title: t("support"),
+      title: isEs ? "Soporte" : "Support",
       links: [
-        { label: t("contact"), href: `/${locale}/contact` },
-        { label: t("faq"), href: `/${locale}/faq` },
-        { label: locale === "es" ? "Recomendar y Ganar $25" : "Refer & Earn $25", href: `/${locale}/refer` },
+        { label: isEs ? "Contacto" : "Contact",              href: `/${locale}/contact` },
+        { label: "FAQ",                                       href: `/${locale}/faq` },
       ],
     },
     {
-      title: t("legal"),
+      title: isEs ? "Legal" : "Legal",
       links: [
-        { label: t("privacy"), href: `/${locale}/privacy` },
-        { label: t("terms"), href: `/${locale}/terms` },
-        { label: t("hipaa"), href: `/${locale}/hipaa-notice` },
-        { label: t("telehealth"), href: `/${locale}/telehealth-consent` },
-        { label: t("refund"), href: `/${locale}/refund-policy` },
+        { label: isEs ? "Política de Privacidad" : "Privacy Policy",     href: `/${locale}/privacy-policy` },
+        { label: isEs ? "Términos de Servicio" : "Terms of Service",     href: `/${locale}/terms-of-service` },
+        { label: isEs ? "Política de Reembolso" : "Refund Policy",       href: `/${locale}/refund-policy` },
+        { label: isEs ? "Política de Envío" : "Shipping Policy",         href: `/${locale}/shipping-policy` },
+        { label: "HIPAA Notice",                                          href: `/${locale}/hipaa-notice` },
       ],
     },
   ];
@@ -39,11 +37,16 @@ export function Footer() {
     <footer className="bg-surface-dim border-t border-border mt-20">
       <div className="max-w-6xl mx-auto px-6 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+          {/* Brand column */}
           <div className="col-span-2 md:col-span-1">
             <p className="font-heading font-bold text-lg text-heading mb-2">
               Body Good<span className="text-brand-red">.</span>
             </p>
-            <p className="text-sm text-body-muted">{t("tagline")}</p>
+            <p className="text-sm text-body-muted leading-relaxed">
+              {isEs
+                ? "Pérdida de peso con liderazgo médico."
+                : "Physician-led telehealth weight loss."}
+            </p>
           </div>
 
           {columns.map((col) => (
@@ -69,7 +72,7 @@ export function Footer() {
 
         <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-sm text-body-muted">
-            &copy; {new Date().getFullYear()} {t("copyright")}
+            &copy; {new Date().getFullYear()} Body Good Studio. {isEs ? "Todos los derechos reservados." : "All rights reserved."}
           </p>
           <Link
             href="/admin/login"

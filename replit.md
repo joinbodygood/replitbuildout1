@@ -76,10 +76,15 @@ A custom telehealth e-commerce platform for Body Good Studio, a physician-led we
 | Analytics | `/admin/analytics` | 🔄 Stub — next phase |
 | Content | `/admin/content` | 🔄 Stub — next phase |
 | Reviews | `/admin/content/reviews` | ✅ Approve/hide/feature/delete · search · pagination |
+| Legal Pages | `/admin/content/legal` | ✅ CMS editor for all 5 legal pages · HTML paste + preview |
+| Referral Members | `/admin/referrals` | ✅ List · search · filter · export CSV · enable/disable |
 | Messaging | `/admin/messaging` | 🔄 Stub — awaiting Chatwoot config |
 | Marketing | `/admin/marketing` | 🔄 Stub — awaiting Mailgun/Twilio |
+| Email Templates | `/admin/marketing/emails` | ✅ Referral link notification · editable template · manual send |
+| Migration Dashboard | `/admin/settings/migration` | ✅ Status per data type · activity log with timestamps |
 | Import Customers | `/admin/settings/import/customers` | ✅ JSON file upload · dedup by email · segments from tags |
 | Import Reviews | `/admin/settings/import/reviews` | ✅ Judge.me JSON · published-only · product mapping |
+| Import Referrals | `/admin/settings/import/referrals` | ✅ CSV upload · ENABLED-only · auto-link customers · new codes |
 
 ### Key Files
 - `src/lib/admin-auth.ts` — session auth, RBAC permissions

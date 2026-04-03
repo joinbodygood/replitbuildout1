@@ -413,6 +413,58 @@ model ShopifyMapping {
   @@index([productId])
 }
 
+// ─── Referral Members (program / imported) ─────────
+model ReferralMember {
+  id                   String   @id @default(cuid())
+  email                String   @unique
+  firstName            String
+  lastName             String
+  phone                String?
+  referralCode         String   @unique
+  status               String   @default("enabled")   // "enabled" | "disabled"
+  totalClicks          Int      @default(0)
+  successfulReferrals  Int      @default(0)
+  totalReferralRevenue Int      @default(0)            // cents
+  legacyReferralUrl    String?                         // old Shopjar go.refrl.co/... URL
+  linkedCustomerEmail  String?                         // email of matched ImportedCustomer
+  notifiedAt           DateTime?                       // when "new link" email was last sent
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([email])
+  @@index([referralCode])
+  @@index([status])
+}
+
+// ─── Legal Pages (CMS-editable) ─────────────────────
+model LegalPage {
+  id        String   @id @default(cuid())
+  slug      String   @unique   // e.g. "privacy-policy"
+  title     String
+  content   String   @db.Text  // raw HTML
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@index([slug])
+}
+
+// ─── Import Activity Log ─────────────────────────────
+model ImportLog {
+  id          String    @id @default(cuid())
+  type        String    // "customers" | "reviews" | "referrals" | "blog" | "pages"
+  filename    String?
+  status      String    @default("completed")  // "completed" | "failed"
+  imported    Int       @default(0)
+  skipped     Int       @default(0)
+  errors      Int       @default(0)
+  total       Int       @default(0)
+  notes       String?   @db.Text
+  createdAt   DateTime  @default(now())
+
+  @@index([type])
+  @@index([createdAt])
+}
+
 model ShopifyOrder {
   id              String    @id @default(cuid())
   orderId         String

@@ -22,25 +22,34 @@ import {
   Star,
   Upload,
   UserRoundSearch,
+  Gift,
+  Mail,
+  Database,
+  Scale,
 } from "lucide-react";
 
 const NAV = [
-  { label: "Dashboard",         href: "/admin",                                    icon: LayoutDashboard, badge: false },
-  { label: "Orders",            href: "/admin/orders",                             icon: ShoppingBag,     badge: false },
-  { label: "Products",          href: "/admin/products",                           icon: Package,         badge: false },
-  { label: "Shopify Mapping",   href: "/admin/products/shopify-mapping",           icon: Link2,           badge: false },
-  { label: "Patients",          href: "/admin/patients",                           icon: Users,           badge: false },
-  { label: "Subscriptions",     href: "/admin/subscriptions",                      icon: RefreshCw,       badge: false },
-  { label: "Discounts",         href: "/admin/discounts",                          icon: Tag,             badge: false },
-  { label: "Content",           href: "/admin/content",                            icon: FileText,        badge: false },
-  { label: "Reviews",           href: "/admin/content/reviews",                    icon: Star,            badge: false },
-  { label: "Messaging",         href: "/admin/messaging",                          icon: MessageSquare,   badge: false },
-  { label: "Helpdesk",          href: "/admin/helpdesk",                           icon: Headphones,      badge: true  },
-  { label: "Marketing",         href: "/admin/marketing",                          icon: Megaphone,       badge: false },
-  { label: "Analytics",         href: "/admin/analytics",                          icon: BarChart2,       badge: false },
-  { label: "Settings",          href: "/admin/settings",                           icon: Settings,        badge: false },
-  { label: "Import Customers",  href: "/admin/settings/import/customers",          icon: UserRoundSearch, badge: false },
-  { label: "Import Reviews",    href: "/admin/settings/import/reviews",            icon: Upload,          badge: false },
+  { label: "Dashboard",           href: "/admin",                                     icon: LayoutDashboard, badge: false },
+  { label: "Orders",              href: "/admin/orders",                              icon: ShoppingBag,     badge: false },
+  { label: "Products",            href: "/admin/products",                            icon: Package,         badge: false },
+  { label: "Shopify Mapping",     href: "/admin/products/shopify-mapping",            icon: Link2,           badge: false },
+  { label: "Patients",            href: "/admin/patients",                            icon: Users,           badge: false },
+  { label: "Subscriptions",       href: "/admin/subscriptions",                       icon: RefreshCw,       badge: false },
+  { label: "Discounts",           href: "/admin/discounts",                           icon: Tag,             badge: false },
+  { label: "Referral Members",    href: "/admin/referrals",                           icon: Gift,            badge: false },
+  { label: "Content",             href: "/admin/content",                             icon: FileText,        badge: false },
+  { label: "Reviews",             href: "/admin/content/reviews",                     icon: Star,            badge: false },
+  { label: "Legal Pages",         href: "/admin/content/legal",                       icon: Scale,           badge: false },
+  { label: "Messaging",           href: "/admin/messaging",                           icon: MessageSquare,   badge: false },
+  { label: "Helpdesk",            href: "/admin/helpdesk",                            icon: Headphones,      badge: true  },
+  { label: "Marketing",           href: "/admin/marketing",                           icon: Megaphone,       badge: false },
+  { label: "Email Templates",     href: "/admin/marketing/emails",                    icon: Mail,            badge: false },
+  { label: "Analytics",           href: "/admin/analytics",                           icon: BarChart2,       badge: false },
+  { label: "Settings",            href: "/admin/settings",                            icon: Settings,        badge: false },
+  { label: "Migration",           href: "/admin/settings/migration",                  icon: Database,        badge: false },
+  { label: "Import Customers",    href: "/admin/settings/import/customers",           icon: UserRoundSearch, badge: false },
+  { label: "Import Reviews",      href: "/admin/settings/import/reviews",             icon: Upload,          badge: false },
+  { label: "Import Referrals",    href: "/admin/settings/import/referrals",           icon: Upload,          badge: false },
 ];
 
 type Props = { user: { name: string; email: string; role: string } };
@@ -50,7 +59,6 @@ export function AdminSidebar({ user }: Props) {
   const router    = useRouter();
   const [openCount, setOpenCount] = useState<number>(0);
 
-  // Poll Chatwoot open conversation count every 60 s
   useEffect(() => {
     let cancelled = false;
     async function fetchCount() {
@@ -77,6 +85,7 @@ export function AdminSidebar({ user }: Props) {
     if (href === "/admin")          return pathname === "/admin";
     if (href === "/admin/products") return pathname === "/admin/products";
     if (href === "/admin/content")  return pathname === "/admin/content";
+    if (href === "/admin/marketing") return pathname === "/admin/marketing";
     if (href === "/admin/settings") return pathname === "/admin/settings" || pathname === "/admin/settings/team";
     return pathname.startsWith(href);
   }

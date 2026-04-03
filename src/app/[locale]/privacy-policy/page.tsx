@@ -2,11 +2,11 @@ import { db } from "@/lib/db";
 import { Container } from "@/components/ui/Container";
 import { setRequestLocale } from "next-intl/server";
 
-const SLUG = "refund-policy";
-const DEFAULT_TITLE = "Refund and Cancellation Policy";
-const DEFAULT_CONTENT = `<p>Our Refund and Cancellation Policy is being updated. Please check back shortly or contact us at <a href="mailto:support@bodygoodstudio.com">support@bodygoodstudio.com</a> for any questions.</p>`;
+const SLUG = "privacy-policy";
+const DEFAULT_TITLE = "Privacy Policy";
+const DEFAULT_CONTENT = `<p>Our Privacy Policy is being updated. Please check back shortly or contact us at <a href="mailto:support@bodygoodstudio.com">support@bodygoodstudio.com</a> for any questions.</p>`;
 
-export default async function RefundPolicyPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function PrivacyPolicyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
