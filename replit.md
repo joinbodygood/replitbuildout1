@@ -75,8 +75,11 @@ A custom telehealth e-commerce platform for Body Good Studio, a physician-led we
 | Subscriptions | `/admin/subscriptions` | 🔄 Stub — awaiting PayPal recurring |
 | Analytics | `/admin/analytics` | 🔄 Stub — next phase |
 | Content | `/admin/content` | 🔄 Stub — next phase |
+| Reviews | `/admin/content/reviews` | ✅ Approve/hide/feature/delete · search · pagination |
 | Messaging | `/admin/messaging` | 🔄 Stub — awaiting Chatwoot config |
 | Marketing | `/admin/marketing` | 🔄 Stub — awaiting Mailgun/Twilio |
+| Import Customers | `/admin/settings/import/customers` | ✅ JSON file upload · dedup by email · segments from tags |
+| Import Reviews | `/admin/settings/import/reviews` | ✅ Judge.me JSON · published-only · product mapping |
 
 ### Key Files
 - `src/lib/admin-auth.ts` — session auth, RBAC permissions

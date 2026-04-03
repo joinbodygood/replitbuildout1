@@ -1,0 +1,71 @@
+Shopify Migration — Import Data to Replit Platform
+We are migrating from Shopify to this platform. The following data has been exported and needs to be imported. Build import tools in the admin dashboard for each data type, then I will upload the exported files.
+
+1. CUSTOMER LIST (20,790 customers)
+Build a customer import tool in the admin dashboard (Settings > Import > Customers) that accepts a JSON file upload.
+
+The JSON file contains an array of customer objects with these fields:
+
+id (Shopify ID — store as shopify_id for reference)
+email
+first_name
+last_name
+phone
+tags (comma-separated string — preserve these, they contain segment info like #self-pay, #compound, #insurance, quiz-lead, #VIP, etc.)
+created_at
+orders_count
+total_spent
+state (enabled/disabled)
+Import rules:
+
+Skip customers with no email address
+Deduplicate by email — if the same email appears twice, keep the one with more orders
+Preserve the original created_at date (don't overwrite with import date)
+Store tags in a searchable format so we can segment customers later (e.g., filter all customers tagged #self-pay or quiz-lead)
+Do NOT create login credentials for imported customers — they will need to register fresh on the new site. Store them as "imported leads/customers" with their purchase history metadata
+Create customer segments based on the Shopify tags:
+#self-pay → Self-Pay Customers
+#compound → Compound Medication Customers
+#insurance → Insurance Customers
+#oral → Oral Medication Customers
+quiz-lead → Quiz Leads (didn't purchase)
+#VIP or Gold VIP → VIP Customers
+#vitaminsandsupplements → Supplement Customers
+newsletter or Email-Subscriber → Email Subscribers
+Show import summary after completion: total imported, skipped (no email), duplicates merged
+2. REVIEWS (734 reviews)
+Build a reviews system and import tool in the admin dashboard (Settings > Import > Reviews).
+
+A. Reviews System
+
+Build a product reviews feature:
+
+Each review has: rating (1-5 stars), title, body text, reviewer name, reviewer email, verified purchase badge, featured flag, created date
+Reviews are tied to products by product ID (we'll need a mapping from Shopify product IDs to our product IDs)
+Display reviews on product pages with average rating and individual review cards
+Admin can approve, hide, feature, or delete reviews
+Show aggregate rating (e.g., "4.9 out of 5 — 686 reviews") on product pages and a site-wide reviews/testimonials page
+B. Import
+
+The JSON file contains an array of review objects with:
+
+id (Judge.me ID)
+rating (1-5)
+title
+body
+reviewer.name
+reviewer.email
+product_external_id (Shopify product ID — needs mapping to our products)
+verified ("verified-purchase" or other)
+published (true/false)
+featured (true/false)
+created_at
+source
+Import rules:
+
+Only import reviews where published: true (686 reviews — we already published the 3+ star ones)
+Skip reviews with published: false (these are 1-2 star reviews intentionally left unpublished)
+Map Shopify product IDs to our product IDs. If a review's product doesn't exist in our system, store the review as a "general/site review" rather than discarding it
+Preserve original created_at dates
+Mark reviews with verified: "verified-purchase" with a verified badge
+Show import summary: total imported, skipped (unpublished), unmapped products

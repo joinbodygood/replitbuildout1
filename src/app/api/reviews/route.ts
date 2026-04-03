@@ -4,27 +4,34 @@ import { fireWebhook } from "@/lib/webhooks";
 
 export async function GET(req: NextRequest) {
   const productSlug = req.nextUrl.searchParams.get("product");
-  const limit = parseInt(req.nextUrl.searchParams.get("limit") || "10");
+  const featured    = req.nextUrl.searchParams.get("featured") === "true";
+  const siteWide    = req.nextUrl.searchParams.get("siteWide") === "true";
+  const limit       = Math.min(100, parseInt(req.nextUrl.searchParams.get("limit") || "20"));
 
   const where: any = { isApproved: true };
-  if (productSlug) where.productSlug = productSlug;
+  if (featured) where.isFeatured = true;
+  if (productSlug && !siteWide) where.productSlug = productSlug;
 
   const reviews = await db.review.findMany({
     where,
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
     take: limit,
+    select: {
+      id: true, name: true, rating: true, title: true, body: true,
+      isVerified: true, isFeatured: true, productSlug: true, createdAt: true,
+    },
   });
 
   const stats = await db.review.aggregate({
-    where,
+    where: { isApproved: true },
     _avg: { rating: true },
-    _count: true,
+    _count: { id: true },
   });
 
   return NextResponse.json({
     reviews,
     avgRating: Math.round((stats._avg.rating || 0) * 10) / 10,
-    totalCount: stats._count,
+    totalCount: stats._count.id,
   });
 }
 

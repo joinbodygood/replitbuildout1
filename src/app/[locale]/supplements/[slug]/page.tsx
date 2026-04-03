@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { Container } from "@/components/ui/Container";
 import { Badge } from "@/components/ui/Badge";
 import { SupplementAddToCart } from "@/components/supplements/SupplementAddToCart";
+import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck, Truck, Leaf, CheckCircle } from "lucide-react";
 
@@ -291,6 +292,17 @@ export default async function SupplementProductPage({ params }: Props) {
               ))}
             </ul>
           </div>
+        </Container>
+      </section>
+
+      {/* Reviews */}
+      <section className="py-4 border-t border-border">
+        <Container>
+          <ReviewsSection
+            productSlug={product.slug}
+            limit={6}
+            isEs={isEs}
+          />
         </Container>
       </section>
 
