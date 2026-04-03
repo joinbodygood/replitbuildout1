@@ -76,7 +76,7 @@ A custom telehealth e-commerce platform for Body Good Studio, a physician-led we
 | Analytics | `/admin/analytics` | 🔄 Stub — next phase |
 | Content | `/admin/content` | 🔄 Stub — next phase |
 | Reviews | `/admin/content/reviews` | ✅ Approve/hide/feature/delete · search · pagination |
-| Legal Pages | `/admin/content/legal` | ✅ CMS editor for all 5 legal pages · HTML paste + preview |
+| Legal Pages | `/admin/content/legal` | ✅ CMS editor for all 5 legal pages · HTML paste + preview · EN + ES bilingual (`titleEs`/`contentEs` served by locale) |
 | Referral Members | `/admin/referrals` | ✅ List · search · filter · export CSV · enable/disable |
 | Messaging | `/admin/messaging` | 🔄 Stub — awaiting Chatwoot config |
 | Marketing | `/admin/marketing` | 🔄 Stub — awaiting Mailgun/Twilio |

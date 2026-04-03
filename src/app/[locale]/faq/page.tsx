@@ -7,7 +7,7 @@ type Props = { params: Promise<{ locale: string }> };
 export default async function FaqPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  return <FaqContent />;
+  return <FaqContent locale={locale} />;
 }
 
 const sections = [
@@ -128,24 +128,145 @@ const sections = [
   },
 ];
 
-function FaqContent() {
+const sectionsEs = [
+  {
+    heading: "Seguridad y Eficacia",
+    items: [
+      {
+        question: "¿Es la semaglutida compuesta igual de efectiva que Ozempic o Wegovy?",
+        answer: "Sí, absolutamente. El ingrediente activo — semaglutida — es químicamente idéntico ya sea que lo prepare una farmacia de compuesto o lo fabrique Novo Nordisk (Ozempic/Wegovy). La diferencia está en el método de entrega y el proceso de fabricación, no en la eficacia del medicamento. En la práctica clínica de la Dra. Moleon, ella ha recetado semaglutida de marca y compuesta a cientos de pacientes, y los resultados de pérdida de peso son equivalentes. La semaglutida compuesta ofrece el mismo efecto terapéutico a una fracción del costo.",
+      },
+      {
+        question: "¿Qué tan rápido veré resultados de pérdida de peso?",
+        answer: "La mayoría de los pacientes notan una reducción del apetito dentro de las primeras 1–2 semanas y ven una pérdida inicial de peso (1–2 kg) durante el primer mes. Sin embargo, los medicamentos GLP-1 actúan gradualmente — comenzamos con una dosis baja y aumentamos lentamente para minimizar los efectos secundarios y optimizar los resultados. La pérdida máxima de peso ocurre típicamente alrededor de las 16–20 semanas al alcanzar las dosis terapéuticas. En promedio, los pacientes pierden 0.5–1 kg por semana, con una pérdida total del 15–20% de su peso corporal en 6–12 meses.",
+      },
+      {
+        question: "¿Es segura la semaglutida para uso a largo plazo?",
+        answer: "Sí. Los ensayos clínicos demuestran la seguridad de la semaglutida durante al menos 2 o más años de uso continuo, y muchos pacientes la han usado por más tiempo con excelente tolerancia. La obesidad es una condición crónica, al igual que la presión arterial alta o la diabetes, y los medicamentos a largo plazo frecuentemente son necesarios para resultados sostenidos. Monitoreamos a los pacientes regularmente con análisis de laboratorio y seguimientos para garantizar la seguridad continua.",
+      },
+      {
+        question: "¿La semaglutida causa cáncer de tiroides en humanos?",
+        answer: "No. Esta es una preocupación común porque la FDA requiere una advertencia de \"recuadro negro\" basada en estudios en animales que muestran tumores de tiroides en roedores a dosis extremadamente altas. Sin embargo, no hay evidencia de que la semaglutida cause cáncer de tiroides en humanos. Millones de personas han usado medicamentos GLP-1 desde 2017, y los ensayos clínicos en humanos no han mostrado mayor riesgo de cáncer de tiroides. Como precaución, no recetamos semaglutida a pacientes con historial personal o familiar de carcinoma medular de tiroides o síndrome MEN2.",
+      },
+      {
+        question: "¿Cuáles son los efectos secundarios más comunes y cómo se manejan?",
+        answer: "Los efectos secundarios más comunes son náuseas (20–30% de los pacientes), diarrea o estreñimiento (10–15%), fatiga y dolores de cabeza. Estos son típicamente leves y se resuelven dentro de 4–8 semanas a medida que su cuerpo se adapta al medicamento. Manejamos los efectos secundarios comenzando con una dosis baja y aumentando gradualmente (titulación lenta), recomendando comidas pequeñas ricas en proteínas, manteniéndose hidratado y evitando alimentos grasos o picantes. Si las náuseas persisten, podemos ralentizar los aumentos de dosis o recetar medicamentos antináuseas.",
+      },
+      {
+        question: "¿Cuál es el esquema de dosificación típico para la semaglutida?",
+        answer: "Comenzamos a los pacientes con 0.25 mg semanales durante las primeras 4 semanas para minimizar los efectos secundarios. Luego aumentamos a 0.5 mg por 4 semanas, luego 1.0 mg, 1.7 mg y finalmente 2.4 mg si es necesario para una pérdida de peso óptima. Esta titulación gradual permite que su cuerpo se adapte cómodamente. Algunos pacientes logran excelentes resultados con 1.0–1.7 mg y no necesitan la dosis máxima. La dosificación se personaliza según la respuesta individual, tolerancia y objetivos de pérdida de peso.",
+      },
+      {
+        question: "¿Importa a qué hora del día me inyecto la semaglutida?",
+        answer: "No, puede inyectarse semaglutida a cualquier hora del día, con o sin alimentos. El medicamento permanece activo en su sistema durante aproximadamente una semana, por lo que el horario específico no afecta significativamente la eficacia. Recomendamos elegir un día y hora consistentes cada semana (por ejemplo, el domingo por la mañana) para que se convierta en parte de su rutina.",
+      },
+      {
+        question: "¿Qué sucede si me olvido una dosis?",
+        answer: "Si se da cuenta de que olvidó su dosis dentro de los 5 días, tómela tan pronto como recuerde y reanude su programa semanal regular. Si han pasado más de 5 días, omita la dosis olvidada y tome su próxima dosis en su día regular. Nunca duplique las dosis para \"ponerse al día\". Olvidar una dosis no arruinará su progreso, pero trate de mantener la consistencia para mejores resultados.",
+      },
+      {
+        question: "¿Puedo inyectarme semaglutida en cualquier parte del cuerpo?",
+        answer: "La semaglutida se inyecta por vía subcutánea (debajo de la piel) en áreas con más tejido graso — principalmente el abdomen, los muslos o la parte superior de los brazos. El abdomen (alrededor del área del ombligo, evitando el radio de 5 cm directamente alrededor del ombligo) tiende a tener la absorción más consistente. Recomendamos rotar los sitios de inyección cada semana para prevenir irritación o bultos debajo de la piel. La inyección en sí es rápida y relativamente indolora con las agujas finas proporcionadas.",
+      },
+      {
+        question: "¿Es la tirzepatida mejor que la semaglutida?",
+        answer: "La tirzepatida (Mounjaro/Zepbound) es un agonista dual GIP/GLP-1, lo que significa que activa dos receptores hormonales en lugar de uno. Los ensayos clínicos muestran una pérdida de peso promedio ligeramente mayor con tirzepatida (20–25% del peso corporal) en comparación con semaglutida (15–20%). Sin embargo, la respuesta individual varía significativamente. Algunos pacientes responden mejor a la semaglutida, mientras que otros prefieren la tirzepatida. El costo también es un factor — la semaglutida compuesta frecuentemente es más accesible. Recomendaremos la mejor opción según su historial de salud y objetivos.",
+      },
+      {
+        question: "¿Puedo cambiar de Ozempic a semaglutida compuesta?",
+        answer: "Sí, absolutamente. Muchos pacientes han cambiado de Ozempic o Wegovy de marca a semaglutida compuesta para ahorrar dinero — el ingrediente activo es idéntico, por lo que la transición es sin problemas. Simplemente igualamos su dosis actual y continuamos su tratamiento sin interrupción. Sus resultados y perfil de efectos secundarios deben permanecer iguales, pero ahorrará significativamente en costos.",
+      },
+      {
+        question: "¿Qué pasa si he probado otros medicamentos para bajar de peso y no funcionaron?",
+        answer: "Los medicamentos GLP-1 como la semaglutida y la tirzepatida representan un avance en el tratamiento de la obesidad. Funcionan de manera diferente a los medicamentos más antiguos para bajar de peso (como la fentermina u orlistat) al dirigirse a las hormonas que regulan el apetito, el azúcar en sangre y el metabolismo. Muchos pacientes que tuvieron un éxito mínimo con medicamentos anteriores logran una pérdida de peso significativa con la terapia GLP-1. Los datos de ensayos clínicos muestran que el 80–85% de los pacientes pierden ≥5% de su peso corporal con estos medicamentos.",
+      },
+      {
+        question: "¿Puedo usar medicamentos GLP-1 si no tengo diabetes?",
+        answer: "¡Sí! Wegovy (semaglutida) y Zepbound (tirzepatida) están aprobados por la FDA específicamente para la pérdida de peso en personas sin diabetes. Los criterios son: IMC ≥30, o IMC ≥27 con al menos una condición relacionada con el peso (presión arterial alta, colesterol alto, apnea del sueño, etc.). Muchos pacientes usan medicamentos GLP-1 únicamente para el control de peso y la salud metabólica, no para el tratamiento de la diabetes.",
+      },
+      {
+        question: "¿Todavía necesito hacer dieta y ejercicio tomando semaglutida?",
+        answer: "Si bien la semaglutida le ayudará a perder peso incluso sin grandes cambios en el estilo de vida (reduciendo el apetito y los antojos), combinar el medicamento con una alimentación saludable y ejercicio regular mejora significativamente los resultados y el éxito a largo plazo. Recomendamos enfocarse en comidas ricas en proteínas (para preservar la masa muscular), entrenamiento de resistencia 2–3 veces por semana y movimiento diario.",
+      },
+      {
+        question: "¿Qué sucede cuando dejo de tomar semaglutida?",
+        answer: "Muchos pacientes recuperan algo de peso después de dejar la semaglutida porque la regulación del apetito vuelve a los niveles iniciales. Para mantener su pérdida de peso, deberá continuar con hábitos alimenticios saludables, ejercicio regular y la conciencia metabólica que desarrolló durante el tratamiento. Muchos pacientes optan por permanecer en una dosis de mantenimiento de semaglutida indefinidamente — de la misma manera que alguien con presión arterial alta toma su medicamento a largo plazo.",
+      },
+      {
+        question: "¿Cuánta proteína debo comer mientras tomo semaglutida?",
+        answer: "Recomendamos al menos 1.8–2.2 gramos de proteína por kilogramo de peso corporal ideal diariamente para preservar la masa muscular durante la pérdida de peso. Para la mayoría de los pacientes, esto significa 80–120 gramos de proteína al día distribuidos en las comidas. Como la semaglutida reduce el apetito, es importante priorizar los alimentos ricos en proteínas primero en cada comida antes de llenarse con carbohidratos o grasas.",
+      },
+      {
+        question: "¿Puedo beber alcohol mientras tomo semaglutida?",
+        answer: "El consumo moderado de alcohol es generalmente seguro con la semaglutida, pero muchos pacientes reportan menor tolerancia al alcohol y menos interés en beber. El alcohol puede aumentar las náuseas y los efectos secundarios gastrointestinales, especialmente cuando está comenzando el tratamiento. Recomendamos limitar el alcohol a 1–2 bebidas por semana, mantenerse bien hidratado y evitar beber con el estómago vacío.",
+      },
+    ],
+  },
+  {
+    heading: "Costo y Seguro Médico",
+    items: [
+      {
+        question: "¿Por qué la semaglutida compuesta es mucho más barata que Wegovy?",
+        answer: "Las farmacias de compuesto preparan formulaciones personalizadas para pacientes individuales utilizando el mismo ingrediente activo aprobado por la FDA (semaglutida). No tienen los enormes costos de I+D, marketing y patentes de los fabricantes de medicamentos de marca, lo que les permite ofrecer el medicamento a $229/mes en lugar de $1,000–1,500/mes. La calidad es excelente — las farmacias de compuesto están reguladas por los consejos estatales de farmacia y siguen estrictos estándares de esterilidad y calidad.",
+      },
+      {
+        question: "¿El seguro médico cubre la semaglutida compuesta?",
+        answer: "La mayoría de los planes de seguro no cubren los medicamentos compuestos. Sin embargo, a $229/mes, la semaglutida compuesta frecuentemente es más barata que los copagos de seguro para Wegovy de marca. Puede usar fondos de HSA/FSA para pagar la semaglutida compuesta ya que es un medicamento con receta para una condición médica diagnosticada. Muchos pacientes encuentran que la ruta de pago directo con medicamento compuesto es más conveniente y accesible que lidiar con la autorización previa del seguro.",
+      },
+      {
+        question: "¿Cuánto tiempo tarda la autorización previa del seguro?",
+        answer: "En Body Good, nos encargamos de todo el papeleo de autorización previa por usted. El tiempo de respuesta típico es de 48–72 horas, aunque algunos planes tardan hasta 5–7 días hábiles. Presentamos toda la documentación necesaria (IMC, condiciones relacionadas con el peso, necesidad médica) para maximizar las posibilidades de aprobación. Si su seguro niega la cobertura, tiene dos opciones: apelar la decisión (con lo que podemos ayudarle) o cambiar a nuestro programa compuesto de pago directo a $229/mes.",
+      },
+      {
+        question: "¿Qué pasa si no puedo pagar $229 al mes?",
+        answer: "Entendemos que el costo es una barrera para muchos pacientes. Aquí hay algunas opciones: (1) Verifique si su seguro cubre Wegovy/Zepbound de marca — nosotros gestionamos la autorización previa, (2) Use fondos de HSA/FSA si están disponibles, (3) Algunos pacientes comienzan con dosificación cada dos semanas para reducir costos (aunque esto puede ralentizar los resultados). A $229/mes, la semaglutida compuesta ya es una de las opciones GLP-1 más accesibles disponibles — compárela con $1,500/mes para la marca sin seguro.",
+      },
+    ],
+  },
+  {
+    heading: "¿Quién Puede Usarla?",
+    items: [
+      {
+        question: "¿Es segura la semaglutida para mujeres con SOP?",
+        answer: "¡Sí! La semaglutida frecuentemente es muy beneficiosa para mujeres con SOP (síndrome de ovario poliquístico). Muchas pacientes ven mejoras en la resistencia a la insulina, regularidad menstrual, niveles de testosterona y fertilidad, además de la pérdida de peso. Sin embargo, si está planeando concebir, debe dejar la semaglutida al menos 2 meses antes de intentar quedar embarazada, ya que no hay datos suficientes sobre la seguridad durante el embarazo. Use métodos anticonceptivos confiables durante el tratamiento.",
+      },
+      {
+        question: "¿Pueden los hombres usar semaglutida para bajar de peso?",
+        answer: "¡Por supuesto! La semaglutida está aprobada por la FDA y es muy efectiva para la pérdida de peso tanto en hombres como en mujeres. Los ensayos clínicos incluyeron ambos sexos, y los hombres frecuentemente logran excelentes resultados con la terapia GLP-1. Los hombres incluso pueden perder peso ligeramente más rápido que las mujeres debido a tasas metabólicas basales y masa muscular más altas. La dosificación, los efectos secundarios y los beneficios son los mismos independientemente del sexo.",
+      },
+      {
+        question: "¿Cuál es la edad mínima para la semaglutida?",
+        answer: "La semaglutida está aprobada por la FDA para la pérdida de peso en adultos (18+) y adolescentes (12+) con obesidad. Para pacientes menores de 18 años, requerimos el consentimiento de los padres y frecuentemente recomendamos un enfoque más conservador centrado primero en la modificación del estilo de vida. Para adultos de cualquier edad, la semaglutida es segura y efectiva — la edad por sí sola no es una barrera para la terapia GLP-1.",
+      },
+      {
+        question: "¿Puedo usar semaglutida si tengo presión arterial alta o diabetes?",
+        answer: "¡Sí! De hecho, la semaglutida frecuentemente ayuda a mejorar ambas condiciones. Muchos pacientes ven reducción de la presión arterial y mejor control del azúcar en sangre con la pérdida de peso. Es posible que necesitemos ajustar sus medicamentos para la presión arterial o la diabetes a medida que pierda peso para prevenir hipoglucemia o presión arterial baja. El monitoreo regular es importante, pero estas condiciones no lo descalifican de la terapia GLP-1 — a menudo son las mismas razones por las que la recetamos.",
+      },
+    ],
+  },
+];
+
+function FaqContent({ locale }: { locale: string }) {
+  const isEs = locale === "es";
+  const activeSections = isEs ? sectionsEs : sections;
+  const heading = isEs ? "Preguntas Frecuentes" : "Frequently Asked Questions";
+  const subheading = isEs
+    ? "Respuestas de la experta, Dra. Linda Moleon, MD — Especialista Certificada en Medicina de la Obesidad"
+    : "Expert answers from Dr. Linda Moleon, MD — Board-Certified Obesity Medicine Specialist";
+
   return (
     <>
       <section className="py-20 bg-brand-pink-soft">
         <Container narrow>
-          <h1 className="font-heading text-heading text-4xl font-bold text-center mb-4">
-            Frequently Asked Questions
-          </h1>
-          <p className="text-body-muted text-lg text-center">
-            Expert answers from Dr. Linda Moleon, MD — Board-Certified Obesity Medicine Specialist
-          </p>
+          <h1 className="font-heading text-heading text-4xl font-bold text-center mb-4">{heading}</h1>
+          <p className="text-body-muted text-lg text-center">{subheading}</p>
         </Container>
       </section>
 
       <section className="py-16">
         <Container narrow>
           <div className="space-y-14">
-            {sections.map((section) => (
+            {activeSections.map((section) => (
               <div key={section.heading}>
                 <h2 className="font-heading text-heading text-2xl font-semibold mb-6 pb-3 border-b border-gray-200">
                   {section.heading}

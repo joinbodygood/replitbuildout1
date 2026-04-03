@@ -441,7 +441,9 @@ model LegalPage {
   id        String   @id @default(cuid())
   slug      String   @unique   // e.g. "privacy-policy"
   title     String
-  content   String   @db.Text  // raw HTML
+  titleEs   String?            // Spanish title
+  content   String   @db.Text  // raw HTML (English)
+  contentEs String?  @db.Text  // raw HTML (Spanish)
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
 
