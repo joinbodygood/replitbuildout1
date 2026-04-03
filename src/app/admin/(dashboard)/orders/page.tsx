@@ -96,7 +96,7 @@ export default function AdminOrdersPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[#E5E5E5] bg-gray-50">
-                  {["Order", "Date", "Patient", "Items", "Total", "Status", ""].map((h) => (
+                  {["Order", "Date", "Patient", "Items", "Total", "Status", "Route", ""].map((h) => (
                     <th
                       key={h}
                       className="text-left px-4 py-3 text-xs font-semibold text-[#55575A] whitespace-nowrap"
@@ -109,13 +109,13 @@ export default function AdminOrdersPage() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-[#55575A] text-sm">
+                    <td colSpan={8} className="text-center py-12 text-[#55575A] text-sm">
                       Loading…
                     </td>
                   </tr>
                 ) : orders.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-[#55575A] text-sm">
+                    <td colSpan={8} className="text-center py-12 text-[#55575A] text-sm">
                       No orders found
                     </td>
                   </tr>
@@ -144,6 +144,19 @@ export default function AdminOrdersPage() {
                         >
                           {order.status.replace(/_/g, " ")}
                         </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-1">
+                          {order.items?.some((i: any) => i.productType === "rx") && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 font-medium">Rx</span>
+                          )}
+                          {order.items?.some((i: any) => i.productType === "supplement") && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-100 text-teal-700 font-medium">Supl</span>
+                          )}
+                          {order.items?.some((i: any) => i.productType === "consultation") && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-100 text-yellow-700 font-medium">Consult</span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <Link

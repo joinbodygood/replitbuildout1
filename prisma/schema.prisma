@@ -182,6 +182,9 @@ model OrderItem {
   price       Int    // cents
   quantity    Int
   productType String @default("rx") // rx | supplement | consultation — used for fulfillment routing
+  shopifyFulfillmentStatus String? // pending | processing | shipped | delivered | failed
+  trackingNumber  String?
+  trackingCarrier String?
 
   order       Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
@@ -357,4 +360,47 @@ model PaypalWebhookEvent {
 
   @@index([eventId])
   @@index([resourceId])
+}
+
+// ─── Shopify Integration ─────────────────────────────
+
+model ShopifyToken {
+  id        String   @id @default(cuid())
+  token     String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ShopifyMapping {
+  id               String   @id @default(cuid())
+  productId        String?
+  ourSku           String   @unique
+  shopifyProductId String
+  shopifyVariantId String
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([ourSku])
+  @@index([productId])
+}
+
+model ShopifyOrder {
+  id              String    @id @default(cuid())
+  orderId         String
+  shopifyOrderId  String    @unique
+  shopifyOrderUrl String?
+  status          String    @default("processing") // processing | shipped | delivered | failed
+  trackingNumber  String?
+  trackingCarrier String?
+  shippedAt       DateTime?
+  failureReason   String?
+  retryCount      Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([orderId])
+  @@index([shopifyOrderId])
+  @@index([status])
 }

@@ -3,6 +3,7 @@ import { getPayPalSubscription } from "@/lib/paypal-subscriptions";
 import { db } from "@/lib/db";
 import { fireWebhook } from "@/lib/webhooks";
 import { upsertContact, openConversation } from "@/lib/chatwoot";
+import { routeSupplementsToShopify } from "@/lib/shopify";
 
 export async function POST(req: NextRequest) {
   try {
@@ -69,11 +70,17 @@ export async function POST(req: NextRequest) {
       include: { items: true },
     });
 
-    // TODO: When order contains supplement items (productType === 'supplement'),
-    // create a corresponding order in Shopify via Admin API for Supliful fulfillment.
-    // Ayush will build this integration. For now, supplement orders are recorded in
-    // the DB and visible in admin under Orders with productType === 'supplement' on
-    // each OrderItem — marked for manual handling until Shopify automation is built.
+    // Route supplement items to Shopify for Supliful fulfillment (fire-and-forget)
+    void routeSupplementsToShopify({
+      id:              order.id,
+      email:           order.email,
+      shippingName:    order.shippingName,
+      shippingAddress: order.shippingAddress,
+      shippingCity:    order.shippingCity,
+      shippingState:   order.shippingState,
+      shippingZip:     order.shippingZip,
+      items:           order.items,
+    });
 
     if (referralCode) {
       const cleanCode = (referralCode as string).trim().toUpperCase();

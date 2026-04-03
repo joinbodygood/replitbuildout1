@@ -1,0 +1,78 @@
+Build the supplement order routing system that automatically creates orders in our Shopify ghost store when a customer purchases a supplement product. This allows Supliful (a Shopify fulfillment app) to pick, pack, and ship the supplement.
+
+1. Order Splitting Logic
+
+After a successful PayPal payment, the backend must check each line item's product_type:
+
+product_type: "rx" → Route through normal Rx fulfillment (DoseSpot → pharmacy). No changes needed here.
+product_type: "consultation" → No physical fulfillment. Just record the order and notify the physician team.
+product_type: "supplement" → Create a corresponding order in our Shopify store via the Shopify Admin API (details below).
+A single order can contain mixed product types (e.g., a GLP-1 subscription + a probiotic). The system must split the order and route each item to the correct fulfillment path.
+
+2. Shopify Order Creation (for supplement items)
+
+When a supplement item is purchased, create an order in Shopify using the Admin API:
+
+
+POST https://{shop}.myshopify.com/admin/api/2024-01/orders.json
+The order should include:
+
+Customer name, email, shipping address (from the checkout form)
+Line items: only the supplement products (map our product SKU to the Shopify product variant ID)
+Financial status: "paid" (payment was already collected through PayPal on our site)
+Note: "Auto-created from Body Good platform. Order #[our-order-id]"
+Tags: "supliful, auto-routed, bodygood-platform"
+Store the Shopify credentials as environment variables:
+
+SHOPIFY_DOMAIN (I will provide)
+SHOPIFY_ADMIN_TOKEN (I will provide — note: this token expires every 24 hours and will need a refresh mechanism)
+3. Product ID Mapping
+
+Create a mapping table in the database that links our product IDs/SKUs to Shopify product variant IDs. This is needed so the Shopify order references the correct Shopify product for Supliful to fulfill.
+
+Fields: our_product_id, our_sku, shopify_product_id, shopify_variant_id
+
+Add an admin interface (Products > Shopify Mapping) where we can manually map each supplement product to its Shopify counterpart. Pre-populate using SKU matching where possible.
+
+4. Shopify Token Refresh
+
+The Shopify access token expires every 24 hours. Build an automatic refresh:
+
+Store SHOPIFY_CLIENT_ID and SHOPIFY_CLIENT_SECRET as environment variables
+Before making any Shopify API call, check if the token is still valid
+If expired or about to expire, call the client credentials grant to get a new token:
+
+POST https://{shop}.myshopify.com/admin/oauth/access_token
+Body: { "client_id": "...", "client_secret": "...", "grant_type": "client_credentials" }
+Cache the new token with its expiry time
+5. Webhook Listener for Fulfillment/Tracking Updates
+
+Set up a webhook endpoint on our backend that Shopify calls when Supliful fulfills an order:
+
+Register a Shopify webhook for orders/fulfilled topic
+When triggered, the webhook payload includes the tracking number, carrier, and fulfillment status
+Match the Shopify order back to our order using the order note or tags (which contain our order ID)
+Update our order record with: tracking number, carrier name, fulfillment status, shipped date
+Update the order status in our system from "Processing" to "Shipped"
+Optionally trigger a shipping confirmation email to the customer with tracking info
+Webhook endpoint: POST /api/webhooks/shopify/fulfillment
+Verify the webhook using Shopify's HMAC signature to ensure it's authentic.
+
+6. Order Status Display
+
+In the admin dashboard Orders section, show the fulfillment routing for each order:
+
+Which items are Rx (pharmacy fulfillment) vs. Supplement (Supliful/Shopify fulfillment)
+Shopify order ID and link for supplement items
+Tracking number and carrier when available
+Fulfillment status: Pending → Processing → Shipped → Delivered
+In the patient portal, show the customer:
+
+Their order with all items
+Tracking information for shipped supplements
+Separate tracking if Rx and supplement ship from different locations
+7. Error Handling
+
+If the Shopify order creation fails (API error, token expired, etc.): log the error, mark the supplement items as "Fulfillment Failed — Manual Review Required", and alert the admin
+Build a retry mechanism: admin can click "Retry Shopify Order" on failed supplement orders
+If the token refresh fails: log the error and send an admin notification so someone can manually refresh credentials

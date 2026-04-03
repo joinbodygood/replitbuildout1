@@ -18,12 +18,14 @@ import {
   LogOut,
   ChevronRight,
   Headphones,
+  Link2,
 } from "lucide-react";
 
 const NAV = [
   { label: "Dashboard",     href: "/admin",                icon: LayoutDashboard, badge: false },
   { label: "Orders",        href: "/admin/orders",         icon: ShoppingBag,     badge: false },
-  { label: "Products",      href: "/admin/products",       icon: Package,         badge: false },
+  { label: "Products",      href: "/admin/products",                       icon: Package,         badge: false },
+  { label: "Shopify Mapping", href: "/admin/products/shopify-mapping",     icon: Link2,           badge: false },
   { label: "Patients",      href: "/admin/patients",       icon: Users,           badge: false },
   { label: "Subscriptions", href: "/admin/subscriptions",  icon: RefreshCw,       badge: false },
   { label: "Discounts",     href: "/admin/discounts",      icon: Tag,             badge: false },
@@ -67,6 +69,7 @@ export function AdminSidebar({ user }: Props) {
 
   function isActive(href: string) {
     if (href === "/admin") return pathname === "/admin";
+    if (href === "/admin/products") return pathname === "/admin/products";
     return pathname.startsWith(href);
   }
 

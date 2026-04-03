@@ -97,13 +97,57 @@ npx ts-node --compiler-options '{"module":"CommonJS"}' prisma/seed-admin.ts
 **Route:** `/[locale]/supplements` and `/[locale]/supplements/[slug]`
 
 ### Overview
-A physician-curated vitamins & supplements catalog alongside the existing Rx programs. Phase 1 covers DB products, storefront pages, cart integration, and order tracking. Fulfillment routing to Shopify/Supliful is Phase 2 (Ayush will build).
+A physician-curated vitamins & supplements catalog alongside the existing Rx programs. Phase 1 covers DB products, storefront pages, cart integration, and order tracking. Phase 2 (Shopify/Supliful routing) is now BUILT and live.
 
 ### Product Type System
 - **`productType` field on `Product`** — `"rx" | "supplement" | "consultation"` (default `"rx"`)
 - **`productType` field on `OrderItem`** — same values, propagated from cart at checkout
-- All existing Rx products default to `"rx"`. All 10 seeded supplements are `"supplement"`.
-- Used for fulfillment routing — see TODO comments in `capture-order/route.ts` and `subscription-approved/route.ts`
+- All existing Rx products default to `"rx"`. All supplement products are `"supplement"`.
+- Fulfillment routing is **LIVE** — supplement items auto-route to Shopify on payment capture
+
+### Shopify / Supliful Fulfillment System (BUILT)
+
+**Files:**
+- `src/lib/shopify.ts` — Shopify token management, order creation, routing function
+- `src/app/api/webhooks/shopify/fulfillment/route.ts` — receives tracking updates from Shopify/Supliful
+- `src/app/api/admin/shopify/mapping/route.ts` — GET/POST/DELETE product SKU → Shopify variant mappings
+- `src/app/api/admin/shopify/order/route.ts` — look up Shopify order by our order ID
+- `src/app/api/admin/shopify/retry-order/route.ts` — admin retry for failed Shopify orders
+- `src/app/admin/(dashboard)/products/shopify-mapping/page.tsx` — admin UI to map supplement SKUs
+
+**Required Environment Secrets:**
+```
+SHOPIFY_DOMAIN          = yourdomain.myshopify.com
+SHOPIFY_ADMIN_TOKEN     = shpat_... (24h expiring token)
+SHOPIFY_CLIENT_ID       = (optional, for auto-refresh)
+SHOPIFY_CLIENT_SECRET   = (optional, for auto-refresh)
+SHOPIFY_WEBHOOK_SECRET  = (for HMAC verification on /api/webhooks/shopify/fulfillment)
+```
+
+**DB models added:**
+- `ShopifyMapping` — maps our SKU → Shopify product/variant IDs
+- `ShopifyOrder` — tracks Shopify order per our order (status, tracking, retry count)
+- `ShopifyToken` — caches auto-refreshed Shopify access token
+- `OrderItem` updated with `shopifyFulfillmentStatus`, `trackingNumber`, `trackingCarrier`
+
+**Order flow:**
+1. Customer pays (PayPal) → `capture-order` or `subscription-approved` fires
+2. `routeSupplementsToShopify()` called fire-and-forget
+3. Supplement items are sent to `POST /admin/api/2024-01/orders.json` on Shopify
+4. Shopify order created with financial_status: "paid", tagged: "supliful, auto-routed, bodygood-platform"
+5. Supliful picks up the Shopify order and fulfills it
+6. When shipped, Shopify sends `POST /api/webhooks/shopify/fulfillment` with tracking info
+7. We update `ShopifyOrder` + `OrderItem` tracking fields + Order status → "shipped"
+
+**If Shopify order creation fails:**
+- `ShopifyOrder` record created with `status: "failed"` and `failureReason`
+- Admin can view the error in Orders → Order Detail → Supplement Fulfillment panel
+- Admin can click "Retry Shopify Order" (up to 5 retries)
+
+**Setup steps:**
+1. Add env secrets (see above)
+2. Go to Admin → Shopify Mapping and map each supplement SKU to its Shopify variant ID
+3. Register webhook in Shopify admin: `POST https://yourdomain/api/webhooks/shopify/fulfillment` for `orders/fulfilled` topic
 
 ### Supliful Catalog (24 products — 22 active, 2 draft)
 All images downloaded locally to `public/images/supplements/{SKU}.jpg|webp|png`.
