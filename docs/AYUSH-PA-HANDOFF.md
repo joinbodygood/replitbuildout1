@@ -185,6 +185,60 @@ The migration script is at `scripts/migrate-zoho.ts`. To use it:
 
 ---
 
+## PA → Refill System Handoff (IMPORTANT)
+
+The PA module and refill system are **two separate services with a clean handoff point.**
+
+### Ownership Boundaries
+
+| Stage | Owner | System |
+|-------|-------|--------|
+| Probability → Eligibility → PA Processing (Rounds 1-5) | **Jena & Rhea** | PA Module (this repo) |
+| PA Approved → Customer pays $75/mo → Active Member | **Automatic** | PA payment trigger (`INS-ONGOING` → `active_management`) |
+| Refill reminders, check-ins, subscription management | **Kira (Customer Support)** | Refill System (`bodygood-refill-api` repo) |
+
+### The Handoff Moment
+
+When a PA is approved:
+1. Jena/Rhea mark the submission as `approved` in the PA admin
+2. Case advances to `pending_activation` → customer pays $85 activation
+3. Customer pays $75/mo (`INS-ONGOING`) → case moves to `active_management`
+4. **Jena & Rhea are done.** The case stays at `active_management`. No more PA work.
+5. ~1-2 days later: customer picks up medication at pharmacy
+6. **3 weeks after approval:** Refill system sends first reminder (email + SMS)
+7. From here, **Kira owns the relationship** — refill check-ins, payment issues, subscription changes
+
+### What Happens on Denial (All 5 Rounds Exhausted)
+
+1. Case moves to `closed_exhausted`
+2. Customer is offered the **self-pay option** (cash-pay program, no insurance)
+3. If they choose self-pay, they enter the normal self-pay product flow — separate from the PA module entirely
+4. If they leave, case stays `closed_exhausted` with full documentation of every attempt
+
+### Refill System Location
+
+The refill backend is a **separate Express.js microservice**:
+- **Repo:** `joinbodygood/bodygood-refill-api` (GitHub)
+- **Plan:** `docs/superpowers/plans/2026-04-03-refill-backend-microservices.md` (on desktop, not in this repo)
+- **Stack:** Express.js, TypeScript, Prisma, Gmail API, Twilio, PayPal
+- **Currently lives in:** Zoho Creator (being replaced by the new build)
+
+### Integration Point (for later)
+
+The PA module fires a `pa.approved` webhook when a drug is approved. The refill system should listen for this to:
+- Know when to start the 3-week refill countdown
+- Link the patient to their approved medication
+- Set up the first RefillCycle
+
+This webhook integration is **not built yet** — it's the bridge Ayush will connect once both systems are running.
+
+The PA module does NOT need to know about refills. The refill system does NOT need to know about PA rounds. They connect through:
+1. The `pa.approved` webhook event
+2. The `INS-ONGOING` PayPal subscription (shared payment infrastructure)
+3. Patient email as the shared identifier
+
+---
+
 ## Superseded Documents
 
 These files in `attached_assets/` are **OUTDATED** — do not follow them:
