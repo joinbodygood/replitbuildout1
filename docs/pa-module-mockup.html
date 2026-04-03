@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Body Good — PA & Eligibility Module</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #ed1b1b;
+    --red-hover: #d01818;
+    --red-soft: #fde7e7;
+    --black: #0C0D0F;
+    --gray: #55575A;
+    --gray-light: #8E9196;
+    --gray-border: #E8E8EA;
+    --gray-bg: #F5F5F7;
+    --white: #FFFFFF;
+    --green: #28A745;
+    --green-soft: #E8F5EC;
+    --yellow: #FFC107;
+    --yellow-soft: #FFF8E1;
+    --error: #DC3545;
+    --error-soft: #FDEDED;
+    --blue: #2563EB;
+    --blue-soft: #EFF6FF;
+    --orange: #E8590C;
+    --orange-soft: #FFF4ED;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-pill: 50px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --font-h: 'Poppins', sans-serif;
+    --font-b: 'Manrope', sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:var(--font-b); background:var(--gray-bg); color:var(--black); font-size:14px; line-height:1.6; -webkit-font-smoothing:antialiased; }
+
+  /* ─── PAGE TABS ─── */
+  .tabs { position:fixed; top:0; left:0; right:0; z-index:100; background:var(--black); display:flex; align-items:center; height:48px; padding:0 24px; }
+  .tabs-label { font-family:var(--font-h); color:rgba(255,255,255,0.4); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:1px; margin-right:20px; }
+  .tab { font-family:var(--font-h); color:rgba(255,255,255,0.45); font-size:13px; font-weight:500; padding:13px 16px; cursor:pointer; border-bottom:2px solid transparent; transition:all 0.15s; }
+  .tab:hover { color:rgba(255,255,255,0.8); }
+  .tab.on { color:#fff; border-bottom-color:var(--red); }
+
+  /* ─── LAYOUT ─── */
+  .wrap { display:flex; margin-top:48px; min-height:calc(100vh - 48px); }
+
+  /* ─── NAV ─── */
+  .nav { width:200px; background:var(--white); border-right:1px solid var(--gray-border); position:fixed; top:48px; bottom:0; overflow-y:auto; }
+  .nav-logo { padding:20px 16px 16px; font-family:var(--font-h); font-weight:700; font-size:15px; color:var(--red); }
+  .nav-lbl { font-size:10px; font-weight:700; color:var(--gray-light); text-transform:uppercase; letter-spacing:0.8px; padding:12px 16px 4px; }
+  .nv { display:flex; align-items:center; gap:8px; padding:8px 16px; font-size:13px; font-weight:500; color:var(--gray); cursor:pointer; }
+  .nv:hover { color:var(--black); background:var(--gray-bg); }
+  .nv.on { color:var(--red); font-weight:600; }
+  .nv .ct { margin-left:auto; background:var(--red); color:#fff; font-size:10px; font-weight:700; padding:1px 6px; border-radius:10px; }
+  .nav-sep { height:1px; background:var(--gray-border); margin:10px 16px; }
+
+  /* ─── MAIN ─── */
+  .main { flex:1; margin-left:200px; }
+  .pg { display:none; }
+  .pg.on { display:block; }
+
+  /* ─── HEADER ─── */
+  .hdr { padding:24px 32px 0; display:flex; align-items:flex-end; justify-content:space-between; }
+  .hdr-t { font-family:var(--font-h); font-size:22px; font-weight:700; }
+  .hdr-s { font-size:13px; color:var(--gray-light); margin-top:2px; }
+  .btn-r { font-family:var(--font-b); background:var(--red); color:#fff; border:none; padding:10px 22px; border-radius:var(--radius-pill); font-size:13px; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(237,27,27,0.2); }
+  .btn-r:hover { background:var(--red-hover); }
+  .btn-o { font-family:var(--font-b); background:var(--white); color:var(--black); border:1px solid var(--gray-border); padding:8px 18px; border-radius:var(--radius-pill); font-size:13px; font-weight:500; cursor:pointer; }
+  .btn-o:hover { background:var(--gray-bg); }
+
+  /* ─── BADGES ─── */
+  .st { display:inline-flex; align-items:center; font-size:11px; font-weight:600; padding:2px 8px; border-radius:var(--radius-pill); letter-spacing:0.2px; }
+  .st-apr { background:var(--green-soft); color:var(--green); }
+  .st-den { background:var(--error-soft); color:var(--error); }
+  .st-inp { background:var(--blue-soft); color:var(--blue); }
+  .st-pen { background:var(--yellow-soft); color:#B8860B; }
+  .st-del { background:var(--orange-soft); color:var(--orange); }
+  .st-na { background:var(--gray-bg); color:var(--gray-light); }
+  .st-new { background:var(--red-soft); color:var(--red); }
+  .st-ref { background:var(--gray-bg); color:var(--gray); }
+  .st-grn { background:var(--green-soft); color:var(--green); }
+  .st-yel { background:var(--yellow-soft); color:#B8860B; }
+  .st-red2 { background:var(--error-soft); color:var(--error); }
+
+  /* ─── SECTION ─── */
+  .sec { margin-bottom:28px; }
+  .sec-h { display:flex; align-items:center; gap:10px; margin-bottom:2px; padding:8px 0; }
+  .sec-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .sec-t { font-family:var(--font-h); font-size:14px; font-weight:600; }
+  .sec-c { font-size:12px; color:var(--gray-light); }
+  .sec-line { flex:1; height:1px; background:var(--gray-border); }
+
+  /* ─── TABLE ─── */
+  .tbl { width:100%; border-collapse:collapse; background:var(--white); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-sm); }
+  .tbl th { font-size:11px; font-weight:600; color:var(--gray-light); text-transform:uppercase; letter-spacing:0.5px; padding:10px 14px; text-align:left; border-bottom:1px solid var(--gray-border); }
+  .tbl td { padding:11px 14px; font-size:13px; border-bottom:1px solid var(--gray-border); vertical-align:middle; }
+  .tbl tr:last-child td { border-bottom:none; }
+  .tbl tbody tr { cursor:pointer; transition:background 0.1s; }
+  .tbl tbody tr:hover { background:var(--gray-bg); }
+  .t-n { font-weight:600; }
+  .t-sub { font-size:11px; color:var(--gray-light); }
+  .t-lnk { color:var(--red); font-weight:600; font-size:12px; text-decoration:none; }
+  .t-lnk:hover { text-decoration:underline; }
+  .t-warn { color:var(--error); font-weight:600; }
+
+  /* ─── FILTER BAR ─── */
+  .fbar { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .fbar select, .fbar input { font-family:var(--font-b); font-size:13px; padding:8px 12px; border:1px solid var(--gray-border); border-radius:var(--radius-pill); background:var(--white); color:var(--black); }
+  .fbar input { width:200px; }
+  .fbar select:focus, .fbar input:focus { outline:none; border-color:var(--red); }
+
+  /* ─── CONTENT PADDING ─── */
+  .pad { padding:20px 32px; }
+
+  /* ─── KPI ROW ─── */
+  .kpi-row { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin-bottom:24px; }
+  .kpi { background:var(--white); border-radius:var(--radius); padding:16px 18px; box-shadow:var(--shadow-sm); }
+  .kpi .v { font-family:var(--font-h); font-size:26px; font-weight:700; }
+  .kpi .l { font-size:12px; color:var(--gray-light); margin-top:2px; }
+  .kpi.hl { border-left:3px solid var(--red); }
+  .kpi.hl .v { color:var(--red); }
+
+  /* ─── CASE DETAIL ─── */
+  .detail { display:grid; grid-template-columns:1fr 300px; gap:24px; }
+  .d-hdr { margin-bottom:20px; }
+  .d-case { font-size:13px; color:var(--gray-light); margin-bottom:4px; }
+  .d-name { font-family:var(--font-h); font-size:20px; font-weight:700; margin-bottom:8px; }
+
+  /* Phase bar */
+  .phase { display:flex; gap:0; margin-bottom:20px; }
+  .ph { font-family:var(--font-h); font-size:12px; font-weight:600; padding:8px 16px; color:var(--gray-light); background:var(--gray-bg); border:1px solid var(--gray-border); display:flex; align-items:center; gap:6px; }
+  .ph:first-child { border-radius:var(--radius-pill) 0 0 var(--radius-pill); }
+  .ph:last-child { border-radius:0 var(--radius-pill) var(--radius-pill) 0; }
+  .ph.done { background:var(--green-soft); color:var(--green); border-color:#BBF0C9; }
+  .ph.now { background:var(--red); color:#fff; border-color:var(--red); }
+  .ph .dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+  /* Med grid */
+  .mg { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:1px; background:var(--gray-border); border-radius:var(--radius); overflow:hidden; margin-bottom:20px; box-shadow:var(--shadow-sm); }
+  .mc { background:var(--white); padding:16px; }
+  .mc.req { background:var(--red-soft); }
+  .mc-n { font-family:var(--font-h); font-size:12px; font-weight:600; color:var(--gray); margin-bottom:6px; display:flex; justify-content:space-between; }
+  .mc-n .tag { font-size:9px; color:var(--red); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+  .mc .st { font-size:13px; padding:4px 12px; margin-bottom:8px; display:inline-flex; }
+  .mc select { width:100%; font-family:var(--font-b); font-size:12px; padding:6px 8px; border:1px solid var(--gray-border); border-radius:var(--radius-sm); background:var(--white); color:var(--gray); }
+  .mc select:focus { outline:none; border-color:var(--red); }
+
+  /* Action row */
+  .act-row { display:flex; gap:8px; margin-bottom:20px; }
+
+  /* Timeline */
+  .tl { padding-left:20px; position:relative; }
+  .tl::before { content:''; position:absolute; left:5px; top:6px; bottom:6px; width:1.5px; background:var(--gray-border); }
+  .tl-i { position:relative; padding-bottom:16px; }
+  .tl-i:last-child { padding-bottom:0; }
+  .tl-dot { position:absolute; left:-18px; top:3px; width:10px; height:10px; border-radius:50%; border:2px solid var(--gray-border); background:var(--white); }
+  .tl-dot.pa { border-color:var(--green); background:var(--green-soft); }
+  .tl-dot.sys { border-color:var(--blue); background:var(--blue-soft); }
+  .tl-dot.com { border-color:var(--yellow); background:var(--yellow-soft); }
+  .tl-d { font-size:13px; }
+  .tl-m { font-size:11px; color:var(--gray-light); margin-top:1px; }
+
+  /* Sidebar info */
+  .si { background:var(--white); border-radius:var(--radius); padding:16px; margin-bottom:12px; box-shadow:var(--shadow-sm); }
+  .si h4 { font-family:var(--font-h); font-size:11px; font-weight:600; color:var(--gray-light); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; }
+  .si-f { margin-bottom:8px; }
+  .si-l { font-size:11px; color:var(--gray-light); }
+  .si-v { font-size:13px; font-weight:500; }
+  .si-v a { color:var(--red); text-decoration:none; }
+  .si-v a:hover { text-decoration:underline; }
+  .score { height:6px; background:var(--gray-bg); border-radius:3px; overflow:hidden; margin:4px 0; }
+  .score-f { height:100%; border-radius:3px; }
+  .score-f.g { background:var(--green); }
+  .doc { display:flex; align-items:center; gap:6px; padding:5px 0; border-bottom:1px solid var(--gray-bg); font-size:12px; }
+  .doc:last-child { border-bottom:none; }
+  .doc-t { font-size:10px; color:var(--gray-light); background:var(--gray-bg); padding:1px 5px; border-radius:3px; margin-left:auto; }
+  textarea.notes { width:100%; min-height:70px; border:1px solid var(--gray-border); border-radius:var(--radius-sm); padding:10px; font-family:var(--font-b); font-size:13px; resize:vertical; }
+  textarea.notes:focus { outline:none; border-color:var(--red); }
+
+  /* ─── LOOKUP ─── */
+  .lu-bar { display:flex; gap:10px; margin-bottom:20px; }
+  .lu-bar input { flex:1; font-family:var(--font-b); font-size:15px; padding:12px 18px; border:2px solid var(--gray-border); border-radius:var(--radius-pill); }
+  .lu-bar input:focus { outline:none; border-color:var(--red); }
+  .lu-bar button { background:var(--red); color:#fff; border:none; padding:12px 28px; border-radius:var(--radius-pill); font-family:var(--font-b); font-size:14px; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(237,27,27,0.2); }
+  .lu-result { background:var(--white); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow-sm); }
+  .lu-ph { display:flex; align-items:center; gap:14px; padding-bottom:16px; border-bottom:1px solid var(--gray-border); margin-bottom:16px; }
+  .lu-av { width:44px; height:44px; border-radius:50%; background:var(--red-soft); color:var(--red); display:flex; align-items:center; justify-content:center; font-family:var(--font-h); font-weight:700; font-size:16px; }
+  .lu-info { flex:1; }
+  .lu-info .n { font-family:var(--font-h); font-size:17px; font-weight:700; }
+  .lu-info .d { font-size:13px; color:var(--gray); }
+  .lu-case { border:1px solid var(--gray-border); border-radius:var(--radius-sm); padding:14px; margin-bottom:10px; }
+  .lu-case .ch { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .lu-case .cn { font-weight:600; color:var(--red); font-size:13px; }
+  .lu-mg { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--gray-border); border-radius:var(--radius-sm); overflow:hidden; }
+  .lu-mc { background:var(--white); text-align:center; padding:8px; }
+  .lu-mc.hl { background:var(--green-soft); }
+  .lu-mc .mn { font-size:10px; color:var(--gray-light); font-weight:600; text-transform:uppercase; margin-bottom:3px; }
+  .ro-ban { background:var(--yellow-soft); border:1px solid #FDE68A; border-radius:var(--radius-sm); padding:10px 16px; margin-bottom:16px; font-size:13px; color:#92400E; font-weight:500; }
+
+  /* ─── DASH GRID ─── */
+  .dash-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .dash-card { background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; }
+  .dash-card-h { padding:14px 18px; border-bottom:1px solid var(--gray-border); font-family:var(--font-h); font-size:13px; font-weight:600; }
+  .dash-card-b { padding:16px 18px; }
+  .bar-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .bar-row:last-child { margin-bottom:0; }
+  .bar-lbl { width:90px; font-size:13px; font-weight:500; }
+  .bar-bg { flex:1; height:20px; background:var(--gray-bg); border-radius:4px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:4px; }
+  .bar-val { width:28px; font-size:13px; font-weight:600; text-align:right; }
+  .rate-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:0; }
+  .rate-item { text-align:center; padding:16px 8px; }
+  .rate-item + .rate-item { border-left:1px solid var(--gray-border); }
+  .rate-v { font-family:var(--font-h); font-size:28px; font-weight:700; }
+  .rate-n { font-size:12px; color:var(--gray); margin-top:2px; }
+  .rate-d { font-size:11px; color:var(--gray-light); }
+</style>
+</head>
+<body>
+
+<div class="tabs">
+  <span class="tabs-label">Module Preview</span>
+  <div class="tab on" onclick="go('queue')">Queue</div>
+  <div class="tab" onclick="go('detail')">Case Detail</div>
+  <div class="tab" onclick="go('list')">Case List</div>
+  <div class="tab" onclick="go('lookup')">CS Lookup</div>
+  <div class="tab" onclick="go('dash')">Dashboard</div>
+</div>
+
+<div class="wrap">
+  <div class="nav">
+    <div class="nav-logo">Body Good</div>
+    <div class="nav-lbl">Insurance</div>
+    <div class="nv on">Queue <span class="ct">14</span></div>
+    <div class="nv">All Cases</div>
+    <div class="nv">Lookup</div>
+    <div class="nav-sep"></div>
+    <div class="nav-lbl">Operations</div>
+    <div class="nv">Dashboard</div>
+    <div class="nv">Orders</div>
+    <div class="nv">Support</div>
+  </div>
+
+  <div class="main">
+
+    <!-- ══════════ QUEUE ══════════ -->
+    <div class="pg on" id="p-queue">
+      <div class="hdr"><div><div class="hdr-t">Work Queue</div><div class="hdr-s">14 cases need attention</div></div><button class="btn-r">+ New Case &rarr;</button></div>
+      <div class="pad">
+
+        <div class="sec">
+          <div class="sec-h"><span class="sec-dot" style="background:var(--red)"></span><span class="sec-t">New Cases</span><span class="sec-c">4 cases &middot; Run eligibility check</span><span class="sec-line"></span></div>
+          <table class="tbl"><thead><tr><th style="width:180px">Patient</th><th>Carrier</th><th>Requested</th><th>Weg</th><th>Zep</th><th>Mou</th><th>Oze</th><th>Waiting</th><th style="width:110px"></th></tr></thead><tbody>
+            <tr><td><div class="t-n">Charisma Johnson</div><div class="t-sub">IC-2026-00071</div></td><td>Cigna</td><td>Wegovy <span class="st st-new" style="margin-left:4px">New</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">&mdash;</span></td><td>12h</td><td><a class="t-lnk">Run Eligibility &rarr;</a></td></tr>
+            <tr><td><div class="t-n">Tameka McFadgen</div><div class="t-sub">IC-2026-00070</div></td><td>BCBS FL</td><td>Mounjaro <span class="st st-new" style="margin-left:4px">New</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">&mdash;</span></td><td>2d</td><td><a class="t-lnk">Run Eligibility &rarr;</a></td></tr>
+            <tr><td><div class="t-n">Josephine Conte-Kroma</div><div class="t-sub">IC-2026-00069</div></td><td>UHC</td><td>Zepbound <span class="st st-new" style="margin-left:4px">New</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">&mdash;</span></td><td>3d</td><td><a class="t-lnk">Run Eligibility &rarr;</a></td></tr>
+          </tbody></table>
+        </div>
+
+        <div class="sec">
+          <div class="sec-h"><span class="sec-dot" style="background:var(--blue)"></span><span class="sec-t">PA Pending Responses</span><span class="sec-c">6 cases &middot; Waiting on carrier decisions</span><span class="sec-line"></span></div>
+          <table class="tbl"><thead><tr><th style="width:180px">Patient</th><th>Carrier</th><th>Requested</th><th>Weg</th><th>Zep</th><th>Mou</th><th>Oze</th><th>Waiting</th><th style="width:110px"></th></tr></thead><tbody>
+            <tr><td><div class="t-n">Lynnise Bagley</div><div class="t-sub">IC-2026-00088</div></td><td>Aetna</td><td>Mounjaro 10mg <span class="st st-ref" style="margin-left:4px">Refill</span></td><td><span class="st st-den">Den</span></td><td><span class="st st-den">Den</span></td><td><span class="st st-apr">Apr</span></td><td><span class="st st-apr">Apr</span></td><td>5d</td><td><a class="t-lnk">View &rarr;</a></td></tr>
+            <tr><td><div class="t-n">Nancy Espinosa</div><div class="t-sub">IC-2026-00078</div></td><td>Humana</td><td>Ozempic <span class="st st-ref" style="margin-left:4px">Refill</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-inp">Inp</span></td><td><span class="st st-inp">Inp</span></td><td>3d</td><td><a class="t-lnk">View &rarr;</a></td></tr>
+            <tr><td><div class="t-n">Brittney Thomas</div><div class="t-sub">IC-2026-00087</div></td><td>BCBS FL</td><td>Mounjaro 10mg <span class="st st-ref" style="margin-left:4px">Refill</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-inp">Inp</span></td><td><span class="st st-na">&mdash;</span></td><td>1d</td><td><a class="t-lnk">View &rarr;</a></td></tr>
+          </tbody></table>
+        </div>
+
+        <div class="sec">
+          <div class="sec-h"><span class="sec-dot" style="background:var(--orange)"></span><span class="sec-t">Needs Follow-up</span><span class="sec-c">2 cases &middot; Delayed medications</span><span class="sec-line"></span></div>
+          <table class="tbl"><thead><tr><th style="width:180px">Patient</th><th>Carrier</th><th>Requested</th><th>Weg</th><th>Zep</th><th>Mou</th><th>Oze</th><th>Waiting</th><th style="width:110px"></th></tr></thead><tbody>
+            <tr><td><div class="t-n">Donna Rudolph</div><div class="t-sub">IC-2026-00082</div></td><td>BCBS IL</td><td>Wegovy <span class="st st-del" style="margin-left:4px">Delayed</span></td><td><span class="st st-del">Del</span></td><td><span class="st st-den">Den</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">&mdash;</span></td><td class="t-warn">8d</td><td><a class="t-lnk">Follow Up &rarr;</a></td></tr>
+            <tr><td><div class="t-n">Sandra Perez</div><div class="t-sub">IC-2026-00080</div></td><td>Cigna</td><td>Zepbound <span class="st st-del" style="margin-left:4px">Delayed</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-del">Del</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">&mdash;</span></td><td class="t-warn">6d</td><td><a class="t-lnk">Follow Up &rarr;</a></td></tr>
+          </tbody></table>
+        </div>
+
+        <div class="sec">
+          <div class="sec-h"><span class="sec-dot" style="background:var(--green)"></span><span class="sec-t">Ready to Activate</span><span class="sec-c">2 cases &middot; Medication approved</span><span class="sec-line"></span></div>
+          <table class="tbl"><thead><tr><th style="width:180px">Patient</th><th>Carrier</th><th>Approved Med</th><th>Weg</th><th>Zep</th><th>Mou</th><th>Oze</th><th>Updated</th><th style="width:110px"></th></tr></thead><tbody>
+            <tr><td><div class="t-n">Lourdes Gomez</div><div class="t-sub">IC-2026-00089</div></td><td>Cigna</td><td>Mounjaro 15mg <span class="st st-ref" style="margin-left:4px">Refill</span></td><td><span class="st st-den">Den</span></td><td><span class="st st-den">Den</span></td><td><span class="st st-apr">Apr</span></td><td><span class="st st-na">&mdash;</span></td><td>Today</td><td><a class="t-lnk">Activate &rarr;</a></td></tr>
+            <tr><td><div class="t-n">Lisa Cohen</div><div class="t-sub">IC-2026-00085</div></td><td>UHC</td><td>Ozempic <span class="st st-ref" style="margin-left:4px">Refill</span></td><td><span class="st st-den">Den</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-apr">Apr</span></td><td><span class="st st-apr">Apr</span></td><td>1d ago</td><td><a class="t-lnk">Activate &rarr;</a></td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ CASE DETAIL ══════════ -->
+    <div class="pg" id="p-detail">
+      <div class="hdr"><div><div class="hdr-t">Lourdes Gomez</div><div class="hdr-s">IC-2026-00089 &middot; <span class="st st-ref">Refill</span> &middot; Assigned to <strong>Jena</strong></div></div>
+        <div style="display:flex;gap:8px;"><button class="btn-o">Assign &darr;</button><button class="btn-o" style="color:var(--error)">Urgent</button></div>
+      </div>
+      <div class="pad">
+        <div class="phase">
+          <div class="ph done"><span class="dot"></span> Eligibility</div>
+          <div class="ph now"><span class="dot"></span> Prior Auth</div>
+          <div class="ph"><span class="dot"></span> Active</div>
+          <div class="ph"><span class="dot"></span> Management</div>
+        </div>
+
+        <div class="detail">
+          <div>
+            <!-- Med status -->
+            <div style="font-family:var(--font-h);font-size:12px;font-weight:600;color:var(--gray-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Medication PA Status</div>
+            <div class="mg">
+              <div class="mc"><div class="mc-n">Wegovy</div><span class="st st-den">Denied</span><br><select><option>Change status...</option><option>Inprocess</option><option>Pending</option><option>Approved</option><option selected>Denied</option><option>Delayed</option></select></div>
+              <div class="mc"><div class="mc-n">Zepbound</div><span class="st st-den">Denied</span><br><select><option>Change status...</option><option>Inprocess</option><option>Pending</option><option>Approved</option><option selected>Denied</option><option>Delayed</option></select></div>
+              <div class="mc req"><div class="mc-n">Mounjaro <span class="tag">Requested</span></div><span class="st st-apr" style="font-size:14px;padding:4px 14px;">Approved</span><br><select><option>Change status...</option><option>Inprocess</option><option>Pending</option><option selected>Approved</option><option>Denied</option><option>Delayed</option></select></div>
+              <div class="mc"><div class="mc-n">Ozempic</div><span class="st st-na">N/A</span><br><select><option selected>Change status...</option><option>Inprocess</option><option>Pending</option><option>Approved</option><option>Denied</option><option>Delayed</option></select></div>
+            </div>
+
+            <div class="act-row">
+              <button class="btn-r">Activate Case &rarr;</button>
+              <button class="btn-o">Send to Self-Pay</button>
+              <button class="btn-o">Close Case</button>
+            </div>
+
+            <!-- Timeline -->
+            <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:16px 20px;">
+              <div style="font-family:var(--font-h);font-size:12px;font-weight:600;color:var(--gray-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">Timeline</div>
+              <div class="tl">
+                <div class="tl-i"><div class="tl-dot pa"></div><div class="tl-d"><strong>Mounjaro</strong> PA changed to <span class="st st-apr">Approved</span></div><div class="tl-m">Jena &middot; Today 11:49 AM</div></div>
+                <div class="tl-i"><div class="tl-dot pa"></div><div class="tl-d"><strong>Wegovy</strong> PA changed to <span class="st st-den">Denied</span></div><div class="tl-m">Jena &middot; Mar 28, 3:15 PM</div></div>
+                <div class="tl-i"><div class="tl-dot pa"></div><div class="tl-d"><strong>Zepbound</strong> PA changed to <span class="st st-den">Denied</span></div><div class="tl-m">Jena &middot; Mar 28, 3:14 PM</div></div>
+                <div class="tl-i"><div class="tl-dot sys"></div><div class="tl-d">Phase advanced to <strong>Prior Auth</strong></div><div class="tl-m">System &middot; Mar 25, 10:02 AM</div></div>
+                <div class="tl-i"><div class="tl-dot sys"></div><div class="tl-d">Eligibility complete &mdash; <span class="st st-grn">Green</span> (78/100)</div><div class="tl-m">System &middot; Mar 25, 10:02 AM</div></div>
+                <div class="tl-i"><div class="tl-dot com"></div><div class="tl-d">Email sent: <em>eligibility_green</em></div><div class="tl-m">n8n &middot; Mar 25, 10:03 AM</div></div>
+                <div class="tl-i"><div class="tl-dot sys"></div><div class="tl-d">Case created from Order #14913</div><div class="tl-m">System &middot; Mar 25, 9:45 AM</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <div>
+            <div class="si"><h4>Patient</h4>
+              <div class="si-f"><div class="si-l">Name</div><div class="si-v">Lourdes Gomez</div></div>
+              <div class="si-f"><div class="si-l">Email</div><div class="si-v">lulugomez12171963@gmail.com</div></div>
+              <div class="si-f"><div class="si-l">Phone</div><div class="si-v">(305) 753-6560</div></div>
+              <div class="si-f"><div class="si-l">State</div><div class="si-v">FL</div></div>
+              <div class="si-f"><div class="si-v"><a href="#">View in Zoho CRM &rarr;</a></div></div>
+            </div>
+            <div class="si"><h4>Insurance</h4>
+              <div class="si-f"><div class="si-l">Carrier</div><div class="si-v">Cigna (Express Scripts)</div></div>
+              <div class="si-f"><div class="si-l">Plan Type</div><div class="si-v">Employer (Large)</div></div>
+              <div class="si-f"><div class="si-l">Group #</div><div class="si-v">GRP-44891</div></div>
+            </div>
+            <div class="si"><h4>Eligibility</h4>
+              <div class="si-f"><div class="si-l">Score</div><div class="si-v">78 / 100 <span class="st st-grn" style="margin-left:4px">Green</span></div><div class="score"><div class="score-f g" style="width:78%"></div></div></div>
+              <div class="si-f"><div class="si-l">Stedi</div><div class="si-v">Active</div></div>
+              <div class="si-f"><div class="si-l">Checked</div><div class="si-v">Mar 25, 2026</div></div>
+            </div>
+            <div class="si"><h4>Documents</h4>
+              <div class="doc"><span>InsuranceCardFront.jpg</span><span class="doc-t">Insurance</span></div>
+              <div class="doc"><span>InsuranceCardBack.jpg</span><span class="doc-t">Insurance</span></div>
+              <div class="doc"><span>IDCardFront.jpg</span><span class="doc-t">ID</span></div>
+              <div class="doc"><span>203-Great.pdf</span><span class="doc-t">Intake</span></div>
+            </div>
+            <div class="si"><h4>Order</h4>
+              <div class="si-f"><div class="si-l">Order #</div><div class="si-v">#14913</div></div>
+              <div class="si-f"><div class="si-l">Medicine</div><div class="si-v">REFILL Mounjaro 15mg</div></div>
+              <div class="si-f"><div class="si-l">Pharmacy</div><div class="si-v">CVS #3709</div></div>
+            </div>
+            <div class="si"><h4>Notes</h4><textarea class="notes" placeholder="Add notes...">Long-term refill. Mounjaro approved quickly. Wegovy and Zepbound denied — plan exclusion.</textarea></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ CASE LIST ══════════ -->
+    <div class="pg" id="p-list">
+      <div class="hdr"><div><div class="hdr-t">All Cases</div><div class="hdr-s">182 total</div></div><button class="btn-r">+ New Case &rarr;</button></div>
+      <div class="pad">
+        <div class="fbar">
+          <select><option>All Phases</option><option>Eligibility</option><option>Prior Auth</option><option>Active</option><option>Management</option><option>Closed</option></select>
+          <select><option>All Meds</option><option>Approved</option><option>Denied</option><option>Inprocess</option><option>Pending</option><option>Delayed</option></select>
+          <select><option>All Carriers</option><option>Cigna</option><option>Aetna</option><option>UHC</option><option>BCBS</option><option>Humana</option></select>
+          <select><option>Assigned</option><option>Jena</option><option>Rhea</option><option>Unassigned</option></select>
+          <input type="text" placeholder="Search name, email, case #...">
+        </div>
+        <table class="tbl"><thead><tr><th>Case #</th><th>Patient</th><th>Carrier</th><th>Weg</th><th>Zep</th><th>Mou</th><th>Oze</th><th>Phase</th><th>Assigned</th><th>Updated</th></tr></thead><tbody>
+          <tr><td><a class="t-lnk">IC-2026-00089</a></td><td><span class="t-n">Lourdes Gomez</span></td><td>Cigna</td><td><span class="st st-den">Den</span></td><td><span class="st st-den">Den</span></td><td><span class="st st-apr">Apr</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-inp">Prior Auth</span></td><td>Jena</td><td>Today</td></tr>
+          <tr><td><a class="t-lnk">IC-2026-00088</a></td><td><span class="t-n">Lynnise Bagley</span></td><td>Aetna</td><td><span class="st st-den">Den</span></td><td><span class="st st-den">Den</span></td><td><span class="st st-apr">Apr</span></td><td><span class="st st-apr">Apr</span></td><td><span class="st st-inp">Prior Auth</span></td><td>Jena</td><td>Today</td></tr>
+          <tr><td><a class="t-lnk">IC-2026-00087</a></td><td><span class="t-n">Brittney Thomas</span></td><td>BCBS FL</td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-inp">Inp</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-inp">Prior Auth</span></td><td>Rhea</td><td>Today</td></tr>
+          <tr><td><a class="t-lnk">IC-2026-00085</a></td><td><span class="t-n">Lisa Cohen</span></td><td>UHC</td><td><span class="st st-den">Den</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-apr">Apr</span></td><td><span class="st st-apr">Apr</span></td><td><span class="st st-grn">Active</span></td><td>Jena</td><td>1d ago</td></tr>
+          <tr><td><a class="t-lnk">IC-2026-00082</a></td><td><span class="t-n">Donna Rudolph</span></td><td>BCBS IL</td><td><span class="st st-del">Del</span></td><td><span class="st st-den">Den</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-inp">Prior Auth</span></td><td>&mdash;</td><td>Mar 28</td></tr>
+          <tr><td><a class="t-lnk">IC-2026-00078</a></td><td><span class="t-n">Nancy Espinosa</span></td><td>Humana</td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-inp">Inp</span></td><td><span class="st st-inp">Inp</span></td><td><span class="st st-inp">Prior Auth</span></td><td>Rhea</td><td>Mar 27</td></tr>
+          <tr><td><a class="t-lnk">IC-2026-00071</a></td><td><span class="t-n">Charisma Johnson</span></td><td>Cigna</td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">&mdash;</span></td><td><span class="st st-na">Eligibility</span></td><td>&mdash;</td><td>Today</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <!-- ══════════ CS LOOKUP ══════════ -->
+    <div class="pg" id="p-lookup">
+      <div class="hdr"><div><div class="hdr-t">Patient Lookup</div><div class="hdr-s">Search by email, name, or case number</div></div></div>
+      <div class="pad">
+        <div class="ro-ban">Read-only &mdash; Customer support can view but not modify case data</div>
+        <div class="lu-bar"><input type="text" placeholder="Search patient..." value="lulugomez12171963@gmail.com"><button>Search &rarr;</button></div>
+        <div class="lu-result">
+          <div class="lu-ph">
+            <div class="lu-av">LG</div>
+            <div class="lu-info"><div class="n">Lourdes Gomez</div><div class="d">lulugomez12171963@gmail.com &middot; (305) 753-6560 &middot; FL</div></div>
+            <a href="#" style="font-size:12px;color:var(--red);text-decoration:none;font-weight:600;">Zoho CRM &rarr;</a>
+          </div>
+          <div class="lu-case">
+            <div class="ch"><div><span class="cn">IC-2026-00089</span> <span class="st st-ref" style="margin-left:6px">Refill</span> <span class="st st-inp" style="margin-left:4px">Prior Auth</span></div><span style="font-size:12px;color:var(--gray-light)">Updated today</span></div>
+            <div style="font-size:12px;color:var(--gray);margin-bottom:10px;">REFILL Mounjaro (Tirzepatide) - 15mg &middot; Cigna &middot; Eligibility: 78/100 Green</div>
+            <div class="lu-mg">
+              <div class="lu-mc"><div class="mn">Wegovy</div><span class="st st-den">Denied</span></div>
+              <div class="lu-mc"><div class="mn">Zepbound</div><span class="st st-den">Denied</span></div>
+              <div class="lu-mc hl"><div class="mn">Mounjaro</div><span class="st st-apr">Approved</span></div>
+              <div class="lu-mc"><div class="mn">Ozempic</div><span class="st st-na">N/A</span></div>
+            </div>
+          </div>
+          <div class="lu-case" style="opacity:0.6">
+            <div class="ch"><div><span class="cn">IC-2025-00034</span> <span class="st st-new" style="margin-left:6px">New</span> <span class="st st-na" style="margin-left:4px">Closed</span></div><span style="font-size:12px;color:var(--gray-light)">Oct 2025</span></div>
+            <div style="font-size:12px;color:var(--gray);margin-bottom:10px;">Previous case &middot; Closed: Patient cancelled</div>
+            <div class="lu-mg">
+              <div class="lu-mc"><div class="mn">Wegovy</div><span class="st st-den">Denied</span></div>
+              <div class="lu-mc"><div class="mn">Zepbound</div><span class="st st-na">N/A</span></div>
+              <div class="lu-mc"><div class="mn">Mounjaro</div><span class="st st-na">N/A</span></div>
+              <div class="lu-mc"><div class="mn">Ozempic</div><span class="st st-na">N/A</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ DASHBOARD ══════════ -->
+    <div class="pg" id="p-dash">
+      <div class="hdr"><div><div class="hdr-t">Dashboard</div><div class="hdr-s">PA & Eligibility overview</div></div></div>
+      <div class="pad">
+        <div class="kpi-row">
+          <div class="kpi"><div class="v">142</div><div class="l">Total Active</div></div>
+          <div class="kpi hl"><div class="v">14</div><div class="l">Needs Action</div></div>
+          <div class="kpi"><div class="v">38</div><div class="l">Eligibility</div></div>
+          <div class="kpi"><div class="v">67</div><div class="l">PA In Progress</div></div>
+          <div class="kpi"><div class="v">54</div><div class="l">Approved (Apr)</div></div>
+          <div class="kpi"><div class="v">34%</div><div class="l">Denial Rate</div></div>
+        </div>
+
+        <div class="dash-grid">
+          <div class="dash-card">
+            <div class="dash-card-h">Cases by Phase</div>
+            <div class="dash-card-b">
+              <div class="bar-row"><span class="bar-lbl">Eligibility</span><div class="bar-bg"><div class="bar-fill" style="width:27%;background:var(--blue)"></div></div><span class="bar-val">38</span></div>
+              <div class="bar-row"><span class="bar-lbl">Prior Auth</span><div class="bar-bg"><div class="bar-fill" style="width:47%;background:var(--red)"></div></div><span class="bar-val">67</span></div>
+              <div class="bar-row"><span class="bar-lbl">Active</span><div class="bar-bg"><div class="bar-fill" style="width:18%;background:var(--green)"></div></div><span class="bar-val">25</span></div>
+              <div class="bar-row"><span class="bar-lbl">Management</span><div class="bar-bg"><div class="bar-fill" style="width:8%;background:var(--gray)"></div></div><span class="bar-val">12</span></div>
+            </div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-card-h">Recent Activity</div>
+            <div class="dash-card-b">
+              <div class="tl" style="padding-left:18px;">
+                <div class="tl-i" style="padding-bottom:12px"><div class="tl-dot pa"></div><div class="tl-d" style="font-size:12px"><strong>Lourdes Gomez</strong> &mdash; Mounjaro <span class="st st-apr">Apr</span></div><div class="tl-m">Jena &middot; 23m ago</div></div>
+                <div class="tl-i" style="padding-bottom:12px"><div class="tl-dot sys"></div><div class="tl-d" style="font-size:12px"><strong>Charisma Johnson</strong> &mdash; New case</div><div class="tl-m">System &middot; 2h ago</div></div>
+                <div class="tl-i" style="padding-bottom:12px"><div class="tl-dot pa"></div><div class="tl-d" style="font-size:12px"><strong>Lynnise Bagley</strong> &mdash; Ozempic <span class="st st-apr">Apr</span></div><div class="tl-m">Jena &middot; 3h ago</div></div>
+                <div class="tl-i" style="padding-bottom:12px"><div class="tl-dot com"></div><div class="tl-d" style="font-size:12px"><strong>Donna Rudolph</strong> &mdash; Email: pa_delayed</div><div class="tl-m">n8n &middot; 5h ago</div></div>
+                <div class="tl-i"><div class="tl-dot pa"></div><div class="tl-d" style="font-size:12px"><strong>Nancy Espinosa</strong> &mdash; Mounjaro <span class="st st-inp">Inp</span></div><div class="tl-m">Rhea &middot; Yesterday</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-card" style="margin-top:16px;">
+          <div class="dash-card-h">Approval Rate by Medication</div>
+          <div class="rate-grid">
+            <div class="rate-item"><div class="rate-v" style="color:var(--error)">16%</div><div class="rate-n">Wegovy</div><div class="rate-d">7 / 44</div></div>
+            <div class="rate-item"><div class="rate-v" style="color:var(--error)">8%</div><div class="rate-n">Zepbound</div><div class="rate-d">4 / 48</div></div>
+            <div class="rate-item"><div class="rate-v" style="color:var(--green)">93%</div><div class="rate-n">Mounjaro</div><div class="rate-d">54 / 58</div></div>
+            <div class="rate-item"><div class="rate-v" style="color:var(--green)">94%</div><div class="rate-n">Ozempic</div><div class="rate-d">32 / 34</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function go(id){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('p-'+id).classList.add('on');
+  event.target.classList.add('on');
+}
+</script>
+</body>
+</html>
