@@ -1,1543 +1,1147 @@
 "use client";
 
-import { useState, useRef, useEffect, Fragment } from "react";
+import { useState, useEffect } from "react";
 import { useLocale } from "next-intl";
-import { Check, AlertTriangle, Target, CheckCircle, Info } from "lucide-react";
 
-// ─────────────────────────────────────────────
-// EMBEDDED PROBABILITY DATABASE (client-side only)
-// ─────────────────────────────────────────────
-const MANDATE_STATES = ["CT", "DE", "MD", "NJ", "VT", "WV"];
-const RESTRICTED_STATES = ["MA", "MI", "CA", "PA"];
+// ═══════════════════════════════════════════════════════
+// BODY GOOD — "What Are My Odds?" Coverage Quiz v2.0
+// Phase 1: Basic quiz → Phase 2: Boost questions → Phase 3: Roadmap results
+// ═══════════════════════════════════════════════════════
 
-type IndicationData = { prob: [number, number]; rating: string; pa: boolean; notes: string };
-type CarrierStates = Record<string, Record<string, IndicationData>>;
-
-const CARRIERS_DB: Record<string, { states: CarrierStates }> = {
-  cigna: {
-    states: {
-      FL: {
-        wegovy_weight_loss: { prob: [30, 45], rating: "yellow", pa: true, notes: "Strict PA. Requires documented step therapy. Express Scripts PBM." },
-        wegovy_cv: { prob: [55, 65], rating: "yellow", pa: true, notes: "Much better odds if patient has documented CVD." },
-        zepbound_weight_loss: { prob: [30, 45], rating: "yellow", pa: true, notes: "Same as Wegovy weight loss pathway." },
-        zepbound_osa: { prob: [45, 55], rating: "yellow", pa: true, notes: "If patient has diagnosed moderate-severe OSA (AHI 15+) and BMI 30+." },
-        mounjaro_t2d: { prob: [85, 95], rating: "green", pa: true, notes: "Standard diabetes coverage." },
-        ozempic_t2d: { prob: [85, 95], rating: "green", pa: false, notes: "Standard diabetes coverage." },
-      },
-      _default: {
-        wegovy_weight_loss: { prob: [30, 45], rating: "yellow", pa: true, notes: "Strict PA. Express Scripts PBM. Plan-dependent." },
-        wegovy_cv: { prob: [55, 65], rating: "yellow", pa: true, notes: "CV indication stronger pathway." },
-        zepbound_weight_loss: { prob: [30, 45], rating: "yellow", pa: true, notes: "PA required. Plan-dependent." },
-        zepbound_osa: { prob: [45, 55], rating: "yellow", pa: true, notes: "OSA pathway available." },
-        mounjaro_t2d: { prob: [85, 95], rating: "green", pa: true, notes: "Standard diabetes coverage." },
-        ozempic_t2d: { prob: [85, 95], rating: "green", pa: false, notes: "Standard diabetes coverage." },
-      },
-    },
-  },
-  bcbs_fl: {
-    states: {
-      FL: {
-        wegovy_weight_loss: { prob: [35, 45], rating: "yellow", pa: true, notes: "No mandate. Employer must opt in. CVS Caremark PBM prefers Wegovy." },
-        wegovy_cv: { prob: [55, 65], rating: "yellow", pa: true, notes: "Much better odds with documented CVD." },
-        zepbound_weight_loss: { prob: [20, 30], rating: "red", pa: true, notes: "CVS Caremark removed Zepbound from most formularies July 2025." },
-        zepbound_osa: { prob: [45, 55], rating: "yellow", pa: true, notes: "OSA pathway may still work with formulary changes." },
-        mounjaro_t2d: { prob: [85, 95], rating: "green", pa: true, notes: "CVS Caremark requires step therapy (try metformin first)." },
-        ozempic_t2d: { prob: [85, 95], rating: "green", pa: false, notes: "Tier 2/3. No PA for standard doses." },
-      },
-    },
-  },
-  aetna: {
-    states: {
-      FL: {
-        wegovy_weight_loss: { prob: [40, 55], rating: "yellow", pa: true, notes: "Employer-elected. CVS Caremark PBM gives Wegovy preferred status." },
-        wegovy_cv: { prob: [55, 65], rating: "yellow", pa: true, notes: "CV indication strengthens approval." },
-        zepbound_weight_loss: { prob: [25, 35], rating: "red", pa: true, notes: "CVS Caremark removed Zepbound from most formularies." },
-        zepbound_osa: { prob: [40, 55], rating: "yellow", pa: true, notes: "OSA pathway still viable." },
-        mounjaro_t2d: { prob: [85, 95], rating: "green", pa: true, notes: "Standard diabetes coverage." },
-        ozempic_t2d: { prob: [85, 95], rating: "green", pa: false, notes: "Standard diabetes coverage." },
-      },
-      CT: {
-        wegovy_weight_loss: { prob: [50, 60], rating: "yellow", pa: true, notes: "Mandate state. Employer-elected benefit with strong approval rates." },
-        zepbound_weight_loss: { prob: [50, 60], rating: "yellow", pa: true, notes: "Mandate state. Employer-elected." },
-        mounjaro_t2d: { prob: [85, 95], rating: "green", pa: true, notes: "Standard diabetes coverage." },
-        ozempic_t2d: { prob: [85, 95], rating: "green", pa: false, notes: "Standard diabetes coverage." },
-      },
-      _default: {
-        wegovy_weight_loss: { prob: [40, 55], rating: "yellow", pa: true, notes: "Employer-elected. CVS Caremark PBM." },
-        wegovy_cv: { prob: [50, 60], rating: "yellow", pa: true, notes: "CV pathway available." },
-        zepbound_weight_loss: { prob: [25, 35], rating: "red", pa: true, notes: "Restricted formulary." },
-        zepbound_osa: { prob: [40, 50], rating: "yellow", pa: true, notes: "OSA pathway available." },
-        mounjaro_t2d: { prob: [85, 95], rating: "green", pa: true, notes: "Standard diabetes coverage." },
-        ozempic_t2d: { prob: [85, 95], rating: "green", pa: false, notes: "Standard diabetes coverage." },
-      },
-    },
-  },
-  uhc: {
-    states: {
-      FL: {
-        wegovy_weight_loss: { prob: [30, 40], rating: "yellow", pa: true, notes: "Restrictive for weight loss. Use metabolic pathway if possible." },
-        wegovy_cv: { prob: [50, 60], rating: "yellow", pa: true, notes: "CV pathway is stronger." },
-        zepbound_weight_loss: { prob: [25, 35], rating: "red", pa: true, notes: "Restrictive. Consider alternative meds." },
-        zepbound_osa: { prob: [40, 50], rating: "yellow", pa: true, notes: "OSA pathway available." },
-        mounjaro_t2d: { prob: [85, 95], rating: "green", pa: true, notes: "Standard diabetes coverage." },
-        ozempic_t2d: { prob: [85, 95], rating: "green", pa: false, notes: "Standard diabetes coverage." },
-      },
-      NY: {
-        wegovy_weight_loss: { prob: [40, 50], rating: "yellow", pa: true, notes: "Self-funded plans at major NYC employers sometimes include." },
-        mounjaro_t2d: { prob: [85, 95], rating: "green", pa: true, notes: "Standard diabetes coverage." },
-        ozempic_t2d: { prob: [85, 95], rating: "green", pa: false, notes: "Standard diabetes coverage." },
-      },
-      _default: {
-        wegovy_weight_loss: { prob: [30, 40], rating: "yellow", pa: true, notes: "Restrictive for weight loss." },
-        wegovy_cv: { prob: [45, 55], rating: "yellow", pa: true, notes: "CV pathway available." },
-        zepbound_weight_loss: { prob: [20, 30], rating: "red", pa: true, notes: "Restrictive formulary." },
-        zepbound_osa: { prob: [35, 45], rating: "yellow", pa: true, notes: "OSA pathway available." },
-        mounjaro_t2d: { prob: [85, 95], rating: "green", pa: true, notes: "Standard diabetes coverage." },
-        ozempic_t2d: { prob: [85, 95], rating: "green", pa: false, notes: "Standard diabetes coverage." },
-      },
-    },
-  },
-  humana: {
-    states: {
-      FL: {
-        wegovy_weight_loss: { prob: [35, 45], rating: "yellow", pa: true, notes: "Significant FL presence. Variable by employer plan." },
-        wegovy_cv: { prob: [50, 60], rating: "yellow", pa: true, notes: "CV pathway available." },
-        mounjaro_t2d: { prob: [85, 95], rating: "green", pa: true, notes: "Standard diabetes coverage." },
-        ozempic_t2d: { prob: [85, 95], rating: "green", pa: false, notes: "Standard diabetes coverage." },
-      },
-      _default: {
-        wegovy_weight_loss: { prob: [35, 45], rating: "yellow", pa: true, notes: "Variable by employer plan." },
-        wegovy_cv: { prob: [50, 60], rating: "yellow", pa: true, notes: "CV pathway available." },
-        zepbound_weight_loss: { prob: [25, 35], rating: "red", pa: true, notes: "Plan-dependent." },
-        zepbound_osa: { prob: [40, 50], rating: "yellow", pa: true, notes: "OSA pathway available." },
-        mounjaro_t2d: { prob: [85, 95], rating: "green", pa: true, notes: "Standard diabetes coverage." },
-        ozempic_t2d: { prob: [85, 95], rating: "green", pa: false, notes: "Standard diabetes coverage." },
-      },
-    },
-  },
-  tricare: {
-    states: {
-      _default: {
-        wegovy_weight_loss: { prob: [15, 25], rating: "red", pa: true, notes: "Generally excluded. Exception requests required." },
-        wegovy_cv: { prob: [50, 65], rating: "yellow", pa: true, notes: "CV indication is a stronger pathway for TRICARE." },
-        zepbound_osa: { prob: [40, 55], rating: "yellow", pa: true, notes: "OSA pathway may be viable." },
-        mounjaro_t2d: { prob: [80, 90], rating: "green", pa: true, notes: "Covered for diabetes with PA." },
-        ozempic_t2d: { prob: [80, 90], rating: "green", pa: true, notes: "Covered for diabetes with PA." },
-      },
-    },
-  },
-  bcbs_fep: {
-    states: {
-      _default: {
-        wegovy_weight_loss: { prob: [60, 70], rating: "green", pa: true, notes: "One of the strongest federal programs for GLP-1 access." },
-        zepbound_weight_loss: { prob: [55, 65], rating: "yellow", pa: true, notes: "Coverage expanding." },
-        mounjaro_t2d: { prob: [85, 95], rating: "green", pa: true, notes: "Standard diabetes coverage." },
-        ozempic_t2d: { prob: [85, 95], rating: "green", pa: false, notes: "Standard diabetes coverage." },
-      },
-    },
-  },
-  va: {
-    states: {
-      _default: {
-        wegovy_weight_loss: { prob: [20, 30], rating: "red", pa: true, notes: "Non-formulary. Exception request required. Document comorbidities heavily." },
-        wegovy_cv: { prob: [40, 55], rating: "yellow", pa: true, notes: "CV indication has better chances." },
-        mounjaro_t2d: { prob: [80, 90], rating: "green", pa: true, notes: "Covered on formulary for diabetes." },
-        ozempic_t2d: { prob: [80, 90], rating: "green", pa: true, notes: "Covered on formulary for diabetes." },
-      },
-    },
-  },
-  medicare: {
-    states: {
-      _default: {
-        wegovy_weight_loss: { prob: [0, 0], rating: "red", pa: false, notes: "Statutory exclusion. Cannot cover weight-loss-only indication." },
-        wegovy_cv: { prob: [45, 60], rating: "yellow", pa: true, notes: "If patient has prior MI, stroke, PAD, or CAD + BMI 27+." },
-        zepbound_weight_loss: { prob: [0, 0], rating: "red", pa: false, notes: "Statutory exclusion." },
-        zepbound_osa: { prob: [40, 55], rating: "yellow", pa: true, notes: "If patient has moderate-severe OSA (AHI 15+) + BMI 30+." },
-        mounjaro_t2d: { prob: [85, 95], rating: "green", pa: true, notes: "Fully covered for diabetes." },
-        ozempic_t2d: { prob: [85, 95], rating: "green", pa: true, notes: "Fully covered for diabetes." },
-      },
-    },
-  },
-  medicaid_fl: {
-    states: {
-      FL: {
-        wegovy_weight_loss: { prob: [0, 0], rating: "red", pa: false, notes: "Weight control meds explicitly non-covered under FL Medicaid." },
-        zepbound_weight_loss: { prob: [0, 0], rating: "red", pa: false, notes: "Not covered." },
-        mounjaro_t2d: { prob: [75, 85], rating: "green", pa: true, notes: "Covered for T2D only through MCO." },
-        ozempic_t2d: { prob: [75, 85], rating: "green", pa: true, notes: "Covered for T2D only through MCO." },
-      },
-    },
-  },
-  medicaid_ny: {
-    states: {
-      NY: {
-        wegovy_weight_loss: { prob: [80, 90], rating: "green", pa: false, notes: "MOST GENEROUS STATE. No PA required. Meds on formulary." },
-        zepbound_weight_loss: { prob: [80, 90], rating: "green", pa: false, notes: "Same generous coverage as Wegovy." },
-        mounjaro_t2d: { prob: [85, 95], rating: "green", pa: false, notes: "Standard diabetes coverage." },
-        ozempic_t2d: { prob: [85, 95], rating: "green", pa: false, notes: "Standard diabetes coverage." },
-      },
-    },
-  },
-  medicaid_il: {
-    states: {
-      IL: {
-        wegovy_weight_loss: { prob: [65, 75], rating: "green", pa: true, notes: "Simple criteria: BMI 30+ with PA. No diet documentation required." },
-        zepbound_weight_loss: { prob: [65, 75], rating: "green", pa: true, notes: "Same simple criteria as Wegovy." },
-        mounjaro_t2d: { prob: [85, 95], rating: "green", pa: true, notes: "Standard diabetes coverage." },
-        ozempic_t2d: { prob: [85, 95], rating: "green", pa: true, notes: "Standard diabetes coverage." },
-      },
-    },
-  },
-  medi_cal: {
-    states: {
-      CA: {
-        wegovy_weight_loss: { prob: [0, 0], rating: "red", pa: false, notes: "ELIMINATED Jan 2026. OSA/CV indications still covered." },
-        wegovy_cv: { prob: [50, 60], rating: "yellow", pa: true, notes: "CV indication still covered." },
-        zepbound_weight_loss: { prob: [0, 0], rating: "red", pa: false, notes: "Not covered for weight loss." },
-        zepbound_osa: { prob: [40, 55], rating: "yellow", pa: true, notes: "OSA indication may still be covered." },
-        mounjaro_t2d: { prob: [85, 95], rating: "green", pa: true, notes: "Standard diabetes coverage." },
-        ozempic_t2d: { prob: [85, 95], rating: "green", pa: false, notes: "Standard diabetes coverage." },
-      },
-    },
-  },
-  bcbs_ma: {
-    states: {
-      MA: {
-        wegovy_weight_loss: { prob: [5, 10], rating: "red", pa: true, notes: "DROPPED coverage Jan 2026. Only covered if employer purchased rider (20% did)." },
-        zepbound_weight_loss: { prob: [5, 10], rating: "red", pa: true, notes: "Same — dropped unless employer rider." },
-        mounjaro_t2d: { prob: [85, 95], rating: "green", pa: true, notes: "Still fully covered for diabetes." },
-        ozempic_t2d: { prob: [85, 95], rating: "green", pa: false, notes: "Still fully covered for diabetes." },
-      },
-    },
-  },
-  bcbs_mi: {
-    states: {
-      MI: {
-        wegovy_weight_loss: { prob: [5, 10], rating: "red", pa: true, notes: "DROPPED for fully-insured large groups. Requires BMI 35+ if any coverage remains." },
-        zepbound_weight_loss: { prob: [5, 10], rating: "red", pa: true, notes: "Same — dropped." },
-        mounjaro_t2d: { prob: [80, 90], rating: "green", pa: true, notes: "Still covered for diabetes." },
-        ozempic_t2d: { prob: [80, 90], rating: "green", pa: false, notes: "Still covered for diabetes." },
-      },
-    },
-  },
-  blue_shield_ca: {
-    states: {
-      CA: {
-        wegovy_weight_loss: { prob: [20, 30], rating: "red", pa: true, notes: "Requires BMI 40+ AND participation in comprehensive weight loss program." },
-        wegovy_cv: { prob: [50, 60], rating: "yellow", pa: true, notes: "CV indication pathway much better." },
-        mounjaro_t2d: { prob: [85, 95], rating: "green", pa: true, notes: "Standard diabetes coverage." },
-        ozempic_t2d: { prob: [85, 95], rating: "green", pa: false, notes: "Standard diabetes coverage." },
-      },
-    },
-  },
-  kaiser: {
-    states: {
-      CA: {
-        wegovy_weight_loss: { prob: [25, 35], rating: "red", pa: true, notes: "Restrictive. Internal formulary management. Better via diabetes pathway." },
-        wegovy_cv: { prob: [45, 55], rating: "yellow", pa: true, notes: "CV pathway available." },
-        mounjaro_t2d: { prob: [80, 90], rating: "green", pa: true, notes: "Covered via internal formulary." },
-        ozempic_t2d: { prob: [80, 90], rating: "green", pa: false, notes: "Covered via internal formulary." },
-      },
-      _default: {
-        wegovy_weight_loss: { prob: [25, 35], rating: "red", pa: true, notes: "Restrictive internal formulary." },
-        wegovy_cv: { prob: [45, 55], rating: "yellow", pa: true, notes: "CV pathway available." },
-        mounjaro_t2d: { prob: [80, 90], rating: "green", pa: true, notes: "Covered via internal formulary." },
-        ozempic_t2d: { prob: [80, 90], rating: "green", pa: false, notes: "Standard diabetes coverage." },
-      },
-    },
-  },
+const B = {
+  red: "#ED1B1B", pink: "#FDE7E7", black: "#0C0D0F", white: "#FFFFFF",
+  light: "#FAF9F7", cream: "#F5F3EF", mid: "#E5E5E5", gray: "#55575A",
+  dark: "#444", green: "#1B8A4A", greenLight: "#E8F5EE",
+  amber: "#F59E0B", amberLight: "#FFFBEB",
+  blue: "#1A6EED", blueLight: "#EBF2FF",
+  redLight: "#FDE7E7",
 };
 
-// Generic fallback for unknown carriers
-const GENERIC_DB: Record<string, CarrierStates> = {
-  employer_large: {
-    _default: {
-      wegovy_weight_loss: { prob: [35, 50], rating: "yellow", pa: true, notes: "Large employer — about 43% of firms 5000+ cover GLP-1s." },
-      wegovy_cv: { prob: [50, 65], rating: "yellow", pa: true, notes: "CV pathway available." },
-      zepbound_weight_loss: { prob: [30, 45], rating: "yellow", pa: true, notes: "Coverage varies by plan design." },
-      zepbound_osa: { prob: [40, 55], rating: "yellow", pa: true, notes: "OSA pathway available." },
-      mounjaro_t2d: { prob: [80, 90], rating: "green", pa: true, notes: "Near-universal for T2D." },
-      ozempic_t2d: { prob: [80, 90], rating: "green", pa: false, notes: "Near-universal for T2D." },
-    },
-  },
-  employer_small: {
-    _default: {
-      wegovy_weight_loss: { prob: [10, 20], rating: "red", pa: true, notes: "Small employers rarely cover GLP-1s for weight loss." },
-      wegovy_cv: { prob: [40, 55], rating: "yellow", pa: true, notes: "CV pathway may be available." },
-      zepbound_weight_loss: { prob: [8, 18], rating: "red", pa: true, notes: "Low probability on small employer plans." },
-      zepbound_osa: { prob: [30, 45], rating: "yellow", pa: true, notes: "OSA pathway may be available." },
-      mounjaro_t2d: { prob: [75, 85], rating: "green", pa: true, notes: "Diabetes coverage more common." },
-      ozempic_t2d: { prob: [75, 85], rating: "green", pa: false, notes: "Diabetes coverage more common." },
-    },
-  },
-  aca_marketplace: {
-    _default: {
-      wegovy_weight_loss: { prob: [5, 15], rating: "red", pa: true, notes: "ACA marketplace plans rarely cover GLP-1s for weight loss." },
-      wegovy_cv: { prob: [30, 45], rating: "yellow", pa: true, notes: "CV pathway may be available." },
-      zepbound_weight_loss: { prob: [5, 15], rating: "red", pa: true, notes: "Very low probability on marketplace." },
-      mounjaro_t2d: { prob: [70, 80], rating: "green", pa: true, notes: "Diabetes coverage varies by plan." },
-      ozempic_t2d: { prob: [70, 80], rating: "green", pa: false, notes: "Diabetes coverage varies by plan." },
-    },
-  },
+const font = "'Manrope', sans-serif";
+const fontHead = "'Poppins', sans-serif";
+
+// ═══════════════════════════════════════════════════════
+// TYPES
+// ═══════════════════════════════════════════════════════
+
+type IndicationData = {
+  prob: [number, number];
+  pa: boolean;
+  notes: string;
 };
 
-// ─────────────────────────────────────────────
-// CARRIER LIST (60+ carriers with search)
-// ─────────────────────────────────────────────
-type CarrierOption = { label: string; key: string };
+type CarrierDatabase = Record<string, IndicationData>;
 
-const CARRIER_OPTIONS: CarrierOption[] = [
-  { label: "UnitedHealthcare", key: "uhc" },
-  { label: "Blue Cross Blue Shield (General)", key: "bcbs_generic" },
-  { label: "Florida Blue (BCBS FL)", key: "bcbs_fl" },
-  { label: "BCBS Massachusetts", key: "bcbs_ma" },
-  { label: "BCBS Michigan", key: "bcbs_mi" },
-  { label: "Anthem Blue Cross Blue Shield", key: "bcbs_generic" },
-  { label: "Highmark Blue Cross Blue Shield", key: "bcbs_generic" },
-  { label: "Independence Blue Cross", key: "bcbs_generic" },
-  { label: "CareFirst BlueCross BlueShield", key: "bcbs_generic" },
-  { label: "Premera Blue Cross", key: "bcbs_generic" },
-  { label: "Regence BlueCross BlueShield", key: "bcbs_generic" },
-  { label: "BCBS of Texas", key: "bcbs_generic" },
-  { label: "BCBS of Illinois", key: "bcbs_generic" },
-  { label: "BCBS of North Carolina", key: "bcbs_generic" },
-  { label: "BCBS of Georgia", key: "bcbs_generic" },
-  { label: "BCBS of Alabama", key: "bcbs_generic" },
-  { label: "BCBS of South Carolina", key: "bcbs_generic" },
-  { label: "BCBS of Tennessee", key: "bcbs_generic" },
-  { label: "BCBS of Arkansas", key: "bcbs_generic" },
-  { label: "BCBS of Colorado", key: "bcbs_generic" },
-  { label: "BCBS of Arizona", key: "bcbs_generic" },
-  { label: "BCBS of Minnesota (MN)", key: "bcbs_generic" },
-  { label: "BCBS of Nebraska", key: "bcbs_generic" },
-  { label: "BCBS of Kansas City", key: "bcbs_generic" },
-  { label: "BCBS of Western New York", key: "bcbs_generic" },
-  { label: "BCBS of Vermont", key: "bcbs_generic" },
-  { label: "BCBS of Delaware", key: "bcbs_generic" },
-  { label: "Aetna", key: "aetna" },
-  { label: "Cigna / Evernorth", key: "cigna" },
-  { label: "Humana", key: "humana" },
-  { label: "Kaiser Permanente", key: "kaiser" },
-  { label: "Blue Shield of California", key: "blue_shield_ca" },
-  { label: "Medi-Cal (California Medicaid)", key: "medi_cal" },
-  { label: "Centene / Ambetter", key: "uhc" },
-  { label: "Molina Healthcare", key: "uhc" },
-  { label: "WellCare", key: "uhc" },
-  { label: "Oscar Health", key: "aetna" },
-  { label: "Bright Health", key: "aetna" },
-  { label: "Community Health Plan", key: "uhc" },
-  { label: "Health Net", key: "aetna" },
-  { label: "Tufts Health Plan", key: "uhc" },
-  { label: "Harvard Pilgrim Health Care", key: "uhc" },
-  { label: "Point32Health", key: "uhc" },
-  { label: "Geisinger Health Plan", key: "uhc" },
-  { label: "UPMC Health Plan", key: "aetna" },
-  { label: "Presbyterian Health Plan", key: "uhc" },
-  { label: "Medica", key: "uhc" },
-  { label: "Sanford Health", key: "uhc" },
-  { label: "CHRISTUS Health Plan", key: "uhc" },
-  { label: "Scott & White Health Plan", key: "uhc" },
-  { label: "Baylor Scott & White Health Plan", key: "aetna" },
-  { label: "CareSource", key: "uhc" },
-  { label: "Medical Mutual", key: "uhc" },
-  { label: "SummaCare", key: "uhc" },
-  { label: "Aultcare", key: "uhc" },
-  { label: "Capital BlueCross", key: "bcbs_generic" },
-  { label: "Excellus BlueCross BlueShield (NY)", key: "bcbs_generic" },
-  { label: "Horizon Blue Cross Blue Shield (NJ)", key: "bcbs_generic" },
-  { label: "BCBS of Rhode Island", key: "bcbs_generic" },
-  { label: "BCBS of Hawaii", key: "bcbs_generic" },
-  { label: "BCBS of Wyoming", key: "bcbs_generic" },
-  { label: "TRICARE", key: "tricare" },
-  { label: "VA Health", key: "va" },
-  { label: "BCBS Federal Employee Program (FEP)", key: "bcbs_fep" },
-  { label: "Medicare Part D", key: "medicare" },
-  { label: "Medicaid", key: "medicaid" },
-  { label: "Other / Not listed", key: "other" },
-];
+type BoostItem = { label: string; points: number; icon: string };
+type RoadmapItem = { type: "green" | "blue" | "amber"; label: string };
 
-// ─────────────────────────────────────────────
-// STATE DATA
-// ─────────────────────────────────────────────
-const STATE_NAMES: Record<string, string> = {
-  AL:"Alabama", AK:"Alaska", AZ:"Arizona", AR:"Arkansas", CA:"California",
-  CO:"Colorado", CT:"Connecticut", DE:"Delaware", FL:"Florida", GA:"Georgia",
-  HI:"Hawaii", ID:"Idaho", IL:"Illinois", IN:"Indiana", IA:"Iowa",
-  KS:"Kansas", KY:"Kentucky", LA:"Louisiana", ME:"Maine", MD:"Maryland",
-  MA:"Massachusetts", MI:"Michigan", MN:"Minnesota", MS:"Mississippi", MO:"Missouri",
-  MT:"Montana", NE:"Nebraska", NV:"Nevada", NH:"New Hampshire", NJ:"New Jersey",
-  NM:"New Mexico", NY:"New York", NC:"North Carolina", ND:"North Dakota", OH:"Ohio",
-  OK:"Oklahoma", OR:"Oregon", PA:"Pennsylvania", RI:"Rhode Island", SC:"South Carolina",
-  SD:"South Dakota", TN:"Tennessee", TX:"Texas", UT:"Utah", VT:"Vermont",
-  VA:"Virginia", WA:"Washington", WV:"West Virginia", WI:"Wisconsin", WY:"Wyoming", DC:"Washington D.C.",
+type MedResult = {
+  prob: number;
+  indication: string;
+  indicationLabel: string;
+  note: string;
+  pa: boolean;
+  boosts: BoostItem[];
+  roadmap: RoadmapItem[];
 };
 
-// ─────────────────────────────────────────────
-// PROBABILITY ENGINE
-// ─────────────────────────────────────────────
-type QuizAnswers = {
-  carrier: CarrierOption | null;
-  planSource: string;
+type QuizResults = {
+  medications: Record<string, MedResult>;
+  bestMedication: string;
+  bestProbability: number;
+  overallRating: "green" | "yellow" | "red";
+  overallLabel: string;
+};
+
+type Phase = "landing" | "quiz" | "initial_results" | "boost" | "email" | "results";
+
+type Answers = {
+  insurer: string;
+  planType: string;
   employerSize: string;
   state: string;
   diagnoses: string[];
   bmiRange: string;
 };
 
-type MedResult = {
-  name: string;
-  generic: string;
-  manufacturer: string;
-  prob: number;
-  indicationLabel: string;
-  notes: string;
-  pa: boolean;
-  rating: "green" | "yellow" | "red";
+type BoostAnswers = {
+  priorMeds: string[];
+  lifestyleProgram: string;
+  labWork: string[];
+  weightDuration: string;
+  additionalConditions: string[];
+  tricarePlan: string;
 };
 
-function resolveCarrierDbKey(answers: QuizAnswers): string {
-  const { carrier, planSource, state } = answers;
-  if (planSource === "medicare") return "medicare";
-  if (planSource === "tricare") return "tricare";
-  if (planSource === "va") return "va";
-  if (planSource === "bcbs_fep") return "bcbs_fep";
-  if (planSource === "medicaid") {
-    if (state === "FL") return "medicaid_fl";
+// ═══════════════════════════════════════════════════════
+// CARRIER COVERAGE DATA (research-verified v2 database)
+// ═══════════════════════════════════════════════════════
+
+const CARRIER_DATA: Record<string, CarrierDatabase> = {
+  cigna: {
+    wegovy_weight_loss: { prob: [35, 50], pa: true, notes: "PA required. Express Scripts PBM. $200/mo cost cap if plan covers." },
+    wegovy_cv: { prob: [60, 75], pa: true, notes: "Strongest pathway with documented CVD + BMI 27+." },
+    zepbound_weight_loss: { prob: [30, 45], pa: true, notes: "Best major PBM for Zepbound access." },
+    zepbound_osa: { prob: [40, 55], pa: true, notes: "OSA pathway. Sleep study required." },
+    mounjaro_t2d: { prob: [85, 92], pa: true, notes: "Preferred formulary for T2D." },
+    ozempic_t2d: { prob: [85, 92], pa: false, notes: "Preferred formulary for T2D." },
+  },
+  aetna: {
+    wegovy_weight_loss: { prob: [30, 45], pa: true, notes: "CVS Caremark preferred GLP-1 for weight management." },
+    wegovy_cv: { prob: [55, 70], pa: true, notes: "CV indication strengthens approval." },
+    zepbound_weight_loss: { prob: [5, 10], pa: true, notes: "EXCLUDED from CVS Caremark formulary. Near-zero chance." },
+    zepbound_osa: { prob: [10, 20], pa: true, notes: "Excluded from formulary. Exception-only." },
+    mounjaro_t2d: { prob: [85, 92], pa: true, notes: "T2D coverage strong." },
+    ozempic_t2d: { prob: [85, 92], pa: false, notes: "T2D coverage strong." },
+  },
+  uhc: {
+    wegovy_weight_loss: { prob: [25, 40], pa: true, notes: "Depends on employer plan election." },
+    wegovy_cv: { prob: [60, 75], pa: true, notes: "OptumRx added Wegovy as preferred for CV indication." },
+    zepbound_weight_loss: { prob: [20, 35], pa: true, notes: "Plan-dependent. Not on standard formulary." },
+    zepbound_osa: { prob: [40, 55], pa: true, notes: "OSA pathway active per UHC policy." },
+    mounjaro_t2d: { prob: [85, 95], pa: true, notes: "Preferred formulary for T2D." },
+    ozempic_t2d: { prob: [85, 95], pa: false, notes: "Preferred formulary for T2D." },
+  },
+  humana: {
+    wegovy_weight_loss: { prob: [5, 10], pa: false, notes: "Benefit exclusion. Obesity codes auto-rejected at pharmacy." },
+    wegovy_cv: { prob: [30, 40], pa: true, notes: "CV indication may work as different benefit category." },
+    zepbound_weight_loss: { prob: [5, 10], pa: false, notes: "Benefit exclusion. Auto-rejected." },
+    zepbound_osa: { prob: [35, 50], pa: true, notes: "OSA pathway available." },
+    mounjaro_t2d: { prob: [80, 90], pa: true, notes: "T2D coverage intact." },
+    ozempic_t2d: { prob: [80, 90], pa: false, notes: "T2D coverage intact." },
+  },
+  bcbs_fl: {
+    wegovy_weight_loss: { prob: [20, 35], pa: true, notes: "Requires employer obesity medication rider." },
+    wegovy_cv: { prob: [45, 60], pa: true, notes: "CV indication pathway. Better odds." },
+    zepbound_weight_loss: { prob: [15, 25], pa: true, notes: "CVS Caremark removed Zepbound. Rider + exception needed." },
+    zepbound_osa: { prob: [30, 45], pa: true, notes: "OSA pathway may work." },
+    mounjaro_t2d: { prob: [80, 90], pa: true, notes: "T2D coverage intact." },
+    ozempic_t2d: { prob: [80, 90], pa: false, notes: "T2D coverage intact." },
+  },
+  bcbs_fep: {
+    wegovy_weight_loss: { prob: [40, 55], pa: true, notes: "One of the strongest federal programs for GLP-1 access." },
+    wegovy_cv: { prob: [60, 75], pa: true, notes: "CV indication strong pathway." },
+    zepbound_weight_loss: { prob: [35, 50], pa: true, notes: "FEP Blue Focus: Tier 2." },
+    zepbound_osa: { prob: [45, 60], pa: true, notes: "OSA pathway available." },
+    mounjaro_t2d: { prob: [85, 95], pa: true, notes: "Standard T2D coverage." },
+    ozempic_t2d: { prob: [85, 95], pa: false, notes: "Standard T2D coverage." },
+  },
+  tricare: {
+    wegovy_weight_loss: { prob: [45, 60], pa: true, notes: "Prime/Select: Covered with PA + step therapy." },
+    wegovy_cv: { prob: [60, 75], pa: true, notes: "CV risk reduction recognized. Prime/Select only." },
+    zepbound_weight_loss: { prob: [40, 55], pa: true, notes: "Brand formulary Tier 2 — cheaper copay than Wegovy." },
+    zepbound_osa: { prob: [50, 65], pa: true, notes: "OSA pathway. Sleep study required. Prime/Select only." },
+    mounjaro_t2d: { prob: [80, 90], pa: true, notes: "Covered for ALL TRICARE plans including For Life." },
+    ozempic_t2d: { prob: [80, 90], pa: true, notes: "Covered for ALL TRICARE plans including For Life." },
+  },
+  tricare_tfl: {
+    wegovy_weight_loss: { prob: [0, 0], pa: false, notes: "EXCLUDED since Aug 2025 for TRICARE For Life." },
+    wegovy_cv: { prob: [0, 0], pa: false, notes: "EXCLUDED for TFL." },
+    zepbound_weight_loss: { prob: [0, 0], pa: false, notes: "EXCLUDED since Aug 2025." },
+    zepbound_osa: { prob: [0, 0], pa: false, notes: "EXCLUDED for TFL." },
+    mounjaro_t2d: { prob: [80, 90], pa: true, notes: "T2D medications STILL covered for TFL." },
+    ozempic_t2d: { prob: [80, 90], pa: true, notes: "T2D medications STILL covered for TFL." },
+  },
+  va: {
+    wegovy_weight_loss: { prob: [40, 55], pa: true, notes: "Requires MOVE! program participation." },
+    wegovy_cv: { prob: [55, 70], pa: true, notes: "CV indication pathway. MACE prevention covered." },
+    zepbound_weight_loss: { prob: [25, 35], pa: true, notes: "Limited. OSA pathway better." },
+    zepbound_osa: { prob: [45, 60], pa: true, notes: "OSA pathway available." },
+    mounjaro_t2d: { prob: [85, 95], pa: true, notes: "VA formulary T2D coverage." },
+    ozempic_t2d: { prob: [85, 95], pa: true, notes: "VA formulary T2D coverage." },
+  },
+  medicare: {
+    wegovy_weight_loss: { prob: [0, 0], pa: false, notes: "Statutory exclusion. Bridge Program launches July 2026." },
+    wegovy_cv: { prob: [55, 70], pa: true, notes: "CV risk reduction covered by many Part D plans." },
+    zepbound_weight_loss: { prob: [0, 0], pa: false, notes: "Statutory exclusion. Bridge July 2026." },
+    zepbound_osa: { prob: [40, 55], pa: true, notes: "OSA indication covered by some Part D plans." },
+    mounjaro_t2d: { prob: [85, 95], pa: true, notes: "Standard Part D benefit for T2D." },
+    ozempic_t2d: { prob: [85, 95], pa: true, notes: "Standard Part D benefit for T2D." },
+  },
+  kaiser: {
+    wegovy_weight_loss: { prob: [15, 30], pa: true, notes: "Restrictive. Requires Kaiser weight management program." },
+    wegovy_cv: { prob: [45, 60], pa: true, notes: "CV indication better pathway." },
+    zepbound_weight_loss: { prob: [10, 20], pa: true, notes: "Very restricted." },
+    zepbound_osa: { prob: [30, 45], pa: true, notes: "OSA pathway." },
+    mounjaro_t2d: { prob: [80, 90], pa: true, notes: "Internal formulary coverage." },
+    ozempic_t2d: { prob: [80, 90], pa: false, notes: "Internal formulary coverage." },
+  },
+  medicaid_ny: {
+    wegovy_weight_loss: { prob: [75, 90], pa: false, notes: "Most generous state. No PA required." },
+    zepbound_weight_loss: { prob: [70, 85], pa: false, notes: "Same generous coverage." },
+    mounjaro_t2d: { prob: [85, 95], pa: false, notes: "No PA required." },
+    ozempic_t2d: { prob: [85, 95], pa: false, notes: "No PA required." },
+  },
+  medicaid_il: {
+    wegovy_weight_loss: { prob: [5, 10], pa: true, notes: "Weight loss NOT covered. T2D only." },
+    zepbound_weight_loss: { prob: [5, 10], pa: true, notes: "Weight loss NOT covered." },
+    mounjaro_t2d: { prob: [80, 90], pa: true, notes: "T2D coverage with PA." },
+    ozempic_t2d: { prob: [80, 90], pa: true, notes: "T2D coverage with PA." },
+  },
+  medicaid_fl: {
+    wegovy_weight_loss: { prob: [0, 5], pa: false, notes: "Weight loss meds non-covered under FL Medicaid." },
+    zepbound_weight_loss: { prob: [0, 5], pa: false, notes: "Not covered." },
+    mounjaro_t2d: { prob: [65, 80], pa: true, notes: "Limited T2D coverage through MCO." },
+    ozempic_t2d: { prob: [75, 85], pa: true, notes: "T2D coverage through MCO." },
+  },
+  medicaid_ca: {
+    wegovy_weight_loss: { prob: [0, 3], pa: false, notes: "Eliminated Jan 2026." },
+    wegovy_cv: { prob: [45, 60], pa: true, notes: "CV indication still covered." },
+    zepbound_weight_loss: { prob: [0, 3], pa: false, notes: "Not covered." },
+    zepbound_osa: { prob: [35, 50], pa: true, notes: "OSA may still be covered." },
+    mounjaro_t2d: { prob: [75, 85], pa: true, notes: "T2D only." },
+    ozempic_t2d: { prob: [80, 90], pa: false, notes: "T2D coverage." },
+  },
+};
+
+const GENERIC_BCBS: CarrierDatabase = {
+  wegovy_weight_loss: { prob: [18, 30], pa: true, notes: "Requires employer obesity medication rider." },
+  wegovy_cv: { prob: [40, 55], pa: true, notes: "CV indication may still be covered." },
+  zepbound_weight_loss: { prob: [12, 22], pa: true, notes: "Depends on PBM." },
+  zepbound_osa: { prob: [28, 42], pa: true, notes: "OSA pathway may work." },
+  mounjaro_t2d: { prob: [80, 90], pa: true, notes: "T2D coverage intact." },
+  ozempic_t2d: { prob: [80, 90], pa: false, notes: "T2D coverage intact." },
+};
+
+const GENERIC_CARRIER: CarrierDatabase = {
+  wegovy_weight_loss: { prob: [20, 38], pa: true, notes: "Coverage varies by plan." },
+  wegovy_cv: { prob: [45, 60], pa: true, notes: "CV pathway may be available." },
+  zepbound_weight_loss: { prob: [15, 30], pa: true, notes: "Coverage varies." },
+  zepbound_osa: { prob: [30, 45], pa: true, notes: "OSA pathway may be available." },
+  mounjaro_t2d: { prob: [80, 90], pa: true, notes: "T2D coverage generally available." },
+  ozempic_t2d: { prob: [80, 90], pa: false, notes: "T2D coverage generally available." },
+};
+
+const MANDATE_STATES: Record<string, number> = { CT: 10, DE: 8, MD: 10, NJ: 8, VT: 8, WV: 8 };
+const RESTRICTED_MEDICAID = ["FL", "TX", "CA", "PA", "MI", "NH"];
+const EMPLOYER_MODS: Record<string, number> = {
+  large_5000_plus: 1.15, medium_500_4999: 1.0, small_under_500: 0.7,
+  government_federal: 1.2, government_state: 0.9, self_employed: 0.6, marketplace_aca: 0.5,
+};
+
+const CARRIER_MAP: Record<string, string> = {
+  "aetna": "aetna", "anthem blue cross blue shield": "aetna",
+  "cigna": "cigna", "florida blue (bcbs fl)": "bcbs_fl",
+  "humana": "humana", "kaiser permanente": "kaiser",
+  "unitedhealthcare": "uhc", "umr": "uhc", "tricare": "tricare",
+  "va health": "va", "medicare": "medicare",
+  "bcbs federal employee program (fep)": "bcbs_fep",
+};
+
+// ═══════════════════════════════════════════════════════
+// PROBABILITY ENGINE v2 — Table-driven + Boost system
+// ═══════════════════════════════════════════════════════
+
+function resolveCarrier(insurer: string, planType: string, state: string, tricarePlan: string): string | null {
+  const ins = (insurer || "").toLowerCase();
+  if (planType === "tricare") {
+    if (tricarePlan === "tfl") return "tricare_tfl";
+    return "tricare";
+  }
+  if (planType === "va") return "va";
+  if (planType === "bcbs_fep") return "bcbs_fep";
+  if (planType === "medicare") return "medicare";
+  if (planType === "medicaid") {
     if (state === "NY") return "medicaid_ny";
     if (state === "IL") return "medicaid_il";
-    if (state === "CA") return "medi_cal";
-    return "medicaid_generic";
+    if (state === "FL") return "medicaid_fl";
+    if (state === "CA") return "medicaid_ca";
+    if (RESTRICTED_MEDICAID.includes(state)) return "medicaid_fl";
+    return null;
   }
-
-  const key = carrier?.key || "other";
-
-  // Handle BCBS generic with state specifics
-  if (key === "bcbs_generic") {
-    if (state === "FL") return "bcbs_fl";
-    if (state === "MA") return "bcbs_ma";
-    if (state === "MI") return "bcbs_mi";
-    return "bcbs_generic";
-  }
-
-  return key;
+  const key = CARRIER_MAP[ins];
+  if (key !== undefined) return key;
+  if (ins.includes("cigna")) return "cigna";
+  if (ins.includes("aetna") || ins.includes("anthem")) return "aetna";
+  if (ins.includes("united") || ins.includes("uhc")) return "uhc";
+  if (ins.includes("humana")) return "humana";
+  if (ins.includes("kaiser")) return "kaiser";
+  if (ins.includes("florida blue")) return "bcbs_fl";
+  if (ins.includes("fep") || ins.includes("federal employee")) return "bcbs_fep";
+  if (ins.includes("bcbs") || ins.includes("blue cross") || ins.includes("blue shield")) return null;
+  return null;
 }
 
-function getIndicationKey(med: string, diagnoses: string[]): string | null {
-  switch (med) {
-    case "wegovy":
-      if (diagnoses.includes("cvd")) return "wegovy_cv";
-      return "wegovy_weight_loss";
-    case "zepbound":
-      if (diagnoses.includes("osa")) return "zepbound_osa";
-      return "zepbound_weight_loss";
-    case "mounjaro":
-      if (diagnoses.includes("t2d")) return "mounjaro_t2d";
-      return null;
-    case "ozempic":
-      if (diagnoses.includes("t2d")) return "ozempic_t2d";
-      return null;
-    default:
-      return null;
-  }
+function getCarrierData(carrierKey: string | null, insurer: string): CarrierDatabase {
+  if (carrierKey && CARRIER_DATA[carrierKey]) return CARRIER_DATA[carrierKey];
+  const ins = (insurer || "").toLowerCase();
+  if (ins.includes("bcbs") || ins.includes("blue cross") || ins.includes("blue shield") ||
+      ins.includes("anthem") || ins.includes("carefirst") || ins.includes("horizon") ||
+      ins.includes("empire") || ins.includes("independence")) return GENERIC_BCBS;
+  return GENERIC_CARRIER;
 }
 
-function getIndicationLabel(indicationKey: string | null, diagnoses: string[]): string {
-  if (!indicationKey) {
-    if (diagnoses.includes("t2d")) return "Type 2 Diabetes";
-    return "Weight Management (no approved indication)";
+function buildRoadmap(
+  _med: string,
+  indication: string,
+  data: IndicationData,
+  answers: Answers,
+  boostAnswers: BoostAnswers,
+  hasStepTherapy: boolean,
+  boosts: BoostItem[]
+): RoadmapItem[] {
+  const items: RoadmapItem[] = [];
+  const { lifestyleProgram } = boostAnswers;
+
+  boosts.forEach(b => items.push({ type: "green", label: b.label }));
+  if (answers.diagnoses.includes("obesity")) items.push({ type: "green", label: "BMI qualifies for coverage criteria" });
+
+  items.push({ type: "blue", label: "Insurance benefit verification" });
+  if (data.pa) items.push({ type: "blue", label: "Prior authorization submission" });
+  items.push({ type: "blue", label: "Letter of medical necessity from Dr. Linda" });
+  if (indication === "cv") items.push({ type: "blue", label: "CV risk reduction documentation" });
+  if (indication === "osa") items.push({ type: "blue", label: "OSA pathway documentation" });
+
+  const userSelectedNoMeds = boostAnswers.priorMeds.includes("none");
+  if (!hasStepTherapy && !userSelectedNoMeds) {
+    items.push({ type: "amber", label: "Prior weight loss medication history strengthens your case" });
   }
-  const labels: Record<string, string> = {
-    wegovy_weight_loss: "Chronic Weight Management",
-    wegovy_cv: "CV Risk Reduction",
-    zepbound_weight_loss: "Chronic Weight Management",
-    zepbound_osa: "Obstructive Sleep Apnea",
-    mounjaro_t2d: "Type 2 Diabetes",
-    ozempic_t2d: "Type 2 Diabetes",
-  };
-  return labels[indicationKey] || "Weight Management";
+  if (!lifestyleProgram || lifestyleProgram === "none") {
+    items.push({ type: "amber", label: "Documented lifestyle modification efforts improve approval odds" });
+  }
+
+  return items;
 }
 
-function calculateMedProb(
-  med: string,
-  dbKey: string,
-  state: string,
-  answers: QuizAnswers
-): MedResult {
-  const { diagnoses, employerSize, planSource, bmiRange } = answers;
-  const indicationKey = getIndicationKey(med, diagnoses);
+function calculateProbability(answers: Answers, boostAnswers: BoostAnswers): QuizResults {
+  const { state, insurer, planType, employerSize, diagnoses } = answers;
+  const { priorMeds = [], lifestyleProgram, labWork = [], weightDuration, additionalConditions = [], tricarePlan } = boostAnswers;
+  const hasDx = (id: string) => diagnoses.includes(id) || additionalConditions.includes(id);
 
-  const META: Record<string, { name: string; generic: string; manufacturer: string }> = {
-    wegovy: { name: "Wegovy", generic: "semaglutide", manufacturer: "Novo Nordisk" },
-    zepbound: { name: "Zepbound", generic: "tirzepatide", manufacturer: "Eli Lilly" },
-    mounjaro: { name: "Mounjaro", generic: "tirzepatide", manufacturer: "Eli Lilly" },
-    ozempic: { name: "Ozempic", generic: "semaglutide", manufacturer: "Novo Nordisk" },
-  };
+  const carrierKey = resolveCarrier(insurer, planType, state, tricarePlan);
+  const carrier = getCarrierData(carrierKey, insurer);
 
-  if (!indicationKey) {
-    return {
-      ...META[med],
-      prob: med === "mounjaro" ? 5 : 3,
-      indicationLabel: "Not approved for weight loss",
-      notes:
-        med === "ozempic"
-          ? "Ozempic is approved for T2D, not weight loss. A diabetes diagnosis would change this."
-          : "No covered indication pathway found for your profile.",
-      pa: false,
-      rating: "red",
-    };
-  }
+  const meds: Record<string, MedResult> = {};
 
-  // Look up base probability
-  let baseProbRange: [number, number] = [20, 35];
-  let notes = "";
-  let pa = true;
-
-  const carrierData = CARRIERS_DB[dbKey];
-  if (carrierData) {
-    const stateData = carrierData.states[state] || carrierData.states["_default"];
-    const indication = stateData?.[indicationKey] || carrierData.states["_default"]?.[indicationKey];
-    if (indication) {
-      baseProbRange = indication.prob;
-      notes = indication.notes;
-      pa = indication.pa;
+  (["wegovy", "zepbound", "mounjaro", "ozempic"] as const).forEach((med) => {
+    let indication: string, indicationLabel: string, key: string;
+    if (med === "wegovy") {
+      if (hasDx("cvd")) { indication = "cv"; indicationLabel = "CV Risk Reduction"; key = "wegovy_cv"; }
+      else { indication = "weight_loss"; indicationLabel = "Weight Management"; key = "wegovy_weight_loss"; }
+    } else if (med === "zepbound") {
+      if (hasDx("osa")) { indication = "osa"; indicationLabel = "Obstructive Sleep Apnea (FDA-approved)"; key = "zepbound_osa"; }
+      else { indication = "weight_loss"; indicationLabel = "Weight Management"; key = "zepbound_weight_loss"; }
+    } else if (med === "mounjaro") {
+      if (hasDx("t2d")) { indication = "t2d"; indicationLabel = "Type 2 Diabetes (FDA-approved)"; key = "mounjaro_t2d"; }
+      else if (hasDx("prediabetes") || hasDx("metabolic") || hasDx("insulin_resistance")) { indication = "prediabetes"; indicationLabel = "Metabolic / Prediabetes (physician advocacy)"; key = "mounjaro_t2d"; }
+      else { indication = "weight_loss"; indicationLabel = "Not FDA-approved for weight loss"; key = "mounjaro_t2d"; }
+    } else {
+      if (hasDx("t2d")) { indication = "t2d"; indicationLabel = "Type 2 Diabetes (FDA-approved)"; key = "ozempic_t2d"; }
+      else { indication = "weight_loss"; indicationLabel = "Not approved for weight loss"; key = "ozempic_t2d"; }
     }
-  } else {
-    // Generic fallback
-    const genericKey =
-      planSource === "aca" ? "aca_marketplace" :
-      employerSize === "large_5000" || employerSize === "gov_federal" ? "employer_large" :
-      "employer_small";
-    const generic = GENERIC_DB[genericKey];
-    const fallback = generic?._default?.[indicationKey];
-    if (fallback) {
-      baseProbRange = fallback.prob;
-      notes = fallback.notes;
-      pa = fallback.pa;
+
+    const data = carrier[key] || GENERIC_CARRIER[key] || { prob: [10, 25] as [number, number], pa: true, notes: "" };
+    let low = data.prob[0], high = data.prob[1];
+
+    if (low === 0 && high <= 5) {
+      meds[med] = { prob: Math.round((low + high) / 2), indication, indicationLabel, note: data.notes, pa: data.pa, boosts: [], roadmap: [] };
+      return;
     }
-  }
 
-  let prob = (baseProbRange[0] + baseProbRange[1]) / 2;
+    if (planType === "employer" && employerSize) {
+      const mod = EMPLOYER_MODS[employerSize] || 1.0;
+      low = Math.round(low * mod); high = Math.round(high * mod);
+    }
 
-  // Employer size modifier
-  const sizeModifiers: Record<string, number> = {
-    large_5000: 1.15,
-    mid_500: 1.0,
-    small: 0.7,
-    gov_federal: 1.2,
-    gov_state: 0.9,
-    self_employed: 0.6,
-    not_sure: 0.95,
-  };
-  if (planSource === "employer") {
-    prob *= sizeModifiers[employerSize] || 1.0;
-  } else if (planSource === "aca") {
-    prob *= 0.5;
-  }
+    if (planType === "employer" && MANDATE_STATES[state] && employerSize !== "large_5000_plus" && employerSize !== "government_federal") {
+      low += MANDATE_STATES[state]; high += MANDATE_STATES[state];
+    }
 
-  // Diagnosis boosts (scaled 0.3 to avoid double-counting primary)
-  const diagBoosts: Record<string, number> = {
-    t2d: 30, cvd: 15, osa: 15, prediabetes: 10, mash: 10, metabolic: 8, obesity: 5, pcos: 3,
-  };
-  let totalBoost = 0;
-  for (const d of diagnoses) {
-    if (diagBoosts[d]) totalBoost += diagBoosts[d] * 0.3;
-  }
-  prob += totalBoost;
+    let dxBoost = 0;
+    if (indication !== "cv" && hasDx("cvd")) dxBoost += 5;
+    if (indication !== "osa" && hasDx("osa")) dxBoost += 5;
+    if (indication !== "t2d" && hasDx("t2d")) dxBoost += 8;
+    if (hasDx("obesity")) dxBoost += 3;
+    if (hasDx("pcos")) dxBoost += 2;
+    if (hasDx("metabolic") && indication !== "prediabetes") dxBoost += 3;
+    if (hasDx("hypertension")) dxBoost += 4;
+    if (hasDx("high_cholesterol")) dxBoost += 3;
+    if (hasDx("fatty_liver")) dxBoost += 4;
+    if (hasDx("joint_pain")) dxBoost += 2;
+    if (hasDx("snoring")) dxBoost += 5;
+    low += dxBoost; high += dxBoost;
 
-  // Mandate state bonus
-  if (MANDATE_STATES.includes(state) && planSource === "employer") {
-    prob += 8;
-  }
+    const boosts: BoostItem[] = [];
 
-  // BMI adjustments
-  if (bmiRange === "under27") {
-    prob -= 15;
-  } else if (bmiRange === "27to30" && !diagnoses.some((d) => ["t2d", "cvd", "osa", "metabolic", "mash", "obesity"].includes(d))) {
-    prob -= 10;
-  } else if (bmiRange === "40plus") {
-    prob += 5;
-  }
+    const stepTherapyMeds = ["phentermine", "contrave", "qsymia", "saxenda", "metformin"];
+    const hasStepTherapy = priorMeds.some(m => stepTherapyMeds.includes(m));
+    const hasAnyPriorMed = priorMeds.length > 0 && !priorMeds.includes("none");
+    if (hasStepTherapy) {
+      const stBoost = priorMeds.filter(m => stepTherapyMeds.includes(m)).length >= 2 ? 18 : 14;
+      low += stBoost; high += stBoost;
+      boosts.push({ label: "Prior weight loss medication", points: stBoost, icon: "check" });
+    } else if (hasAnyPriorMed) {
+      low += 6; high += 6;
+      boosts.push({ label: "Prior medication history", points: 6, icon: "check" });
+    }
 
-  prob = Math.min(95, Math.max(0, Math.round(prob)));
+    if (lifestyleProgram === "supervised") {
+      low += 12; high += 12;
+      boosts.push({ label: "Supervised diet/exercise program", points: 12, icon: "check" });
+    } else if (lifestyleProgram === "self") {
+      low += 6; high += 6;
+      boosts.push({ label: "Self-directed weight loss efforts", points: 6, icon: "check" });
+    }
 
-  const rating: "green" | "yellow" | "red" =
-    prob >= 60 ? "green" : prob >= 30 ? "yellow" : "red";
+    if (labWork.includes("a1c") && !hasDx("t2d") && !hasDx("prediabetes")) {
+      low += 5; high += 5;
+      boosts.push({ label: "A1C / blood sugar on file", points: 5, icon: "check" });
+    }
+    if (labWork.includes("sleep_study") && !hasDx("osa") && med === "zepbound") {
+      low += 8; high += 8;
+      boosts.push({ label: "Sleep study on file", points: 8, icon: "check" });
+    }
+    if (labWork.includes("lipid_panel")) {
+      low += 3; high += 3;
+      boosts.push({ label: "Cholesterol / lipid panel on file", points: 3, icon: "check" });
+    }
+    if (labWork.includes("bp_on_file")) {
+      low += 2; high += 2;
+      boosts.push({ label: "Blood pressure documented", points: 2, icon: "check" });
+    }
+
+    if (weightDuration === "3_plus_years") {
+      low += 8; high += 8;
+      boosts.push({ label: "3+ years managing weight", points: 8, icon: "check" });
+    } else if (weightDuration === "1_3_years") {
+      low += 5; high += 5;
+      boosts.push({ label: "1-3 years managing weight", points: 5, icon: "check" });
+    } else if (weightDuration === "6mo_1yr") {
+      low += 3; high += 3;
+      boosts.push({ label: "6+ months managing weight", points: 3, icon: "check" });
+    }
+
+    low = Math.min(95, Math.max(0, low));
+    high = Math.min(95, Math.max(0, high));
+    let prob = Math.round((low + high) / 2);
+
+    if (med === "mounjaro" && !hasDx("t2d") && !hasDx("prediabetes") && !hasDx("metabolic") && !hasDx("insulin_resistance")) {
+      prob = Math.min(prob, 15);
+    } else if (med === "mounjaro" && hasDx("prediabetes") && !hasDx("t2d")) {
+      prob = Math.min(prob, 62);
+    }
+    if (med === "ozempic" && !hasDx("t2d")) {
+      prob = Math.min(prob, 5);
+    }
+
+    const roadmap = buildRoadmap(med, indication, data, answers, boostAnswers, hasStepTherapy, boosts);
+
+    let note = data.notes;
+    if (med === "wegovy" && hasDx("cvd")) note = "Your heart disease history opens a strong coverage pathway that works even on plans excluding weight loss.";
+    else if (med === "zepbound" && hasDx("osa")) note = "Your sleep apnea diagnosis creates an FDA-approved coverage pathway — this significantly strengthens your odds.";
+    else if (med === "mounjaro" && hasDx("t2d")) note = "Your diabetes diagnosis qualifies you for the highest-probability coverage path.";
+    else if (med === "ozempic" && hasDx("t2d")) note = "Near-universal coverage with your T2D diagnosis.";
+
+    meds[med] = { prob, indication, indicationLabel, note, pa: data.pa, boosts, roadmap };
+  });
+
+  const sorted = Object.entries(meds).sort((a, b) => b[1].prob - a[1].prob);
+  const best = sorted[0];
 
   return {
-    ...META[med],
-    prob,
-    indicationLabel: getIndicationLabel(indicationKey, diagnoses),
-    notes,
-    pa,
-    rating,
+    medications: meds,
+    bestMedication: best[0],
+    bestProbability: best[1].prob,
+    overallRating: best[1].prob >= 60 ? "green" : best[1].prob >= 30 ? "yellow" : "red",
+    overallLabel: best[1].prob >= 60 ? "Good odds!" : best[1].prob >= 30 ? "Worth exploring" : "Coverage unlikely",
   };
 }
 
-function calculateAllMeds(answers: QuizAnswers): MedResult[] {
-  const dbKey = resolveCarrierDbKey(answers);
-  const meds = ["wegovy", "zepbound", "mounjaro", "ozempic"];
-  return meds.map((med) => calculateMedProb(med, dbKey, answers.state, answers));
+// ═══════════════════════════════════════════════════════
+// QUIZ STEP DATA
+// ═══════════════════════════════════════════════════════
+
+const INSURERS = [
+  "Aetna","Anthem Blue Cross Blue Shield","AvMed","Blue Cross Blue Shield (other state)","CareFirst BlueCross BlueShield",
+  "Centene / WellCare","Cigna","Devoted Health","EmblemHealth","Empire Blue Cross Blue Shield",
+  "Florida Blue (BCBS FL)","Geisinger","HAP","Health Net","HealthFirst",
+  "Horizon BCBS NJ","Humana","Independence Blue Cross","Kaiser Permanente",
+  "Medicaid","Medicare","Molina Healthcare","Oscar Health","TRICARE",
+  "UnitedHealthcare","UMR","UPMC","VA Health","BCBS Federal Employee Program (FEP)","Other",
+];
+
+type SelectOption = { id: string; label: string };
+
+const PLAN_TYPES: SelectOption[] = [
+  { id: "employer", label: "Through my employer" },
+  { id: "marketplace", label: "ACA Marketplace / Healthcare.gov" },
+  { id: "medicaid", label: "Medicaid" },
+  { id: "medicare", label: "Medicare" },
+  { id: "tricare", label: "TRICARE (military)" },
+  { id: "va", label: "VA Health" },
+  { id: "bcbs_fep", label: "Federal Employee Program" },
+];
+
+const EMPLOYER_SIZES: SelectOption[] = [
+  { id: "large_5000_plus", label: "Large (5,000+ employees)" },
+  { id: "medium_500_4999", label: "Mid-size (500-4,999)" },
+  { id: "small_under_500", label: "Small (under 500)" },
+  { id: "government_federal", label: "Government / Federal" },
+  { id: "self_employed", label: "Self-employed" },
+];
+
+const DIAGNOSES: SelectOption[] = [
+  { id: "obesity", label: "Obesity (BMI 30+)" },
+  { id: "t2d", label: "Type 2 Diabetes" },
+  { id: "prediabetes", label: "Prediabetes / Insulin Resistance" },
+  { id: "osa", label: "Sleep Apnea (OSA)" },
+  { id: "cvd", label: "Heart Disease / Cardiovascular" },
+  { id: "metabolic", label: "Metabolic Syndrome" },
+  { id: "pcos", label: "PCOS" },
+  { id: "none", label: "None / Not sure" },
+];
+
+const BMI_RANGES: SelectOption[] = [
+  { id: "under_27", label: "Under 27" },
+  { id: "27_29", label: "27 - 29.9" },
+  { id: "30_plus", label: "30 - 34.9" },
+  { id: "35_plus", label: "35 - 39.9" },
+  { id: "40_plus", label: "40+" },
+  { id: "not_sure", label: "Not sure" },
+];
+
+const STATES_LIST = ["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC"];
+const STATE_NAMES: Record<string, string> = {"AL":"Alabama","AK":"Alaska","AZ":"Arizona","AR":"Arkansas","CA":"California","CO":"Colorado","CT":"Connecticut","DE":"Delaware","FL":"Florida","GA":"Georgia","HI":"Hawaii","ID":"Idaho","IL":"Illinois","IN":"Indiana","IA":"Iowa","KS":"Kansas","KY":"Kentucky","LA":"Louisiana","ME":"Maine","MD":"Maryland","MA":"Massachusetts","MI":"Michigan","MN":"Minnesota","MS":"Mississippi","MO":"Missouri","MT":"Montana","NE":"Nebraska","NV":"Nevada","NH":"New Hampshire","NJ":"New Jersey","NM":"New Mexico","NY":"New York","NC":"North Carolina","ND":"North Dakota","OH":"Ohio","OK":"Oklahoma","OR":"Oregon","PA":"Pennsylvania","RI":"Rhode Island","SC":"South Carolina","SD":"South Dakota","TN":"Tennessee","TX":"Texas","UT":"Utah","VT":"Vermont","VA":"Virginia","WA":"Washington","WV":"West Virginia","WI":"Wisconsin","WY":"Wyoming","DC":"Washington DC"};
+
+const PRIOR_MEDS: SelectOption[] = [
+  { id: "phentermine", label: "Phentermine" },
+  { id: "contrave", label: "Contrave (naltrexone/bupropion)" },
+  { id: "qsymia", label: "Qsymia (phentermine/topiramate)" },
+  { id: "saxenda", label: "Saxenda (liraglutide)" },
+  { id: "metformin", label: "Metformin" },
+  { id: "other_rx", label: "Other prescription weight loss med" },
+  { id: "otc_only", label: "OTC supplements only" },
+  { id: "none", label: "None" },
+];
+
+const LIFESTYLE_OPTIONS: SelectOption[] = [
+  { id: "supervised", label: "Yes — supervised program (doctor, dietitian, Weight Watchers, Noom, etc.)" },
+  { id: "self", label: "Yes — on my own (diet, gym, etc.)" },
+  { id: "none", label: "No / Not recently" },
+];
+
+const LAB_WORK: SelectOption[] = [
+  { id: "a1c", label: "A1C or blood sugar test" },
+  { id: "lipid_panel", label: "Cholesterol / lipid panel" },
+  { id: "sleep_study", label: "Sleep study" },
+  { id: "liver_tests", label: "Liver function tests" },
+  { id: "bp_on_file", label: "Blood pressure on file" },
+  { id: "none", label: "None / Not sure" },
+];
+
+const WEIGHT_DURATION: SelectOption[] = [
+  { id: "less_6mo", label: "Less than 6 months" },
+  { id: "6mo_1yr", label: "6 months to 1 year" },
+  { id: "1_3_years", label: "1-3 years" },
+  { id: "3_plus_years", label: "3+ years" },
+];
+
+const ADDITIONAL_CONDITIONS: SelectOption[] = [
+  { id: "hypertension", label: "High blood pressure" },
+  { id: "high_cholesterol", label: "High cholesterol" },
+  { id: "insulin_resistance", label: "Pre-diabetes or insulin resistance" },
+  { id: "fatty_liver", label: "Fatty liver" },
+  { id: "joint_pain", label: "Joint pain from weight" },
+  { id: "depression_weight", label: "Depression or anxiety related to weight" },
+  { id: "snoring", label: "Snoring or breathing issues at night" },
+  { id: "none", label: "None of these" },
+];
+
+const TRICARE_PLANS: SelectOption[] = [
+  { id: "prime", label: "TRICARE Prime" },
+  { id: "select", label: "TRICARE Select" },
+  { id: "tfl", label: "TRICARE For Life (Medicare-eligible retiree)" },
+  { id: "young_adult", label: "TRICARE Young Adult" },
+  { id: "reserve", label: "TRICARE Reserve Select" },
+  { id: "not_sure", label: "Not sure" },
+];
+
+// ═══════════════════════════════════════════════════════
+// UI COMPONENTS
+// ═══════════════════════════════════════════════════════
+
+function Pill({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button onClick={onClick} style={{
+      display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "14px 18px",
+      borderRadius: 50, border: `2px solid ${selected ? B.red : B.mid}`,
+      backgroundColor: selected ? B.redLight : B.white, cursor: "pointer",
+      fontFamily: font, fontSize: 14, fontWeight: selected ? 700 : 500, color: B.black,
+      textAlign: "left", transition: "all 0.15s ease",
+    }}>
+      <span style={{ flex: 1 }}>{children}</span>
+      {selected && <span style={{ color: B.red, fontWeight: 800, fontSize: 16 }}>&#10003;</span>}
+    </button>
+  );
 }
 
-// ─────────────────────────────────────────────
-// COMPONENT
-// ─────────────────────────────────────────────
-type Step = "landing" | 1 | 2 | 3 | 4 | 5 | 6 | "email" | "calculating" | "results";
-
-const TOTAL_QUIZ_STEPS = 6;
-
-function StepWrapper({
-  children,
-  title,
-  subtitle,
-  progressPct,
-  currentStep,
-  totalSteps,
-}: {
-  children: React.ReactNode;
-  title: string;
-  subtitle?: string;
-  progressPct: number;
-  currentStep: number;
-  totalSteps: number;
-}) {
+function ProgressBar({ current, total, label }: { current: number; total: number; label?: string }) {
   return (
-    <div style={{ fontFamily: "var(--font-body)" }} className="min-h-screen bg-white">
-      <div className="w-full h-1 bg-gray-100">
-        <div
-          className="h-1 bg-[#ed1b1b] transition-all duration-500"
-          style={{ width: `${progressPct}%` }}
-        />
-      </div>
-      <div className="max-w-lg mx-auto px-4 py-10">
-        <div className="mb-2 text-xs text-gray-400 font-heading">
-          Step {currentStep} of {totalSteps}
-        </div>
-        <h2
-          style={{ fontFamily: "var(--font-heading)" }}
-          className="text-2xl md:text-3xl font-bold text-gray-900 mb-2"
-        >
-          {title}
-        </h2>
-        {subtitle && <p className="text-gray-500 text-sm mb-6">{subtitle}</p>}
-        {children}
+    <div style={{ marginBottom: 24 }}>
+      {label && <div style={{ fontFamily: font, fontSize: 11, color: B.gray, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>{label}</div>}
+      <div style={{ display: "flex", gap: 4 }}>
+        {Array.from({ length: total }).map((_, i) => (
+          <div key={i} style={{
+            flex: 1, height: 4, borderRadius: 4,
+            backgroundColor: i <= current ? B.red : B.mid,
+            transition: "background-color 0.3s",
+          }} />
+        ))}
       </div>
     </div>
   );
 }
 
-// ─────────────────────────────────────────────
-// BMI CALCULATOR STEP — module-level to prevent re-mounting
-// ─────────────────────────────────────────────
-function getBmiRange(bmi: number): string {
-  if (bmi < 27) return "under27";
-  if (bmi < 30) return "27to30";
-  if (bmi < 35) return "30to35";
-  if (bmi < 40) return "35to40";
-  return "40plus";
-}
-
-function BmiStep({
-  progressPct, currentStepNum, totalSteps,
-  selectedRange, pillBtn, pillBtnSelected, pillBtnUnselected, primaryBtn, onSelect,
-}: {
-  progressPct: number; currentStepNum: number; totalSteps: number;
-  selectedRange: string; pillBtn: string; pillBtnSelected: string; pillBtnUnselected: string; primaryBtn: string;
-  onSelect: (val: string) => void;
+function ProbabilityBar({ prob, medName, indication, note, boosts, animate }: {
+  prob: number; medName: string; indication: string; note: string;
+  boosts: BoostItem[]; animate?: boolean;
 }) {
-  const [unit, setUnit] = useState<"imperial" | "metric">("imperial");
-  const [feet, setFeet] = useState("");
-  const [inches, setInches] = useState("");
-  const [cm, setCm] = useState("");
-  const [lbs, setLbs] = useState("");
-  const [kg, setKg] = useState("");
-  const [calcRange, setCalcRange] = useState("");
-  const [bmiValue, setBmiValue] = useState<number | null>(null);
-  const [activeRange, setActiveRange] = useState(selectedRange);
+  const color = prob >= 60 ? B.green : prob >= 30 ? B.amber : B.red;
+  const rating = prob >= 60 ? "Good odds" : prob >= 30 ? "Worth exploring" : prob === 0 ? "Not covered" : "Low odds";
+  const [displayProb, setDisplayProb] = useState(0);
 
-  function computeBmi() {
-    let bmi: number | null = null;
-    if (unit === "imperial") {
-      const totalInches = (parseFloat(feet) || 0) * 12 + (parseFloat(inches) || 0);
-      const weight = parseFloat(lbs);
-      if (totalInches > 0 && weight > 0) {
-        bmi = (weight * 703) / (totalInches * totalInches);
-      }
-    } else {
-      const heightCm = parseFloat(cm);
-      const weight = parseFloat(kg);
-      if (heightCm > 0 && weight > 0) {
-        bmi = weight / Math.pow(heightCm / 100, 2);
-      }
-    }
-    if (bmi !== null && bmi > 10 && bmi < 80) {
-      const rounded = Math.round(bmi * 10) / 10;
-      setBmiValue(rounded);
-      const range = getBmiRange(rounded);
-      setCalcRange(range);
-      setActiveRange(range);
-    } else {
-      setBmiValue(null);
-      setCalcRange("");
-    }
-  }
-
-  useEffect(() => { computeBmi(); }, [feet, inches, cm, lbs, kg, unit]);
-
-  const BMI_RANGES = [
-    { value: "under27", label: "Under 27", info: "Below overweight threshold" },
-    { value: "27to30", label: "27–29.9", info: "Overweight — qualifies with comorbidity" },
-    { value: "30to35", label: "30–34.9", info: "Obese class I — meets most plan criteria" },
-    { value: "35to40", label: "35–39.9", info: "Obese class II — strong eligibility" },
-    { value: "40plus", label: "40+", info: "Obese class III — meets all thresholds" },
-    { value: "not_sure", label: "I'd rather not say", info: "" },
-  ];
-
-  const bmiColor =
-    bmiValue === null ? null :
-    bmiValue >= 30 ? "#15803d" :
-    bmiValue >= 27 ? "#b45309" : "#6b7280";
-
-  const bmiLabel =
-    bmiValue === null ? null :
-    bmiValue >= 40 ? "Obese Class III" :
-    bmiValue >= 35 ? "Obese Class II" :
-    bmiValue >= 30 ? "Obese Class I" :
-    bmiValue >= 27 ? "Overweight" :
-    bmiValue >= 25 ? "Slightly Overweight" : "Normal weight";
+  useEffect(() => {
+    if (!animate) { setDisplayProb(prob); return; }
+    const start = displayProb;
+    const diff = prob - start;
+    const duration = 800;
+    const startTime = Date.now();
+    const tick = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(1, elapsed / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayProb(Math.round(start + diff * eased));
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prob]);
 
   return (
-    <StepWrapper
-      title="What is your BMI range?"
-      subtitle="Don't know your BMI? Use the calculator below."
-      progressPct={progressPct}
-      currentStep={currentStepNum}
-      totalSteps={totalSteps}
-    >
-      {/* BMI CALCULATOR */}
-      <div className="bg-[#fde7e7] rounded-2xl p-5 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <span style={{ fontFamily: "var(--font-heading)" }} className="text-sm font-bold text-gray-800">
-            BMI Calculator
-          </span>
-          <div className="flex rounded-full bg-white border border-gray-200 overflow-hidden text-xs">
-            <button
-              type="button"
-              onClick={() => { setUnit("imperial"); setBmiValue(null); setCalcRange(""); }}
-              className={`px-4 py-1.5 font-semibold transition-colors ${unit === "imperial" ? "bg-[#ed1b1b] text-white" : "text-gray-500 hover:text-gray-800"}`}
-            >
-              lbs / ft
-            </button>
-            <button
-              type="button"
-              onClick={() => { setUnit("metric"); setBmiValue(null); setCalcRange(""); }}
-              className={`px-4 py-1.5 font-semibold transition-colors ${unit === "metric" ? "bg-[#ed1b1b] text-white" : "text-gray-500 hover:text-gray-800"}`}
-            >
-              kg / cm
-            </button>
-          </div>
+    <div style={{ padding: "20px 22px", borderRadius: 14, backgroundColor: B.white, border: `1.5px solid ${B.mid}`, marginBottom: 14 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+        <div>
+          <div style={{ fontFamily: fontHead, fontSize: 17, fontWeight: 700, color: B.black }}>{medName}</div>
+          <div style={{ fontFamily: font, fontSize: 12, color: B.gray, marginTop: 2 }}>{indication}</div>
         </div>
-
-        {unit === "imperial" ? (
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs text-gray-500 mb-1 font-medium">Feet</label>
-              <input
-                type="number"
-                value={feet}
-                onChange={(e) => setFeet(e.target.value)}
-                placeholder="5"
-                min="3" max="8"
-                className="w-full px-3 py-3 rounded-xl border-2 border-white focus:border-[#ed1b1b] outline-none text-gray-800 text-center text-lg font-bold bg-white transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1 font-medium">Inches</label>
-              <input
-                type="number"
-                value={inches}
-                onChange={(e) => setInches(e.target.value)}
-                placeholder="6"
-                min="0" max="11"
-                className="w-full px-3 py-3 rounded-xl border-2 border-white focus:border-[#ed1b1b] outline-none text-gray-800 text-center text-lg font-bold bg-white transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1 font-medium">Weight (lbs)</label>
-              <input
-                type="number"
-                value={lbs}
-                onChange={(e) => setLbs(e.target.value)}
-                placeholder="185"
-                min="50" max="700"
-                className="w-full px-3 py-3 rounded-xl border-2 border-white focus:border-[#ed1b1b] outline-none text-gray-800 text-center text-lg font-bold bg-white transition-colors"
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-gray-500 mb-1 font-medium">Height (cm)</label>
-              <input
-                type="number"
-                value={cm}
-                onChange={(e) => setCm(e.target.value)}
-                placeholder="168"
-                min="100" max="250"
-                className="w-full px-3 py-3 rounded-xl border-2 border-white focus:border-[#ed1b1b] outline-none text-gray-800 text-center text-lg font-bold bg-white transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1 font-medium">Weight (kg)</label>
-              <input
-                type="number"
-                value={kg}
-                onChange={(e) => setKg(e.target.value)}
-                placeholder="84"
-                min="20" max="300"
-                className="w-full px-3 py-3 rounded-xl border-2 border-white focus:border-[#ed1b1b] outline-none text-gray-800 text-center text-lg font-bold bg-white transition-colors"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* BMI result */}
-        {bmiValue !== null && (
-          <div className="mt-4 bg-white rounded-xl px-4 py-3 flex items-center justify-between">
-            <div>
-              <span className="text-xs text-gray-400">Your BMI</span>
-              <div style={{ fontFamily: "var(--font-heading)", color: bmiColor ?? "#1f2937" }} className="text-3xl font-black">
-                {bmiValue}
-              </div>
-            </div>
-            <div className="text-right">
-              <div style={{ color: bmiColor ?? "#1f2937" }} className="text-sm font-semibold">
-                {bmiLabel}
-              </div>
-              <div className="text-xs text-gray-400 mt-0.5">
-                {bmiValue >= 30 ? (
-                  <span className="flex items-center gap-1">
-                    <CheckCircle size={12} className="text-green-600 shrink-0" />
-                    Meets most insurance thresholds
-                  </span>
-                ) : bmiValue >= 27
-                  ? "Qualifies with a documented comorbidity"
-                  : "Below most plan minimums"}
-              </div>
-            </div>
-          </div>
-        )}
+        <div style={{ textAlign: "right" }}>
+          <div style={{ fontFamily: fontHead, fontSize: 28, fontWeight: 800, color }}>{displayProb}%</div>
+          <div style={{ fontFamily: font, fontSize: 11, fontWeight: 600, color }}>{rating}</div>
+        </div>
       </div>
-
-      {/* Range buttons */}
-      <p className="text-xs text-gray-400 mb-3">
-        {calcRange ? "We've selected your range below — tap Continue or choose a different one:" : "Or select your range manually:"}
-      </p>
-      <div className="space-y-2 mb-6">
-        {BMI_RANGES.map((o) => {
-          const isActive = activeRange === o.value;
-          const isCalced = calcRange === o.value;
-          return (
-            <button
-              key={o.value}
-              type="button"
-              onClick={() => setActiveRange(o.value)}
-              className={`${pillBtn} flex items-center justify-between ${isActive ? pillBtnSelected : pillBtnUnselected}`}
-            >
-              <div>
-                <span className="font-semibold">BMI {o.label}</span>
-                {o.info && <span className={`ml-2 text-xs ${isActive ? "text-red-100" : "text-gray-400"}`}>{o.info}</span>}
-              </div>
-              <div className="flex items-center gap-2">
-                {isCalced && !isActive && (
-                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">your BMI</span>
-                )}
-                {isCalced && isActive && (
-                  <span className="text-xs bg-red-200 text-white px-2 py-0.5 rounded-full">your BMI</span>
-                )}
-                {isActive && <Check size={18} className="text-white shrink-0" />}
-              </div>
-            </button>
-          );
-        })}
+      <div style={{ height: 8, backgroundColor: B.cream, borderRadius: 6, overflow: "hidden", marginBottom: 10 }}>
+        <div style={{ width: `${displayProb}%`, height: "100%", backgroundColor: color, borderRadius: 6, transition: "width 0.8s cubic-bezier(0.22, 1, 0.36, 1)" }} />
       </div>
-
-      <button
-        type="button"
-        disabled={!activeRange}
-        onClick={() => onSelect(activeRange)}
-        className={`${primaryBtn} disabled:opacity-40`}
-      >
-        Continue →
-      </button>
-    </StepWrapper>
+      {boosts && boosts.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+          {boosts.map((b, i) => (
+            <span key={i} style={{
+              display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 10px",
+              borderRadius: 20, backgroundColor: B.greenLight, fontFamily: font, fontSize: 11, color: B.green, fontWeight: 600,
+            }}>
+              +{b.points}% {b.label}
+            </span>
+          ))}
+        </div>
+      )}
+      {note && <p style={{ fontFamily: font, fontSize: 12, color: B.dark, margin: 0, lineHeight: 1.6, fontStyle: "italic" }}>{note}</p>}
+    </div>
   );
 }
+
+function RoadmapSection({ items }: { items: RoadmapItem[] }) {
+  if (!items || items.length === 0) return null;
+  const greens = items.filter(i => i.type === "green");
+  const blues = items.filter(i => i.type === "blue");
+  const ambers = items.filter(i => i.type === "amber");
+
+  const Section = ({ title, color, bgColor, itemList }: { title: string; color: string; bgColor: string; itemList: RoadmapItem[] }) =>
+    itemList.length === 0 ? null : (
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontFamily: fontHead, fontSize: 12, fontWeight: 600, color, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>{title}</div>
+        {itemList.map((item, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", marginBottom: 4, borderRadius: 8, backgroundColor: bgColor }}>
+            <span style={{ fontSize: 14 }}>{item.type === "green" ? "✓" : item.type === "blue" ? "→" : "!"}</span>
+            <span style={{ fontFamily: font, fontSize: 13, color: B.dark }}>{item.label}</span>
+          </div>
+        ))}
+      </div>
+    );
+
+  return (
+    <div style={{ padding: "16px 18px", borderRadius: 14, backgroundColor: B.light, border: `1px solid ${B.mid}`, marginBottom: 14 }}>
+      <div style={{ fontFamily: fontHead, fontSize: 14, fontWeight: 700, color: B.black, marginBottom: 12 }}>Your Approval Roadmap</div>
+      <Section title="Working in your favor" color={B.green} bgColor={B.greenLight} itemList={greens} />
+      <Section title="Our team handles" color={B.blue} bgColor={B.blueLight} itemList={blues} />
+      <Section title="Could improve your odds" color={B.amber} bgColor={B.amberLight} itemList={ambers} />
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════
+// MAIN QUIZ COMPONENT
+// ═══════════════════════════════════════════════════════
 
 export default function InsuranceCheckPage() {
   const locale = useLocale();
-  const [step, setStep] = useState<Step>("landing");
-  const [answers, setAnswers] = useState<QuizAnswers>({
-    carrier: null,
-    planSource: "",
-    employerSize: "",
-    state: "",
-    diagnoses: [],
-    bmiRange: "",
+
+  const [phase, setPhase] = useState<Phase>("landing");
+  const [quizStep, setQuizStep] = useState(0);
+  const [boostStep, setBoostStep] = useState(0);
+  const [answers, setAnswers] = useState<Answers>({
+    insurer: "", planType: "", employerSize: "medium_500_4999", state: "", diagnoses: [], bmiRange: "",
   });
-  const [firstName, setFirstName] = useState("");
+  const [boostAnswers, setBoostAnswers] = useState<BoostAnswers>({
+    priorMeds: [], lifestyleProgram: "", labWork: [], weightDuration: "", additionalConditions: [], tricarePlan: "",
+  });
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [calcProgress, setCalcProgress] = useState(0);
-  const [results, setResults] = useState<MedResult[]>([]);
-  const [carrierSearch, setCarrierSearch] = useState("");
-  const [carrierOpen, setCarrierOpen] = useState(false);
-  const carrierRef = useRef<HTMLDivElement>(null);
+  const [firstName, setFirstName] = useState("");
+  const [results, setResults] = useState<QuizResults | null>(null);
+  const [searchQ, setSearchQ] = useState("");
+  const [showCalculating, setShowCalculating] = useState(false);
 
-  // Close dropdown on outside click
+  const quizSteps = [
+    { id: "insurer", question: "Who is your insurance company?", subtitle: "Select your primary health insurer", type: "search" },
+    { id: "planType", question: "How do you get your insurance?", subtitle: "This tells us which coverage rules apply", type: "single", options: PLAN_TYPES },
+    ...(answers.planType === "employer" ? [{ id: "employerSize", question: "How big is your employer?", subtitle: "Larger employers are more likely to cover GLP-1 medications", type: "single", options: EMPLOYER_SIZES }] : []),
+    { id: "state", question: "What state do you live in?", subtitle: "Some states mandate GLP-1 coverage", type: "state" },
+    { id: "diagnoses", question: "Do you have any of these conditions?", subtitle: "Each diagnosis opens different coverage pathways — select all that apply", type: "multi", options: DIAGNOSES },
+    { id: "bmiRange", question: "What's your approximate BMI?", subtitle: "Most plans require BMI 30+ for weight management coverage", type: "single", options: BMI_RANGES },
+  ];
+
+  const boostSteps = [
+    { id: "priorMeds", question: "Have you tried any weight loss medications before?", subtitle: "Prior attempts significantly strengthen your case", type: "multi", options: PRIOR_MEDS },
+    { id: "lifestyleProgram", question: "Have you been on a diet or exercise program?", subtitle: "Documented lifestyle efforts are key for most insurers", type: "single", options: LIFESTYLE_OPTIONS },
+    { id: "labWork", question: "Do you have any recent lab work or medical tests?", subtitle: "Existing lab results can unlock stronger coverage pathways", type: "multi", options: LAB_WORK },
+    { id: "weightDuration", question: "How long have you been managing your weight?", subtitle: "Longer history strengthens your case for medical necessity", type: "single", options: WEIGHT_DURATION },
+    { id: "additionalConditions", question: "Has a doctor ever discussed any of these with you?", subtitle: "These conditions — even if mild — can strengthen your approval odds", type: "multi", options: ADDITIONAL_CONDITIONS },
+    ...(answers.planType === "tricare" ? [{ id: "tricarePlan", question: "What type of TRICARE plan do you have?", subtitle: "Coverage varies significantly between TRICARE plan types", type: "single", options: TRICARE_PLANS }] : []),
+  ];
+
+  const currentQuizStep = quizSteps[quizStep];
+  const currentBoostStep = boostSteps[boostStep];
+
   useEffect(() => {
-    function handler(e: MouseEvent) {
-      if (carrierRef.current && !carrierRef.current.contains(e.target as Node)) {
-        setCarrierOpen(false);
-      }
+    if (phase === "boost" || phase === "initial_results" || phase === "results") {
+      setResults(calculateProbability(answers, boostAnswers));
     }
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  }, [boostAnswers, phase, answers]);
 
-  function startCalculating() {
-    setStep("calculating");
-    setCalcProgress(0);
-    const interval = setInterval(() => {
-      setCalcProgress((p) => {
-        if (p >= 100) {
-          clearInterval(interval);
-          const meds = calculateAllMeds(answers);
-          setResults(meds);
-          setStep("results");
-          // Fire nurture webhook based on score threshold
-          const score = meds.length > 0 ? Math.max(...meds.map((r) => r.prob)) : 0;
-          const best = meds.find((r) => r.prob === score);
-          fetch("/api/insurance-check-result", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email,
-              firstName,
-              phone: phone || null,
-              score,
-              carrier: answers.carrier?.label || null,
-              state: answers.state || null,
-              bestMed: best?.name || null,
-              bestIndication: best?.indicationLabel || null,
-              diagnoses: answers.diagnoses,
-              bmiRange: answers.bmiRange,
-              locale,
-            }),
-          }).catch(() => {});
-          return 100;
-        }
-        return p + 4;
-      });
-    }, 100);
-  }
+  const setAnswer = (key: keyof Answers, value: string | string[]) =>
+    setAnswers(prev => ({ ...prev, [key]: value }));
+  const setBoost = (key: keyof BoostAnswers, value: string | string[]) =>
+    setBoostAnswers(prev => ({ ...prev, [key]: value }));
 
-  function handleEmailSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const advanceQuiz = () => {
+    if (quizStep < quizSteps.length - 1) {
+      setQuizStep(quizStep + 1);
+    } else {
+      setShowCalculating(true);
+      const r = calculateProbability(answers, boostAnswers);
+      setTimeout(() => { setResults(r); setShowCalculating(false); setPhase("initial_results"); }, 2500);
+    }
+  };
+
+  const advanceBoost = () => {
+    if (boostStep < boostSteps.length - 1) setBoostStep(boostStep + 1);
+    else setPhase("email");
+  };
+
+  const handleMultiToggle = (key: string, id: string, isBoost = false) => {
+    if (isBoost) {
+      const current = boostAnswers[key as keyof BoostAnswers] as string[];
+      if (id === "none") { setBoost(key as keyof BoostAnswers, ["none"]); return; }
+      const filtered = current.filter(x => x !== "none");
+      setBoost(key as keyof BoostAnswers, filtered.includes(id) ? filtered.filter(x => x !== id) : [...filtered, id]);
+    } else {
+      const current = answers[key as keyof Answers] as string[];
+      if (id === "none") { setAnswer(key as keyof Answers, ["none"]); return; }
+      const filtered = current.filter(x => x !== "none");
+      setAnswer(key as keyof Answers, filtered.includes(id) ? filtered.filter(x => x !== id) : [...filtered, id]);
+    }
+  };
+
+  function handleEmailSubmit() {
     if (!firstName || !email) return;
-    // Fire-and-forget lead capture
+
     fetch("/api/quiz-lead", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, quizOutcome: "insurance-check", locale, firstName }),
+      body: JSON.stringify({ email, firstName, phone: phone || null, quizOutcome: "insurance-check", locale }),
     }).catch(() => {});
-    startCalculating();
+
+    const r = calculateProbability(answers, boostAnswers);
+    setResults(r);
+
+    const score = r.bestProbability;
+    fetch("/api/insurance-check-result", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        firstName,
+        phone: phone || null,
+        score,
+        carrier: answers.insurer || null,
+        state: answers.state || null,
+        bestMed: r.bestMedication || null,
+        bestIndication: r.medications[r.bestMedication]?.indicationLabel || null,
+        diagnoses: answers.diagnoses,
+        bmiRange: answers.bmiRange,
+        locale,
+      }),
+    }).catch(() => {});
+
+    setPhase("results");
   }
 
-  const filteredCarriers = CARRIER_OPTIONS.filter((c) =>
-    c.label.toLowerCase().includes(carrierSearch.toLowerCase())
+  const QuizContainer = ({ children, progress, total, progressLabel }: {
+    children: React.ReactNode; progress: number; total: number; progressLabel?: string;
+  }) => (
+    <div style={{ minHeight: "100vh", backgroundColor: B.light, display: "flex", justifyContent: "center", padding: "40px 20px" }}>
+      <div style={{ maxWidth: 520, width: "100%" }}>
+        <ProgressBar current={progress} total={total} label={progressLabel} />
+        {children}
+      </div>
+    </div>
   );
 
-  const bestProb = results.length > 0 ? Math.max(...results.map((r) => r.prob)) : 0;
-  const bestMed = results.find((r) => r.prob === bestProb);
-  const overallRating = bestProb >= 75 ? "green" : bestProb >= 30 ? "yellow" : "red";
-
-  const stateName = answers.state ? STATE_NAMES[answers.state] || answers.state : "";
-  const isMandateState = MANDATE_STATES.includes(answers.state);
-  const isRestrictedState = RESTRICTED_STATES.includes(answers.state);
-
-  // ── STYLES ──
-  const pillBtn =
-    "w-full py-4 px-8 rounded-full font-heading font-semibold text-base transition-all duration-200 cursor-pointer text-left";
-  const pillBtnSelected =
-    "bg-[#ed1b1b] text-white shadow-[0_4px_12px_rgba(237,27,27,0.3)]";
-  const pillBtnUnselected =
-    "bg-white text-gray-800 border border-gray-200 hover:border-[#ed1b1b] hover:shadow-md";
-  const primaryBtn =
-    "w-full bg-[#ed1b1b] text-white font-heading font-bold py-4 px-8 rounded-full shadow-[0_4px_12px_rgba(237,27,27,0.2)] hover:bg-[#d01818] hover:shadow-[0_6px_16px_rgba(237,27,27,0.3)] transition-all duration-200 text-lg";
-  const outlineBtn =
-    "w-full bg-white text-[#ed1b1b] border-2 border-[#ed1b1b] font-heading font-semibold py-3 px-8 rounded-full hover:bg-[#fde7e7] transition-all duration-200";
-
-  const currentStepNum = typeof step === "number" ? step : 0;
-  const progressPct =
-    typeof step === "number"
-      ? Math.round((currentStepNum / (TOTAL_QUIZ_STEPS + (answers.planSource === "employer" ? 1 : 0))) * 100)
-      : 0;
-
-  // ── RENDER ──
-
-  // LANDING
-  if (step === "landing") {
+  // ── LANDING ──
+  if (phase === "landing") {
     return (
-      <div style={{ fontFamily: "var(--font-body)" }} className="min-h-screen bg-[#fde7e7]">
-        <div className="max-w-lg mx-auto px-4 py-12 text-center">
-          <div className="inline-block bg-[#ed1b1b] text-white text-xs font-heading font-bold px-4 py-1 rounded-full mb-6 tracking-wide">
-            FREE — NO INSURANCE CARD NEEDED
+      <div style={{ minHeight: "100vh", backgroundColor: B.light, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+        <div style={{ maxWidth: 480, width: "100%", textAlign: "center" }}>
+          <div style={{ fontFamily: fontHead, fontSize: 11, fontWeight: 600, color: B.red, textTransform: "uppercase", letterSpacing: 2, marginBottom: 12 }}>Free Tool</div>
+          <h1 style={{ fontFamily: fontHead, fontSize: 28, fontWeight: 700, color: B.black, margin: "0 0 12px", lineHeight: 1.3 }}>What Are My Odds?</h1>
+          <p style={{ fontFamily: font, fontSize: 15, color: B.gray, lineHeight: 1.6, margin: "0 0 8px" }}>Find out if your insurance is likely to cover GLP-1 weight loss medications like Wegovy, Zepbound, Mounjaro, and Ozempic.</p>
+          <p style={{ fontFamily: font, fontSize: 13, color: B.gray, lineHeight: 1.5, margin: "0 0 28px" }}>Takes about 2 minutes. No personal health information required.</p>
+          <button onClick={() => setPhase("quiz")} style={{
+            width: "100%", padding: "16px 32px", borderRadius: 50, border: "none",
+            backgroundColor: B.red, color: B.white, fontFamily: fontHead, fontSize: 15, fontWeight: 600,
+            cursor: "pointer", transition: "opacity 0.15s",
+          }}>Check My Coverage Odds &rarr;</button>
+          <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 24, flexWrap: "wrap" }}>
+            {["Board-Certified Doctors", "Licensed in 20 States", "100% Free"].map(t => (
+              <span key={t} style={{ fontFamily: font, fontSize: 11, color: B.gray }}>&#10003; {t}</span>
+            ))}
           </div>
-          <h1
-            style={{ fontFamily: "var(--font-heading)" }}
-            className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-4"
-          >
-            What Are Your Odds of Getting GLP-1 Covered?
-          </h1>
-          <p className="text-gray-600 text-lg mb-4">
-            Find out in 2 minutes. Based on your insurer, state, and health profile — no plan
-            documents needed.
-          </p>
-          <p className="text-gray-500 text-sm mb-8 italic">
-            This tool provides estimated probabilities only. It does not verify your actual
-            insurance benefits or guarantee coverage.
-          </p>
-          <button onClick={() => setStep(1)} className={primaryBtn} style={{ maxWidth: 400 }}>
-            Check My Coverage Odds — Free →
-          </button>
-          <p className="text-gray-400 text-xs mt-4">
-            Created by Dr. Linda Moleon, MD · Double board-certified · No PHI collected
-          </p>
         </div>
       </div>
     );
   }
 
-  // STEP 1 — Carrier search
-  if (step === 1) {
+  // ── CALCULATING ANIMATION ──
+  if (showCalculating) {
     return (
-      <StepWrapper title="Who is your insurance carrier?" subtitle="Start typing to search — select your insurer from the list." progressPct={progressPct} currentStep={currentStepNum} totalSteps={TOTAL_QUIZ_STEPS}>
-        <div ref={carrierRef} className="relative mb-6">
-          <input
-            type="text"
-            value={carrierSearch}
-            onChange={(e) => { setCarrierSearch(e.target.value); setCarrierOpen(true); }}
-            onFocus={() => setCarrierOpen(true)}
-            placeholder="Search insurance company..."
-            className="w-full px-5 py-4 rounded-2xl border-2 border-gray-200 focus:border-[#ed1b1b] outline-none text-gray-800 text-base transition-colors"
-          />
-          {carrierOpen && filteredCarriers.length > 0 && (
-            <div className="absolute z-50 w-full bg-white border border-gray-200 rounded-2xl shadow-xl mt-1 max-h-64 overflow-y-auto">
-              {filteredCarriers.map((c) => (
-                <button
-                  key={c.label}
-                  type="button"
-                  onClick={() => {
-                    setAnswers((a) => ({ ...a, carrier: c }));
-                    setCarrierSearch(c.label);
-                    setCarrierOpen(false);
-                    setTimeout(() => setStep(2), 200);
-                  }}
-                  className="w-full text-left px-5 py-3 hover:bg-[#fde7e7] text-gray-800 text-sm transition-colors border-b border-gray-50 last:border-0"
-                >
-                  {c.label}
-                </button>
+      <div style={{ minHeight: "100vh", backgroundColor: B.light, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+        <div style={{ maxWidth: 400, width: "100%", textAlign: "center" }}>
+          <div style={{ fontFamily: fontHead, fontSize: 22, fontWeight: 700, color: B.black, marginBottom: 20 }}>Analyzing your coverage...</div>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 24 }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{
+                width: 12, height: 12, borderRadius: "50%", backgroundColor: B.red,
+                animation: `pulse 1s ease-in-out ${i * 0.2}s infinite`,
+              }} />
+            ))}
+          </div>
+          <div style={{ fontFamily: font, fontSize: 13, color: B.gray }}>Checking carrier data, formulary status, and coverage pathways...</div>
+          <style>{`@keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }`}</style>
+        </div>
+      </div>
+    );
+  }
+
+  // ── PHASE 1: BASIC QUIZ ──
+  if (phase === "quiz" && currentQuizStep) {
+    const step = currentQuizStep;
+    const answersAsStrings = answers as Record<string, string | string[]>;
+    const boostAsStrings = boostAnswers as Record<string, string | string[]>;
+    const currentVal = answersAsStrings[step.id];
+
+    return (
+      <QuizContainer progress={quizStep} total={quizSteps.length} progressLabel="Step 1 of 2 — Basic Info">
+        <h2 style={{ fontFamily: fontHead, fontSize: 21, fontWeight: 700, color: B.black, margin: "0 0 6px" }}>{step.question}</h2>
+        <p style={{ fontFamily: font, fontSize: 13, color: B.gray, margin: "0 0 24px" }}>{step.subtitle}</p>
+
+        {step.type === "search" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <input
+              value={searchQ} onChange={(e) => setSearchQ(e.target.value)}
+              placeholder="Type to search..."
+              style={{ padding: "12px 16px", borderRadius: 50, border: `2px solid ${B.mid}`, fontFamily: font, fontSize: 14, outline: "none", width: "100%", boxSizing: "border-box" }}
+            />
+            <div style={{ maxHeight: 320, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
+              {INSURERS.filter(ins => !searchQ || ins.toLowerCase().includes(searchQ.toLowerCase())).map(ins => (
+                <Pill key={ins} selected={answers.insurer === ins} onClick={() => {
+                  setAnswer("insurer", ins); setSearchQ(""); setTimeout(advanceQuiz, 200);
+                }}>{ins}</Pill>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {step.type === "single" && step.options && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {step.options.map((opt: SelectOption) => (
+              <Pill key={opt.id} selected={currentVal === opt.id} onClick={() => {
+                setAnswer(step.id as keyof Answers, opt.id); setTimeout(advanceQuiz, 200);
+              }}>{opt.label}</Pill>
+            ))}
+          </div>
+        )}
+
+        {step.type === "multi" && step.options && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {step.options.map((opt: SelectOption) => (
+              <Pill key={opt.id} selected={Array.isArray(currentVal) && currentVal.includes(opt.id)} onClick={() => handleMultiToggle(step.id, opt.id)}>{opt.label}</Pill>
+            ))}
+            {Array.isArray(currentVal) && currentVal.length > 0 && (
+              <button onClick={advanceQuiz} style={{
+                marginTop: 12, padding: "14px", borderRadius: 50, border: "none",
+                backgroundColor: B.red, color: B.white, fontFamily: fontHead, fontSize: 14, fontWeight: 600, cursor: "pointer",
+              }}>Continue &rarr;</button>
+            )}
+          </div>
+        )}
+
+        {step.type === "state" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <input
+              value={searchQ} onChange={(e) => setSearchQ(e.target.value)}
+              placeholder="Type to search..."
+              style={{ padding: "12px 16px", borderRadius: 50, border: `2px solid ${B.mid}`, fontFamily: font, fontSize: 14, outline: "none", width: "100%", boxSizing: "border-box" }}
+            />
+            <div style={{ maxHeight: 320, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
+              {STATES_LIST.filter(s => !searchQ || STATE_NAMES[s].toLowerCase().includes(searchQ.toLowerCase()) || s.toLowerCase().includes(searchQ.toLowerCase()))
+                .map(s => (
+                  <Pill key={s} selected={answers.state === s} onClick={() => {
+                    setAnswer("state", s); setSearchQ(""); setTimeout(advanceQuiz, 200);
+                  }}>{STATE_NAMES[s]}</Pill>
+                ))}
+            </div>
+          </div>
+        )}
+
+      </QuizContainer>
+    );
+  }
+
+  // ── INITIAL RESULTS (before boost) ──
+  if (phase === "initial_results" && results) {
+    const r = results;
+    return (
+      <div style={{ minHeight: "100vh", backgroundColor: B.light, display: "flex", justifyContent: "center", padding: "40px 20px" }}>
+        <div style={{ maxWidth: 520, width: "100%" }}>
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <div style={{ fontFamily: fontHead, fontSize: 11, fontWeight: 600, color: B.red, textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>Your Initial Results</div>
+            <h2 style={{ fontFamily: fontHead, fontSize: 24, fontWeight: 700, color: B.black, margin: "0 0 8px" }}>Here&apos;s where you stand</h2>
+            <p style={{ fontFamily: font, fontSize: 13, color: B.gray, margin: 0 }}>Based on your insurance, plan type, and health profile</p>
+          </div>
+
+          <ProbabilityBar prob={r.medications.wegovy.prob} medName="Wegovy®" indication={r.medications.wegovy.indicationLabel} note={r.medications.wegovy.note} boosts={[]} animate={true} />
+          <ProbabilityBar prob={r.medications.zepbound.prob} medName="Zepbound®" indication={r.medications.zepbound.indicationLabel} note={r.medications.zepbound.note} boosts={[]} animate={true} />
+          <ProbabilityBar prob={r.medications.mounjaro.prob} medName="Mounjaro®" indication={r.medications.mounjaro.indicationLabel} note={r.medications.mounjaro.note} boosts={[]} animate={true} />
+          <ProbabilityBar prob={r.medications.ozempic.prob} medName="Ozempic®" indication={r.medications.ozempic.indicationLabel} note={r.medications.ozempic.note} boosts={[]} animate={true} />
+
+          <div style={{
+            marginTop: 20, padding: "20px 22px", borderRadius: 14,
+            backgroundColor: B.amberLight, border: `1.5px solid ${B.amber}`, textAlign: "center",
+          }}>
+            <div style={{ fontFamily: fontHead, fontSize: 16, fontWeight: 700, color: B.black, marginBottom: 6 }}>Want to see if your odds are better?</div>
+            <p style={{ fontFamily: font, fontSize: 13, color: B.dark, margin: "0 0 16px", lineHeight: 1.5 }}>
+              Your history matters. A few more questions about your past weight loss efforts could significantly increase your probability.
+            </p>
+            <button onClick={() => setPhase("boost")} style={{
+              padding: "14px 32px", borderRadius: 50, border: "none",
+              backgroundColor: B.red, color: B.white, fontFamily: fontHead, fontSize: 14, fontWeight: 600, cursor: "pointer", width: "100%",
+            }}>Boost My Odds &rarr;</button>
+            <button onClick={() => setPhase("email")} style={{
+              marginTop: 8, padding: "10px", borderRadius: 50, border: "none",
+              backgroundColor: "transparent", color: B.gray, fontFamily: font, fontSize: 12, cursor: "pointer",
+            }}>Skip — show me the full results</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── PHASE 2: BOOST QUESTIONS ──
+  if (phase === "boost" && currentBoostStep) {
+    const step = currentBoostStep;
+    const boostAsStrings = boostAnswers as Record<string, string | string[]>;
+    const currentVal = boostAsStrings[step.id];
+
+    return (
+      <div style={{ minHeight: "100vh", backgroundColor: B.light, display: "flex", justifyContent: "center", padding: "40px 20px" }}>
+        <div style={{ maxWidth: 520, width: "100%" }}>
+          <ProgressBar current={boostStep} total={boostSteps.length} label="Step 2 of 2 — Boost Your Odds" />
+
+          {results && (
+            <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+              {(["wegovy", "zepbound", "mounjaro", "ozempic"] as const).map(med => {
+                const m = results.medications[med];
+                const color = m.prob >= 60 ? B.green : m.prob >= 30 ? B.amber : B.red;
+                return (
+                  <div key={med} style={{ flex: 1, padding: "8px 10px", borderRadius: 10, backgroundColor: B.white, border: `1px solid ${B.mid}`, textAlign: "center" }}>
+                    <div style={{ fontFamily: fontHead, fontSize: 10, fontWeight: 600, color: B.gray, textTransform: "uppercase" }}>{med.charAt(0).toUpperCase() + med.slice(1)}</div>
+                    <div style={{ fontFamily: fontHead, fontSize: 20, fontWeight: 800, color, transition: "color 0.3s" }}>{m.prob}%</div>
+                    <div style={{ height: 3, backgroundColor: B.cream, borderRadius: 3, overflow: "hidden", marginTop: 4 }}>
+                      <div style={{ width: `${m.prob}%`, height: "100%", backgroundColor: color, borderRadius: 3, transition: "width 0.8s cubic-bezier(0.22, 1, 0.36, 1)" }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <h2 style={{ fontFamily: fontHead, fontSize: 21, fontWeight: 700, color: B.black, margin: "0 0 6px" }}>{step.question}</h2>
+          <p style={{ fontFamily: font, fontSize: 13, color: B.gray, margin: "0 0 24px" }}>{step.subtitle}</p>
+
+          {step.type === "single" && step.options && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {step.options.map((opt: SelectOption) => (
+                <Pill key={opt.id} selected={currentVal === opt.id} onClick={() => {
+                  setBoost(step.id as keyof BoostAnswers, opt.id); setTimeout(advanceBoost, 400);
+                }}>{opt.label}</Pill>
               ))}
             </div>
           )}
+
+          {step.type === "multi" && step.options && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {step.options.map((opt: SelectOption) => (
+                <Pill key={opt.id} selected={Array.isArray(currentVal) && currentVal.includes(opt.id)} onClick={() => handleMultiToggle(step.id, opt.id, true)}>{opt.label}</Pill>
+              ))}
+              {Array.isArray(currentVal) && currentVal.length > 0 && (
+                <button onClick={advanceBoost} style={{
+                  marginTop: 12, padding: "14px", borderRadius: 50, border: "none",
+                  backgroundColor: B.red, color: B.white, fontFamily: fontHead, fontSize: 14, fontWeight: 600, cursor: "pointer",
+                }}>Continue &rarr;</button>
+              )}
+            </div>
+          )}
         </div>
-        {answers.carrier && (
-          <div className="bg-[#fde7e7] rounded-2xl p-3 flex items-center justify-between mb-4">
-            <span className="text-sm text-gray-700 font-medium">
-              Selected: <strong>{answers.carrier.label}</strong>
-            </span>
-            <button
-              onClick={() => { setAnswers((a) => ({ ...a, carrier: null })); setCarrierSearch(""); }}
-              className="text-gray-400 hover:text-[#ed1b1b] text-xs"
-            >
-              Clear
-            </button>
-          </div>
-        )}
-        {answers.carrier && (
-          <button onClick={() => setStep(2)} className={primaryBtn}>
-            Continue →
-          </button>
-        )}
-      </StepWrapper>
+      </div>
     );
   }
 
-  // STEP 2 — How do you get insurance?
-  if (step === 2) {
-    const options = [
-      { value: "employer", label: "Through my employer" },
-      { value: "aca", label: "ACA Marketplace (Healthcare.gov)" },
-      { value: "medicaid", label: "Medicaid" },
-      { value: "medicare", label: "Medicare" },
-      { value: "tricare", label: "TRICARE (military)" },
-      { value: "va", label: "VA Health" },
-      { value: "bcbs_fep", label: "BCBS Federal Employee Program" },
-    ];
+  // ── EMAIL CAPTURE ──
+  if (phase === "email") {
     return (
-      <StepWrapper title="How do you get your insurance?" progressPct={progressPct} currentStep={currentStepNum} totalSteps={TOTAL_QUIZ_STEPS}>
-        <div className="space-y-3">
-          {options.map((o) => (
+      <div style={{ minHeight: "100vh", backgroundColor: B.light, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+        <div style={{ maxWidth: 440, width: "100%", textAlign: "center" }}>
+          <div style={{ fontFamily: fontHead, fontSize: 11, fontWeight: 600, color: B.red, textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>Almost There</div>
+          <h2 style={{ fontFamily: fontHead, fontSize: 22, fontWeight: 700, color: B.black, margin: "0 0 8px" }}>See Your Full Results</h2>
+          <p style={{ fontFamily: font, fontSize: 13, color: B.gray, margin: "0 0 24px", lineHeight: 1.5 }}>Enter your info to see your personalized coverage roadmap and next steps.</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name *"
+              style={{ padding: "14px 18px", borderRadius: 50, border: `2px solid ${B.mid}`, fontFamily: font, fontSize: 14, outline: "none", width: "100%", boxSizing: "border-box" }} />
+            <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address *" type="email"
+              style={{ padding: "14px 18px", borderRadius: 50, border: `2px solid ${B.mid}`, fontFamily: font, fontSize: 14, outline: "none", width: "100%", boxSizing: "border-box" }} />
+            <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone (optional)" type="tel"
+              style={{ padding: "14px 18px", borderRadius: 50, border: `2px solid ${B.mid}`, fontFamily: font, fontSize: 14, outline: "none", width: "100%", boxSizing: "border-box" }} />
             <button
-              key={o.value}
-              type="button"
-              onClick={() => {
-                setAnswers((a) => ({ ...a, planSource: o.value }));
-                if (o.value === "employer") {
-                  setStep(3);
-                } else {
-                  setStep(4);
-                }
-              }}
-              className={`${pillBtn} ${answers.planSource === o.value ? pillBtnSelected : pillBtnUnselected}`}
-            >
-              {o.label}
-            </button>
-          ))}
-        </div>
-      </StepWrapper>
-    );
-  }
-
-  // STEP 3 — Employer size (conditional)
-  if (step === 3) {
-    const options = [
-      { value: "large_5000", label: "Large (5,000+ employees)" },
-      { value: "mid_500", label: "Mid-size (500–4,999 employees)" },
-      { value: "small", label: "Small (under 500 employees)" },
-      { value: "gov_federal", label: "Government / Federal" },
-      { value: "gov_state", label: "Government / State or Local" },
-      { value: "self_employed", label: "Self-employed" },
-      { value: "not_sure", label: "Not sure" },
-    ];
-    return (
-      <StepWrapper title="How large is your employer?" subtitle="This affects which benefits your plan likely offers." progressPct={progressPct} currentStep={currentStepNum} totalSteps={TOTAL_QUIZ_STEPS}>
-        <div className="space-y-3">
-          {options.map((o) => (
-            <button
-              key={o.value}
-              type="button"
-              onClick={() => {
-                setAnswers((a) => ({ ...a, employerSize: o.value }));
-                setStep(4);
-              }}
-              className={`${pillBtn} ${answers.employerSize === o.value ? pillBtnSelected : pillBtnUnselected}`}
-            >
-              {o.label}
-            </button>
-          ))}
-        </div>
-      </StepWrapper>
-    );
-  }
-
-  // STEP 4 — State
-  if (step === 4) {
-    const stateList = Object.entries(STATE_NAMES);
-    return (
-      <StepWrapper title="What state are you in?" subtitle="Coverage rules vary significantly by state." progressPct={progressPct} currentStep={currentStepNum} totalSteps={TOTAL_QUIZ_STEPS}>
-        {answers.state && isMandateState && (
-          <div className="mb-4 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-800 text-sm flex items-start gap-2">
-            <CheckCircle size={16} className="shrink-0 mt-0.5" />
-            <span>Your state requires fully-insured plans to cover weight loss medication.</span>
+              onClick={handleEmailSubmit}
+              disabled={!email || !firstName}
+              style={{
+                marginTop: 8, padding: "16px", borderRadius: 50, border: "none",
+                backgroundColor: email && firstName ? B.red : "#D1D1D1", color: B.white,
+                fontFamily: fontHead, fontSize: 15, fontWeight: 600, cursor: email && firstName ? "pointer" : "not-allowed",
+              }}>Show My Results &rarr;</button>
           </div>
-        )}
-        {answers.state && isRestrictedState && (
-          <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-amber-800 text-sm flex items-start gap-2">
-            <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-            <span>Some insurers in your state have recently limited GLP-1 coverage.</span>
-          </div>
-        )}
-        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-6">
-          {stateList.map(([abbr]) => (
-            <button
-              key={abbr}
-              type="button"
-              onClick={() => {
-                setAnswers((a) => ({ ...a, state: abbr }));
-                setTimeout(() => setStep(5), 150);
-              }}
-              className={`py-2 px-1 rounded-xl text-xs font-heading font-semibold transition-all duration-150 border
-                ${answers.state === abbr
-                  ? "bg-[#ed1b1b] text-white border-[#ed1b1b]"
-                  : "bg-white text-gray-700 border-gray-200 hover:border-[#ed1b1b] hover:text-[#ed1b1b]"
-                }`}
-            >
-              {abbr}
-            </button>
-          ))}
+          <p style={{ fontFamily: font, fontSize: 11, color: B.gray, marginTop: 16 }}>We respect your privacy. No spam. Unsubscribe anytime.</p>
         </div>
-        {answers.state && (
-          <button onClick={() => setStep(5)} className={primaryBtn}>
-            Continue with {stateName} →
-          </button>
-        )}
-      </StepWrapper>
+      </div>
     );
   }
 
-  // STEP 5 — Health conditions
-  if (step === 5) {
-    const options = [
-      { value: "t2d", label: "Type 2 Diabetes" },
-      { value: "prediabetes", label: "Prediabetes / Insulin Resistance" },
-      { value: "obesity", label: "Obesity (BMI 30+)" },
-      { value: "osa", label: "Sleep Apnea (OSA)" },
-      { value: "cvd", label: "Heart Disease / Cardiovascular" },
-      { value: "metabolic", label: "Metabolic Syndrome" },
-      { value: "pcos", label: "PCOS" },
-      { value: "mash", label: "MASH / Fatty Liver Disease" },
-      { value: "none", label: "None / Not sure" },
-    ];
-    function toggleDiagnosis(val: string) {
-      if (val === "none") {
-        setAnswers((a) => ({ ...a, diagnoses: ["none"] }));
-        return;
-      }
-      setAnswers((a) => {
-        const current = a.diagnoses.filter((d) => d !== "none");
-        if (current.includes(val)) {
-          return { ...a, diagnoses: current.filter((d) => d !== val) };
-        }
-        return { ...a, diagnoses: [...current, val] };
-      });
+  // ── PHASE 3: FULL RESULTS WITH ROADMAP ──
+  if (phase === "results" && results) {
+    const r = results;
+    const bestProb = r.bestProbability;
+
+    let ctaTitle: string, ctaBody: string, ctaButton: string, ctaRoute: string;
+    if (bestProb >= 65) {
+      ctaTitle = "Your odds look strong";
+      ctaBody = "Our insurance team can verify your coverage and start the approval process. We handle prior authorization, documentation, and physician advocacy.";
+      ctaButton = "Confirm My Coverage — $25";
+      ctaRoute = `/${locale}/intake/insurance-eligibility`;
+    } else if (bestProb >= 30) {
+      ctaTitle = "Worth pursuing with the right team";
+      ctaBody = "Coverage is possible with proper documentation and physician advocacy. Our team specializes in building strong cases — we know exactly what your insurer needs to see.";
+      ctaButton = "Let Our Team Build Your Case";
+      ctaRoute = `/${locale}/intake/insurance-eligibility`;
+    } else {
+      ctaTitle = "Insurance coverage is unlikely";
+      ctaBody = "Based on your plan, insurance approval for weight loss medications is unlikely. The good news: our self-pay compounded options start at just $139/month — same active ingredients, no insurance needed.";
+      ctaButton = "Explore Self-Pay Options";
+      ctaRoute = `/${locale}/quiz`;
     }
-    return (
-      <StepWrapper title="Do you have any of these health conditions?" subtitle="Select all that apply. This helps find your best covered pathway." progressPct={progressPct} currentStep={currentStepNum} totalSteps={TOTAL_QUIZ_STEPS}>
-        <div className="space-y-3 mb-6">
-          {options.map((o) => {
-            const isSelected = answers.diagnoses.includes(o.value);
-            return (
-              <button
-                key={o.value}
-                type="button"
-                onClick={() => toggleDiagnosis(o.value)}
-                className={`${pillBtn} flex items-center justify-between ${isSelected ? pillBtnSelected : pillBtnUnselected}`}
-              >
-                <span>{o.label}</span>
-                {isSelected && <Check size={18} className="text-white shrink-0" />}
-              </button>
-            );
-          })}
-        </div>
-        <button
-          onClick={() => setStep(6)}
-          disabled={answers.diagnoses.length === 0}
-          className={`${primaryBtn} disabled:opacity-40`}
-        >
-          Continue →
-        </button>
-      </StepWrapper>
-    );
-  }
 
-  // STEP 6 — BMI calculator + range
-  if (step === 6) {
-    return <BmiStep
-      progressPct={progressPct}
-      currentStepNum={currentStepNum}
-      totalSteps={TOTAL_QUIZ_STEPS}
-      selectedRange={answers.bmiRange}
-      pillBtn={pillBtn}
-      pillBtnSelected={pillBtnSelected}
-      pillBtnUnselected={pillBtnUnselected}
-      primaryBtn={primaryBtn}
-      onSelect={(val) => {
-        setAnswers((a) => ({ ...a, bmiRange: val }));
-        setStep("email");
-      }}
-    />;
-  }
-
-  // EMAIL CAPTURE
-  if (step === "email") {
     return (
-      <div style={{ fontFamily: "var(--font-body)" }} className="min-h-screen bg-[#fde7e7] flex items-center">
-        <div className="max-w-md mx-auto px-4 py-12 w-full">
-          <div className="bg-white rounded-3xl shadow-lg p-8">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 rounded-full bg-[#fde7e7] flex items-center justify-center mx-auto mb-4">
-                <Target size={28} className="text-[#ed1b1b]" />
-              </div>
-              <h2 style={{ fontFamily: "var(--font-heading)" }} className="text-2xl font-bold text-gray-900 mb-2">
-                Your results are ready!
-              </h2>
-              <p className="text-gray-500 text-sm">
-                Enter your info to see your personalized coverage probability report.
-              </p>
-            </div>
-            <form onSubmit={handleEmailSubmit} className="space-y-4">
-              <input
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="First name *"
-                required
-                className="w-full px-5 py-3 rounded-xl border-2 border-gray-200 focus:border-[#ed1b1b] outline-none text-gray-800 transition-colors"
-              />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email address *"
-                required
-                className="w-full px-5 py-3 rounded-xl border-2 border-gray-200 focus:border-[#ed1b1b] outline-none text-gray-800 transition-colors"
-              />
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="Phone (optional — for text updates)"
-                className="w-full px-5 py-3 rounded-xl border-2 border-gray-200 focus:border-[#ed1b1b] outline-none text-gray-800 transition-colors"
-              />
-              <button type="submit" className={primaryBtn}>
-                Show My Results →
-              </button>
-              <p className="text-gray-400 text-xs text-center">
-                We&apos;ll send your results + coverage tips. No spam, ever. Unsubscribe anytime.
-              </p>
-            </form>
+      <div style={{ minHeight: "100vh", backgroundColor: B.light, display: "flex", justifyContent: "center", padding: "40px 20px" }}>
+        <div style={{ maxWidth: 520, width: "100%" }}>
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <div style={{
+              display: "inline-block", padding: "4px 16px", borderRadius: 50, marginBottom: 12,
+              backgroundColor: bestProb >= 60 ? B.greenLight : bestProb >= 30 ? B.amberLight : B.redLight,
+              color: bestProb >= 60 ? B.green : bestProb >= 30 ? B.amber : B.red,
+              fontFamily: fontHead, fontSize: 12, fontWeight: 700,
+            }}>{r.overallLabel}</div>
+            <h2 style={{ fontFamily: fontHead, fontSize: 24, fontWeight: 700, color: B.black, margin: "0 0 8px" }}>
+              {firstName ? `${firstName}, here's` : "Here's"} your full coverage report
+            </h2>
           </div>
-        </div>
-      </div>
-    );
-  }
 
-  // CALCULATING ANIMATION
-  if (step === "calculating") {
-    return (
-      <div style={{ fontFamily: "var(--font-body)" }} className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center px-4 max-w-sm">
-          <div className="w-20 h-20 rounded-full border-4 border-[#fde7e7] border-t-[#ed1b1b] animate-spin mx-auto mb-6" />
-          <h2 style={{ fontFamily: "var(--font-heading)" }} className="text-2xl font-bold text-gray-900 mb-3">
-            Analyzing your profile...
-          </h2>
-          <p className="text-gray-500 text-sm mb-6">
-            Cross-referencing your insurer, state, and health profile against coverage data
+          {Object.entries(r.medications)
+            .sort((a, b) => b[1].prob - a[1].prob)
+            .map(([med, data]) => (
+              <div key={med}>
+                <ProbabilityBar
+                  prob={data.prob}
+                  medName={med.charAt(0).toUpperCase() + med.slice(1) + "®"}
+                  indication={data.indicationLabel}
+                  note={data.note}
+                  boosts={data.boosts}
+                  animate={true}
+                />
+                {med === r.bestMedication && data.roadmap && data.roadmap.length > 0 && (
+                  <RoadmapSection items={data.roadmap} />
+                )}
+              </div>
+            ))}
+
+          <div style={{
+            marginTop: 20, padding: "24px", borderRadius: 14,
+            backgroundColor: B.white, border: `2px solid ${B.red}`, textAlign: "center",
+          }}>
+            <div style={{ fontFamily: fontHead, fontSize: 18, fontWeight: 700, color: B.black, marginBottom: 8 }}>{ctaTitle}</div>
+            <p style={{ fontFamily: font, fontSize: 13, color: B.dark, margin: "0 0 16px", lineHeight: 1.6 }}>{ctaBody}</p>
+            <button onClick={() => window.location.href = ctaRoute} style={{
+              width: "100%", padding: "16px", borderRadius: 50, border: "none",
+              backgroundColor: B.red, color: B.white, fontFamily: fontHead, fontSize: 15, fontWeight: 600, cursor: "pointer",
+            }}>{ctaButton} &rarr;</button>
+          </div>
+
+          <button onClick={() => {
+            setPhase("landing");
+            setQuizStep(0);
+            setBoostStep(0);
+            setAnswers({ insurer: "", planType: "", employerSize: "medium_500_4999", state: "", diagnoses: [], bmiRange: "" });
+            setBoostAnswers({ priorMeds: [], lifestyleProgram: "", labWork: [], weightDuration: "", additionalConditions: [], tricarePlan: "" });
+            setResults(null);
+            setFirstName(""); setEmail(""); setPhone("");
+          }} style={{
+            display: "block", margin: "16px auto 0", padding: "10px 24px", borderRadius: 50, border: "none",
+            backgroundColor: "transparent", color: B.gray, fontFamily: font, fontSize: 12, cursor: "pointer",
+          }}>&#8592; Start over</button>
+
+          <p style={{ fontFamily: font, fontSize: 10, color: B.gray, marginTop: 24, lineHeight: 1.5, textAlign: "center" }}>
+            These results are estimates based on publicly available insurance formulary data as of April 2026. They are not guarantees of coverage.
+            Actual coverage depends on your specific plan benefits. Body Good Studio is not an insurance company.
+            Board-certified physicians licensed in 20 states.
           </p>
-          <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-2 bg-[#ed1b1b] rounded-full transition-all duration-100"
-              style={{ width: `${calcProgress}%` }}
-            />
-          </div>
-          <p className="text-gray-400 text-xs mt-3">{calcProgress}% complete</p>
-        </div>
-      </div>
-    );
-  }
-
-  // RESULTS
-  if (step === "results" && results.length > 0) {
-    const ratingColors = {
-      green: { bg: "bg-green-50", border: "border-green-200", text: "text-green-700", bar: "bg-green-500", hero: "#f0fdf4", num: "#15803d" },
-      yellow: { bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-700", bar: "bg-amber-400", hero: "#fffbeb", num: "#b45309" },
-      red: { bg: "bg-red-50", border: "border-red-200", text: "text-red-700", bar: "bg-red-400", hero: "#fff1f2", num: "#b91c1c" },
-    };
-    const heroColor = ratingColors[overallRating];
-    const ratingLabel = overallRating === "green" ? "Good odds!" : overallRating === "yellow" ? "Worth exploring" : "Coverage unlikely";
-    const sortedResults = [...results].sort((a, b) => b.prob - a.prob);
-
-    return (
-      <div style={{ fontFamily: "var(--font-body)" }} className="min-h-screen bg-white">
-        {/* Hero score */}
-        <div style={{ backgroundColor: heroColor.hero }} className="px-4 pt-10 pb-8">
-          <div className="max-w-lg mx-auto text-center">
-            <div className={`inline-block text-xs font-heading font-bold px-4 py-1 rounded-full mb-3 ${heroColor.text} ${heroColor.bg} border ${heroColor.border}`}>
-              {ratingLabel}
-            </div>
-            <div style={{ color: heroColor.num, fontFamily: "var(--font-heading)" }} className="text-7xl font-black mb-1">
-              {bestProb}%
-            </div>
-            <p className="text-gray-700 text-base mb-2">
-              <strong>{firstName || "Your profile"}</strong>, based on your{" "}
-              <strong>{answers.carrier?.label || "insurance plan"}</strong> in{" "}
-              <strong>{stateName}</strong>
-            </p>
-            {bestMed && (
-              <p className="text-gray-500 text-sm">
-                Best pathway: <strong>{bestMed.name}</strong> via {bestMed.indicationLabel}
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div className="max-w-lg mx-auto px-4 pb-16">
-          {/* Inline disclaimer — non-dismissible */}
-          <div className="my-6 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-900">
-            <div className="flex items-start gap-2 mb-1">
-              <AlertTriangle size={16} className="shrink-0 mt-0.5 text-amber-700" />
-              <strong>Important:</strong>
-            </div>
-            These estimates are based on published formulary data and carrier policies as of March 2026.{" "}
-            <strong>This is not a guarantee of coverage.</strong> Body Good does not determine your insurance coverage at any point. Your actual coverage depends on your specific plan details, which can only be verified by checking your real benefits.
-          </div>
-
-          {/* Per-medication cards */}
-          <h3 style={{ fontFamily: "var(--font-heading)" }} className="text-lg font-bold text-gray-900 mb-4">
-            Your est. coverage probability by medication
-          </h3>
-          <div className="space-y-4 mb-8">
-            {sortedResults.map((med) => {
-              const c = ratingColors[med.rating];
-              const ratingText = med.rating === "green" ? "Good odds" : med.rating === "yellow" ? "Worth exploring" : "Low odds";
-              return (
-                <div
-                  key={med.name}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.08)] p-5 hover:scale-[1.01] transition-transform duration-200"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <div style={{ fontFamily: "var(--font-heading)" }} className="text-lg font-bold text-gray-900">
-                        {med.name}
-                      </div>
-                      <div className="text-gray-400 text-xs">
-                        {med.generic} · {med.manufacturer}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div style={{ fontFamily: "var(--font-heading)", color: c.num }} className="text-2xl font-black">
-                        {med.prob}%
-                      </div>
-                      <div className={`text-xs font-semibold ${c.text}`}>{ratingText}</div>
-                    </div>
-                  </div>
-                  <div className="w-full h-2 bg-gray-100 rounded-full mb-3">
-                    <div
-                      className={`h-2 rounded-full ${c.bar} transition-all duration-700`}
-                      style={{ width: `${med.prob}%` }}
-                    />
-                  </div>
-                  <div className="text-xs text-gray-500 mb-1">
-                    <strong>Pathway:</strong> {med.indicationLabel}
-                    {med.pa && <span className="ml-2 text-amber-600">· Prior auth required</span>}
-                  </div>
-                  {med.notes && (
-                    <p className="text-xs text-gray-400 italic">{med.notes}</p>
-                  )}
-                  <div className="mt-2 text-xs text-gray-400">
-                    ↑ Est. approval probability — not a guarantee of coverage
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* ── FAVORABLE (score ≥ 65%) — $25 Eligibility Check upgrade ── */}
-          {bestProb >= 65 && (
-            <div className="bg-green-50 border-2 border-green-300 rounded-2xl p-6 mb-6">
-              <div className="text-green-700 text-xs font-heading font-bold uppercase tracking-widest mb-2">
-                Your odds look strong — verify your real benefits
-              </div>
-              <h3 style={{ fontFamily: "var(--font-heading)" }} className="text-xl font-bold text-gray-900 mb-3">
-                Want to know for sure? The $25 Eligibility Check.
-              </h3>
-              <ul className="space-y-2 mb-5">
-                {[
-                  "We verify your actual insurance benefits in real-time",
-                  "We identify the strongest covered pathway for your situation",
-                  "You get exact next steps — what's covered, what needs prior auth",
-                  "This is not an estimate — it's your real plan data",
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                    <Check size={15} className="text-green-600 mt-0.5 shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <a
-                href={`/${locale}/intake/insurance-eligibility`}
-                className="block w-full bg-[#ed1b1b] text-white text-center font-heading font-bold py-4 px-8 rounded-full shadow-[0_4px_12px_rgba(237,27,27,0.2)] hover:bg-[#d01818] transition-all duration-200 mb-3"
-              >
-                Confirm My Coverage — $25 →
-              </a>
-              <p className="text-gray-400 text-xs text-center">
-                One-time, non-refundable verification fee. We check your actual benefits — not an estimate.
-              </p>
-              <div className="mt-4 pt-4 border-t border-green-200 text-center">
-                <p className="text-gray-500 text-sm">
-                  Prefer to skip insurance?{" "}
-                  <a href={`/${locale}/programs`} className="text-[#ed1b1b] font-semibold hover:underline">
-                    Start self-pay from $169/mo →
-                  </a>
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* ── UNFAVORABLE (score < 65%) — Self-pay redirect, never a dead end ── */}
-          {bestProb < 65 && (
-            <div className="rounded-2xl p-6 mb-6 border-2 border-gray-200 bg-white">
-              <div className="text-gray-500 text-xs font-heading font-bold uppercase tracking-widest mb-2">
-                Insurance is unlikely for weight loss — but you have great options
-              </div>
-              <h3 style={{ fontFamily: "var(--font-heading)" }} className="text-xl font-bold text-gray-900 mb-3">
-                Don&apos;t give up — self-pay is fast, effective, and affordable
-              </h3>
-              <ul className="space-y-2 mb-5">
-                {[
-                  "Compounded semaglutide & tirzepatide are clinically equivalent to brand-name GLP-1s",
-                  "Programs start from $169/mo — medication included, no insurance battles",
-                  "Board-certified physician review included with every program",
-                  "Most patients start treatment within 1–3 business days",
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                    <Check size={15} className="text-[#ed1b1b] mt-0.5 shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <a
-                href={`/${locale}/quiz`}
-                className="block w-full bg-[#ed1b1b] text-white text-center font-heading font-bold py-4 px-8 rounded-full shadow-[0_4px_12px_rgba(237,27,27,0.2)] hover:bg-[#d01818] transition-all duration-200 mb-3"
-              >
-                Find My Self-Pay Program →
-              </a>
-              <a
-                href={`/${locale}/programs`}
-                className="block w-full text-center text-gray-600 text-sm font-semibold hover:text-[#ed1b1b] transition-colors mb-2"
-              >
-                Browse all programs — starting at $169/mo →
-              </a>
-              <button
-                onClick={() => setStep("landing")}
-                className="w-full text-center text-gray-400 text-sm hover:text-gray-600 transition-colors mt-1"
-              >
-                Have a diagnosis we didn&apos;t capture? Retake the quiz →
-              </button>
-            </div>
-          )}
-
-          {/* Retake */}
-          <div className="text-center mb-8">
-            <button
-              onClick={() => {
-                setStep("landing");
-                setAnswers({ carrier: null, planSource: "", employerSize: "", state: "", diagnoses: [], bmiRange: "" });
-                setCarrierSearch("");
-                setResults([]);
-              }}
-              className="text-gray-400 text-sm hover:text-[#ed1b1b] transition-colors"
-            >
-              ← Start over
-            </button>
-          </div>
-
-          {/* Footer disclaimer */}
-          <div className="border-t border-gray-100 pt-6 text-xs text-gray-400 leading-relaxed">
-            Probability estimates based on published carrier formularies, state mandates, and Body Good clinical data as of March 2026. This tool provides estimates only — not guarantees. Body Good does not determine insurance coverage at any point. Insurance policies change frequently. Individual results depend on specific plan details. Created by Dr. Linda Moleon, MD — double board-certified in obesity medicine and anesthesiology.
-          </div>
         </div>
       </div>
     );
