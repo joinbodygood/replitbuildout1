@@ -1,0 +1,60 @@
+<p><span style="font-weight: 400;">Please note, that usually, order fulfillment time takes 4-6 business days </span><b>before shipping</b><span style="font-weight: 400;">.</span><span style="font-weight: 400;"><br></span><span style="font-weight: 400;"><br></span><span style="font-weight: 400;">Please see the shipping times below:</span></p>
+<table style="width: 100%; height: 100%;">
+<tbody>
+<tr>
+<td style="width: 59%;">
+<p><span style="font-weight: 400;">US Domestic - Regular</span></p>
+</td>
+<td style="width: 20.8546%;">
+<p><span style="font-weight: 400;">1 - 4 business days</span></p>
+</td>
+<td style="width: 11.1454%;">
+<p><span style="font-weight: 400;">USPS</span></p>
+</td>
+</tr>
+<tr>
+<td style="width: 59%;">
+<p><span style="font-weight: 400;">US Domestic - Express</span></p>
+</td>
+<td style="width: 20.8546%;">
+<p><span style="font-weight: 400;">1 - 3 business days</span></p>
+</td>
+<td style="width: 11.1454%;">
+<p><span style="font-weight: 400;">FedEx</span></p>
+</td>
+</tr>
+<tr>
+<td style="width: 59%;">
+<p><span style="font-weight: 400;">International - Zone 1<br>(Canada, Mexico)</span></p>
+</td>
+<td style="width: 20.8546%;">
+<p><span style="font-weight: 400;">2 - 5 business days</span></p>
+</td>
+<td style="width: 11.1454%;">
+<p><span style="font-weight: 400;">FedEx</span></p>
+</td>
+</tr>
+<tr>
+<td style="width: 59%;">
+<p><span style="font-weight: 400;">International - Zone 2<br>(Belgium, France, Germany, Italy, Luxembourg,<br>Monaco, Netherlands, United Kingdom, Andorra, <br>Denmark, Finland, Greece, Iceland, Liechtenstein,<br>Malta, Norway, Portugal, Sweden)</span></p>
+</td>
+<td style="width: 20.8546%;">
+<p><span style="font-weight: 400;">2 - 5 business days</span></p>
+</td>
+<td style="width: 11.1454%;">
+<p><span style="font-weight: 400;">FedEx</span></p>
+</td>
+</tr>
+<tr>
+<td style="width: 59%;">
+<p><span style="font-weight: 400;">International - Zone 3<br></span><span style="font-weight: 400;">(Australia, Indonesia, Macau, Malaysia, New Zealand, Philippines, <br>Thailand, Vietnam, South Korea)</span></p>
+</td>
+<td style="width: 20.8546%;">
+<p><span style="font-weight: 400;">2 - 5 business days</span></p>
+</td>
+<td style="width: 11.1454%;">
+<p><span style="font-weight: 400;" mce-data-marked="1">FedEx</span></p>
+</td>
+</tr>
+</tbody>
+</table>
