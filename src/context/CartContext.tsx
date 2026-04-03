@@ -5,6 +5,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef } f
 export type CartItem = {
   productId: string;
   variantId: string;
+  sku?: string;         // product catalog SKU (e.g. VOX4ASHW) — used for Shopify/Supliful fulfillment routing
   name: string;
   variantLabel: string;
   price: number;        // cents — TOTAL plan cost, or monthly price when purchaseType === "subscribe"

@@ -563,7 +563,7 @@ export default function CheckoutPage() {
                                 items: items.map((item) => ({
                                   name: item.name,
                                   variantLabel: item.variantLabel,
-                                  sku: item.variantId,
+                                  sku: item.sku ?? item.variantId,
                                   price: item.price,
                                   quantity: item.quantity,
                                 })),
@@ -633,7 +633,7 @@ export default function CheckoutPage() {
                                 items: items.map((item) => ({
                                   name: item.name,
                                   variantLabel: item.variantLabel,
-                                  sku: item.variantId,
+                                  sku: item.sku ?? item.variantId,
                                   price: item.price,
                                   quantity: item.quantity,
                                 })),

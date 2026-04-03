@@ -213,6 +213,7 @@ export default async function SupplementProductPage({ params }: Props) {
                 <SupplementAddToCart
                   productId={product.id}
                   variantId={variant.id}
+                  sku={product.sku ?? undefined}
                   name={t.name}
                   variantLabel={variant.label ?? ""}
                   price={variant.price}

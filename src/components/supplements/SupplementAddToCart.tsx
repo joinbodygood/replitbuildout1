@@ -11,6 +11,7 @@ const DISCOUNT = 0.10; // 10% off for Subscribe & Save
 type Props = {
   productId: string;
   variantId: string;
+  sku?: string; // catalog SKU (e.g. VOX4ASHW) for Shopify fulfillment routing
   name: string;
   variantLabel: string;
   price: number; // full retail price in cents
@@ -26,6 +27,7 @@ function fmt(cents: number) {
 export function SupplementAddToCart({
   productId,
   variantId,
+  sku,
   name,
   variantLabel,
   price,
@@ -71,6 +73,7 @@ export function SupplementAddToCart({
     addItem({
       productId,
       variantId,
+      sku,
       name,
       variantLabel,
       price: isSubscribe ? subscribePrice : price,

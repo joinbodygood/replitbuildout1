@@ -86,12 +86,18 @@ export async function createShopifyOrder(
 
   const token = await getShopifyToken();
 
-  const skus     = params.items.map((i) => i.sku).filter(Boolean);
-  const mappings = await db.shopifyMapping.findMany({ where: { ourSku: { in: skus }, isActive: true } });
+  // Build a set of candidate SKUs — include both the raw SKU and, for variant SKUs
+  // ending in "-VAR", also try the base catalog SKU (e.g. "VOX4ASHW-VAR" → "VOX4ASHW").
+  const rawSkus       = params.items.map((i) => i.sku).filter(Boolean) as string[];
+  const baseCandidates = rawSkus.flatMap((s) => (s.endsWith("-VAR") ? [s, s.slice(0, -4)] : [s]));
+  const mappings = await db.shopifyMapping.findMany({
+    where: { ourSku: { in: baseCandidates }, isActive: true },
+  });
 
   const lineItems = params.items
     .map((item) => {
-      const mapping = mappings.find((m) => m.ourSku === item.sku);
+      const baseSku  = item.sku.endsWith("-VAR") ? item.sku.slice(0, -4) : item.sku;
+      const mapping  = mappings.find((m) => m.ourSku === item.sku || m.ourSku === baseSku);
       if (!mapping) return null;
       return {
         variant_id:        parseInt(mapping.shopifyVariantId),
