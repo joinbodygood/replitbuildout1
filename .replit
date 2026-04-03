@@ -43,6 +43,8 @@ CHATWOOT_API_TOKEN = "GeATBSkoQUnZmw5LZgoV3fcR"
 NEXT_PUBLIC_CHATWOOT_BASE_URL = "https://support.joinbodygood.com"
 NEXT_PUBLIC_CHATWOOT_WEBSITE_TOKEN = "b8SSyLCCAAhZnT6MfxzQuR62"
 CHATWOOT_ACCOUNT_ID = "1"
+SHOPIFY_DOMAIN = "573c26.myshopify.com"
+SHOPIFY_CLIENT_ID = "77c795130c0e48c0c29b5b6b5ba3a6b2"
 
 [postMerge]
 path = "scripts/post-merge.sh"

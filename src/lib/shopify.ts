@@ -1,14 +1,14 @@
 import { db } from "@/lib/db";
 import { createHmac } from "crypto";
 
-const SHOPIFY_DOMAIN      = process.env.SHOPIFY_DOMAIN;
-const SHOPIFY_CLIENT_ID   = process.env.SHOPIFY_CLIENT_ID;
-const SHOPIFY_CLIENT_SECRET = process.env.SHOPIFY_CLIENT_SECRET;
+const SHOPIFY_DOMAIN        = process.env.SHOPIFY_DOMAIN;
+const SHOPIFY_CLIENT_ID     = process.env.SHOPIFY_CLIENT_ID;
+const SHOPIFY_CLIENT_SECRET = process.env.SHOPIFY_APP_SHARED_SECRET;
 
 /* ─── Token management ──────────────────────────────────────────────────── */
 
 export async function getShopifyToken(): Promise<string> {
-  const staticToken = process.env.SHOPIFY_ADMIN_TOKEN;
+  const staticToken = process.env.SHOPIFY_ACCESS_TOKEN;
 
   const cached = await db.shopifyToken.findFirst({ orderBy: { createdAt: "desc" } });
 
@@ -31,7 +31,9 @@ export async function getShopifyToken(): Promise<string> {
       if (resp.ok) {
         const data      = await resp.json();
         const token     = data.access_token as string;
-        const expiresAt = new Date(Date.now() + 23 * 60 * 60 * 1000);
+        // Use server-reported expires_in (seconds), subtract 5 min buffer
+        const expiresInMs = ((data.expires_in as number ?? 86400) - 300) * 1000;
+        const expiresAt   = new Date(Date.now() + expiresInMs);
 
         if (cached) {
           await db.shopifyToken.update({ where: { id: cached.id }, data: { token, expiresAt } });
@@ -46,13 +48,14 @@ export async function getShopifyToken(): Promise<string> {
   }
 
   if (staticToken) return staticToken;
-  throw new Error("No Shopify token available — configure SHOPIFY_ADMIN_TOKEN or SHOPIFY_CLIENT_ID/SECRET");
+  throw new Error("No Shopify token available — configure SHOPIFY_ACCESS_TOKEN or SHOPIFY_CLIENT_ID/SHOPIFY_APP_SHARED_SECRET");
 }
 
 /* ─── Webhook HMAC verification ─────────────────────────────────────────── */
 
 export function verifyShopifyWebhook(rawBody: string, hmacHeader: string): boolean {
-  const secret = process.env.SHOPIFY_WEBHOOK_SECRET;
+  // Use dedicated webhook secret if set, fall back to app shared secret
+  const secret = process.env.SHOPIFY_WEBHOOK_SECRET ?? process.env.SHOPIFY_APP_SHARED_SECRET;
   if (!secret) return false;
   const digest = createHmac("sha256", secret).update(rawBody, "utf8").digest("base64");
   return digest === hmacHeader;
