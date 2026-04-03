@@ -4,6 +4,8 @@ import type { PatientInput } from '@/lib/insurance/confidence-engine';
 import { runStediCheck } from '@/lib/insurance/stedi';
 import { runWebSearch } from '@/lib/insurance/web-search';
 import { fireWebhook } from '@/lib/webhooks';
+import { createCase, findCaseByEmail } from '@/lib/pa/case-service';
+import { autoAssign } from '@/lib/pa/assignment-service';
 
 export async function POST(req: NextRequest) {
   try {
@@ -70,6 +72,34 @@ export async function POST(req: NextRequest) {
       carrierKey: results.carrierKey,
       checkTimestamp: results.checkTimestamp,
     }).catch(err => console.error('[coverage-check] Webhook fire failed:', (err as Error).message));
+
+    // Create or update PA case from coverage check results
+    if (body.subscriberName && body.memberId) {
+      const email = (body as Record<string, string>).patientEmail || `${firstName.toLowerCase()}.${lastName.toLowerCase()}@pending.bodygood`;
+      try {
+        let paCase = await findCaseByEmail(email);
+        if (!paCase) {
+          paCase = await createCase({
+            patientEmail: email,
+            patientName: subscriberName,
+            patientState: state,
+            carrierName: insurerName,
+            memberId,
+            groupNumber,
+            planType: mapPlanType(planType || ''),
+            subscriberName,
+            subscriberDob,
+            eligibilityData: results,
+            probabilityScore: results.medications.reduce((max: number, m: { probability: number }) => Math.max(max, m.probability), 0),
+            probabilityBucket: results.bucket,
+            stage: 'eligibility_review',
+          });
+          await autoAssign(paCase.id);
+        }
+      } catch (err) {
+        console.warn('[coverage-check] PA case creation failed:', (err as Error).message);
+      }
+    }
 
     return NextResponse.json({ success: true, results });
   } catch (err) {
