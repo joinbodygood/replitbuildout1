@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { fireWebhook } from "@/lib/webhooks";
 import { upsertContact, openConversation } from "@/lib/chatwoot";
+import { dittofeed } from "@/lib/dittofeed";
 
 export async function POST(req: NextRequest) {
   try {
@@ -70,6 +71,33 @@ export async function POST(req: NextRequest) {
         });
       }
     })();
+
+    // Dittofeed: identify the lead and track quiz completion
+    const userId = body.email || "";
+    if (userId) {
+      dittofeed.identify({
+        userId,
+        traits: {
+          email: body.email,
+          firstName: body.firstName || undefined,
+          phone: body.phone || undefined,
+          leadSource: "quiz",
+          programInterest: body.quizOutcome || undefined,
+        },
+      });
+      dittofeed.track({
+        userId,
+        event: "quiz_completed",
+        properties: {
+          email: body.email,
+          quiz_result: body.quizOutcome,
+          locale: body.locale,
+          utm_source: body.utmSource,
+          utm_medium: body.utmMedium,
+          utm_campaign: body.utmCampaign,
+        },
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
