@@ -61,16 +61,18 @@ export function AdminSidebar({ user }: Props) {
 
   useEffect(() => {
     let cancelled = false;
+    const embedSecret = process.env.NEXT_PUBLIC_EMBED_JWT_SECRET;
+
     async function fetchCount() {
       try {
-        const res  = await fetch("/api/admin/chatwoot");
-        if (!res.ok) return;
-        const data = await res.json() as { openCount: number };
+        const res = await fetch("https://support.joinbodygood.com/api/embed/stats", {
+          headers: embedSecret ? { Authorization: `Bearer ${embedSecret}` } : {},
+        });
+        const data = await res.json();
         if (!cancelled) setOpenCount(data.openCount ?? 0);
-      } catch {
-        // silently ignore network errors
-      }
+      } catch {}
     }
+
     fetchCount();
     const interval = setInterval(fetchCount, 60_000);
     return () => { cancelled = true; clearInterval(interval); };
