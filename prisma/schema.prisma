@@ -485,3 +485,144 @@ model ShopifyOrder {
   @@index([shopifyOrderId])
   @@index([status])
 }
+
+// ──────────────────────────────────────────────────────────────────────
+// Insurance Probability Checker v2 (replaces InsuranceProbability)
+// ──────────────────────────────────────────────────────────────────────
+
+enum InsuranceOrigin {
+  aca
+  medicare
+  medicaid
+  employer
+  federal_military
+}
+
+enum CoverageStatus {
+  not_on_formulary
+  unlikely
+  coverage_with_pa
+  high_probability
+}
+
+enum CoverageSource {
+  healthcare_gov_api
+  qhp_file
+  medicare_part_d
+  medicaid_state
+  pbm_baseline
+  carrier_scrape
+  manual
+  default_fallback
+}
+
+enum ResultBucket {
+  not_on_formulary
+  unlikely
+  coverage_with_pa
+  high_probability
+}
+
+model CoverageIndex {
+  id              String           @id @default(cuid())
+  insuranceOrigin InsuranceOrigin
+  carrierKey      String
+  planId          String?
+  state           String
+  pbm             String?
+  medication      String           // wegovy | zepbound | mounjaro | ozempic | foundayo
+  indicationKey   String           // weight_loss | t2d | cv | osa | mash
+  status          CoverageStatus
+  probLow         Int
+  probHigh        Int
+  paRequired      Boolean          @default(true)
+  stepTherapy     Boolean          @default(false)
+  tier            Int?
+  notes           String?
+  source          CoverageSource
+  sourceEvidenceUrl String?
+  lastSeenAt      DateTime         @default(now())
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([carrierKey, state, medication, indicationKey], name: "coverage_index_no_plan")
+  @@unique([planId, medication, indicationKey], name: "coverage_index_with_plan")
+  @@index([insuranceOrigin, carrierKey, state])
+  @@index([planId])
+  @@index([medication, indicationKey])
+  @@index([lastSeenAt])
+}
+
+model CoverageDefault {
+  id            String         @id @default(cuid())
+  medication    String
+  indicationKey String
+  probLow       Int
+  probHigh      Int
+  paRequired    Boolean        @default(true)
+  notes         String?
+  updatedAt     DateTime       @updatedAt
+
+  @@unique([medication, indicationKey])
+}
+
+model AcaPlanDirectory {
+  id          String   @id @default(cuid())
+  planId      String   @unique // HIOS 14-digit
+  carrierKey  String
+  state       String
+  planName    String
+  planYear    Int
+  metalLevel  String?
+  lastSeenAt  DateTime @default(now())
+
+  @@index([carrierKey, state])
+  @@index([state, planName])
+}
+
+model InsuranceCheckLead {
+  id                 String       @id @default(cuid())
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  firstName          String
+  email              String
+  phone              String?
+  smsConsent         Boolean      @default(false)
+  emailConsent       Boolean      @default(true)
+
+  intakeJson         Json
+  resultJson         Json
+  resultHistory      Json?
+  resultBucket       ResultBucket
+  bestMedication     String
+
+  utmSource          String?
+  utmMedium          String?
+  utmCampaign        String?
+  ipAddress          String?
+  userAgent          String?
+
+  zohoLeadId         String?
+  convertedToPaid    Boolean      @default(false)
+  convertedAt        DateTime?
+
+  locale             String       @default("en")
+
+  @@index([email])
+  @@index([createdAt])
+  @@index([resultBucket])
+}
+
+model WorkerRun {
+  id             String   @id @default(cuid())
+  workerName     String
+  startedAt      DateTime @default(now())
+  finishedAt     DateTime?
+  status         String   // running | success | error
+  rowsWritten    Int      @default(0)
+  errorMessage   String?
+
+  @@index([workerName, startedAt])
+  @@index([status])
+}
