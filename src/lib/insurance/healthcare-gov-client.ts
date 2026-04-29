@@ -20,7 +20,10 @@ export async function lookupDrugRxcui(drugName: string): Promise<string | null> 
     if (!res.ok) return null;
     const j = await res.json() as { drugs?: Array<{ rxcui: string; name: string }> };
     return j.drugs?.[0]?.rxcui ?? null;
-  } catch { return null; }
+  } catch (err) {
+    console.warn("[healthcare-gov-client] lookupDrugRxcui failed", { drugName, err });
+    return null;
+  }
 }
 
 export async function checkCoverage(args: { year: number; rxcui: string; planId: string }): Promise<HealthcareGovCoverage | null> {
@@ -39,5 +42,8 @@ export async function checkCoverage(args: { year: number; rxcui: string; planId:
       covered: !!c.covered, drugTier: c.drug_tier ?? null,
       paRequired: !!c.prior_authorization, stepTherapy: !!c.step_therapy, copay: c.copay_amount ?? null,
     };
-  } catch { return null; }
+  } catch (err) {
+    console.warn("[healthcare-gov-client] checkCoverage failed", { rxcui: args.rxcui, planId: args.planId, err });
+    return null;
+  }
 }

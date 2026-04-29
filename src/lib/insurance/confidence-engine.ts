@@ -31,8 +31,6 @@ export interface CoverageResult {
   computedAt: string;
 }
 
-const CURRENT_YEAR = new Date().getFullYear();
-
 // Module-level cache for resolved RxCUIs. Populated lazily on first live-lookup
 // per medication. `null` cached as a negative result — no retry per request.
 const RXCUI_CACHE = new Map<MedicationKey, string | null>();
@@ -80,7 +78,7 @@ async function scoreMedication(
   if (pipeline.kind === "aca" && pipeline.useLiveLookup && intake.planName) {
     const rxcui = await getRxcuiFor(medication, meta.brand);
     if (rxcui) {
-      const live = await checkCoverage({ year: CURRENT_YEAR, rxcui, planId: intake.planName });
+      const live = await checkCoverage({ year: new Date().getFullYear(), rxcui, planId: intake.planName });
       if (live) {
         const lo = live.covered ? (live.paRequired ? 60 : 80) : 0;
         const hi = live.covered ? (live.paRequired ? 80 : 95) : 0;
