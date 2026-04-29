@@ -1,0 +1,34 @@
+{
+  "states": {
+    "FL": {
+      "wegovy_weight_loss":   { "covered": false, "notes": "FL Medicaid excludes weight loss drugs.", "url": "https://ahca.myflorida.com/medicaid/prescribed-drugs" },
+      "zepbound_weight_loss": { "covered": false, "notes": "Excluded.", "url": "https://ahca.myflorida.com/medicaid/prescribed-drugs" },
+      "ozempic_t2d":          { "covered": true, "pa": true, "probLow": 75, "probHigh": 90, "notes": "Covered with PA for T2D." },
+      "mounjaro_t2d":         { "covered": true, "pa": true, "probLow": 70, "probHigh": 88, "notes": "Covered with PA for T2D." },
+      "foundayo_weight_loss": { "covered": false, "notes": "Not on FL Medicaid PDL." }
+    },
+    "NY": {
+      "wegovy_weight_loss":   { "covered": true, "pa": false, "probLow": 80, "probHigh": 92, "notes": "NY Medicaid has best Wegovy coverage in the country — no PA." },
+      "zepbound_weight_loss": { "covered": true, "pa": false, "probLow": 75, "probHigh": 90, "notes": "Covered without PA." },
+      "ozempic_t2d":          { "covered": true, "pa": false, "probLow": 88, "probHigh": 95, "notes": "Standard T2D coverage." },
+      "mounjaro_t2d":         { "covered": true, "pa": true, "probLow": 75, "probHigh": 90, "notes": "Covered with PA." },
+      "foundayo_weight_loss": { "covered": false, "notes": "Newly launched; not yet on PDL." }
+    },
+    "CA": {
+      "wegovy_weight_loss":   { "covered": false, "notes": "Medi-Cal eliminated weight loss GLP-1s January 2026." },
+      "zepbound_weight_loss": { "covered": false, "notes": "Eliminated 2026." },
+      "ozempic_t2d":          { "covered": true, "pa": true, "probLow": 80, "probHigh": 92, "notes": "T2D covered." },
+      "mounjaro_t2d":         { "covered": true, "pa": true, "probLow": 78, "probHigh": 90 }
+    },
+    "TX": {
+      "wegovy_weight_loss":   { "covered": false, "notes": "Not on Texas Medicaid PDL." },
+      "ozempic_t2d":          { "covered": true, "pa": true, "probLow": 78, "probHigh": 90 },
+      "mounjaro_t2d":         { "covered": true, "pa": true, "probLow": 75, "probHigh": 88 }
+    },
+    "IL": {
+      "wegovy_weight_loss":   { "covered": true, "pa": true, "probLow": 65, "probHigh": 85, "notes": "BMI 30+ with PA." },
+      "zepbound_weight_loss": { "covered": true, "pa": true, "probLow": 60, "probHigh": 80 },
+      "ozempic_t2d":          { "covered": true, "pa": false, "probLow": 88, "probHigh": 95 }
+    }
+  }
+}

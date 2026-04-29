@@ -1,0 +1,25 @@
+{
+  "pbms": {
+    "cvs_caremark": {
+      "wegovy_weight_loss":   { "status": "preferred", "pa": true, "probLow": 65, "probHigh": 85, "notes": "Preferred on CVS Caremark formularies." },
+      "zepbound_weight_loss": { "status": "removed",   "pa": true, "probLow": 0,  "probHigh": 0,  "notes": "Removed from CVS Caremark formularies July 2025." },
+      "ozempic_t2d":          { "status": "preferred", "pa": false, "probLow": 85, "probHigh": 95 },
+      "mounjaro_t2d":         { "status": "preferred", "pa": true, "probLow": 80, "probHigh": 92 },
+      "foundayo_weight_loss": { "status": "not_added", "pa": true, "probLow": 0,  "probHigh": 0,  "notes": "Newly launched; not yet on standard formulary." }
+    },
+    "esi": {
+      "wegovy_weight_loss":   { "status": "non_preferred", "pa": true, "probLow": 40, "probHigh": 60, "notes": "Step therapy required." },
+      "zepbound_weight_loss": { "status": "non_preferred", "pa": true, "probLow": 35, "probHigh": 55 },
+      "ozempic_t2d":          { "status": "preferred",     "pa": false, "probLow": 88, "probHigh": 95 },
+      "mounjaro_t2d":         { "status": "preferred",     "pa": true, "probLow": 80, "probHigh": 92 },
+      "foundayo_weight_loss": { "status": "not_added",     "pa": true, "probLow": 0,  "probHigh": 0 }
+    },
+    "optumrx": {
+      "wegovy_weight_loss":   { "status": "non_preferred", "pa": true, "probLow": 35, "probHigh": 55 },
+      "zepbound_weight_loss": { "status": "non_preferred", "pa": true, "probLow": 30, "probHigh": 50 },
+      "ozempic_t2d":          { "status": "preferred",     "pa": false, "probLow": 85, "probHigh": 93 },
+      "mounjaro_t2d":         { "status": "preferred",     "pa": true, "probLow": 78, "probHigh": 90 },
+      "foundayo_weight_loss": { "status": "not_added",     "pa": true, "probLow": 0,  "probHigh": 0 }
+    }
+  }
+}

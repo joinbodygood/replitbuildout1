@@ -1,0 +1,24 @@
+{
+  "tricare": {
+    "wegovy_weight_loss":   { "covered": false, "pa": true,  "probLow": 10, "probHigh": 22, "notes": "Express Scripts Federal: weight loss alone rarely approved; CV exception possible." },
+    "wegovy_cv":            { "covered": true,  "pa": true,  "probLow": 48, "probHigh": 63, "notes": "TRICARE post-SELECT CV pathway; growing approvals." },
+    "zepbound_weight_loss": { "covered": false, "pa": true,  "probLow": 10, "probHigh": 20 },
+    "zepbound_osa":         { "covered": true,  "pa": true,  "probLow": 38, "probHigh": 54, "notes": "Sleep study (AHI 15+) required." },
+    "ozempic_t2d":          { "covered": true,  "pa": true,  "probLow": 78, "probHigh": 90 },
+    "mounjaro_t2d":         { "covered": true,  "pa": true,  "probLow": 75, "probHigh": 88 },
+    "foundayo_weight_loss": { "covered": false, "pa": true,  "probLow": 0,  "probHigh": 0 }
+  },
+  "bcbs_fep": {
+    "wegovy_weight_loss":   { "covered": true,  "pa": true,  "probLow": 55, "probHigh": 75 },
+    "zepbound_weight_loss": { "covered": true,  "pa": true,  "probLow": 50, "probHigh": 70 },
+    "ozempic_t2d":          { "covered": true,  "pa": false, "probLow": 88, "probHigh": 95 },
+    "mounjaro_t2d":         { "covered": true,  "pa": true,  "probLow": 80, "probHigh": 92 },
+    "foundayo_weight_loss": { "covered": false, "pa": true,  "probLow": 0,  "probHigh": 0 }
+  },
+  "va": {
+    "wegovy_weight_loss":   { "covered": false, "pa": true,  "probLow": 5,  "probHigh": 15 },
+    "ozempic_t2d":          { "covered": true,  "pa": true,  "probLow": 80, "probHigh": 92 },
+    "mounjaro_t2d":         { "covered": true,  "pa": true,  "probLow": 75, "probHigh": 88 },
+    "foundayo_weight_loss": { "covered": false, "pa": true,  "probLow": 0,  "probHigh": 0 }
+  }
+}
