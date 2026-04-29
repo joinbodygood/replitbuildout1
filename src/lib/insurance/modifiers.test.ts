@@ -4,7 +4,7 @@ import type { IntakeAnswers } from "./routing";
 
 const base: IntakeAnswers = {
   insuranceOrigin: "employer", carrier: "cigna", state: "FL", zip: "33101",
-  planName: null, employerName: "ACME", employerSize: "500_4999",
+  planName: null, planId: null, employerName: "ACME", employerSize: "500_4999",
   diagnoses: [], heightInches: 66, weightLb: 220, // BMI ~35.5
   contact: { firstName: "T", email: "t@x.com", phone: null, smsConsent: false, emailConsent: true }, utm: {},
 };

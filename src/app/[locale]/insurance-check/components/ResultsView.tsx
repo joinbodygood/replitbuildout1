@@ -20,18 +20,23 @@ export default function ResultsView({ result, firstName }: Props) {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        {result.medications.map(med => (
-          <MedicationCard key={med.medication} med={med} isFoundayo={med.medication === "foundayo"} />
-        ))}
+        {result.medications.map((med, i) => {
+          const isLastOdd = i === result.medications.length - 1 && result.medications.length % 2 === 1;
+          return (
+            <div key={med.medication} className={isLastOdd ? "md:col-span-2" : ""}>
+              <MedicationCard med={med} isFoundayo={med.medication === "foundayo"} />
+            </div>
+          );
+        })}
       </div>
 
       <div className="bg-neutral-900 rounded-2xl p-6 text-center mb-6">
         <p className="text-[#ED1B1B] text-xs font-semibold tracking-wider uppercase mb-1">Not sure which option fits?</p>
-        <h3 className="text-white text-lg font-semibold mb-2">Talk to Dr. Linda's team — free 5-min call</h3>
+        <h3 className="text-white text-lg font-semibold mb-2">Talk to Dr. Linda's team — free 5-min review</h3>
         <p className="text-neutral-400 text-sm mb-4">We'll personally walk you through your best path forward.</p>
         <a href="https://calendly.com/bodygood/intro" target="_blank" rel="noopener"
           className="inline-flex items-center bg-[#ED1B1B] hover:bg-[#D01818] text-white text-sm font-semibold px-5 py-2.5 rounded-full transition">
-          Book a free call →
+          Get a free 5-min review →
         </a>
       </div>
 

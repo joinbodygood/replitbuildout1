@@ -56,6 +56,7 @@ export default function IntakeForm({ onSubmit, initialUtm }: Props) {
   const [zip, setZip] = useState("");
   const [carrier, setCarrier] = useState("");
   const [planName, setPlanName] = useState("");
+  const [planId, setPlanId] = useState<string | null>(null);
   const [employerName, setEmployerName] = useState("");
   const [employerSize, setEmployerSize] = useState<"lt_500"|"500_4999"|"5000_plus"|"unknown"|null>(null);
   const [diagnoses, setDiagnoses] = useState<Array<typeof DIAGNOSES[number]["key"]>>([]);
@@ -96,6 +97,7 @@ export default function IntakeForm({ onSubmit, initialUtm }: Props) {
       state,
       zip,
       planName: planName.trim() || null,
+      planId,
       employerName: isEmployer ? (employerName.trim() || null) : null,
       employerSize: isEmployer ? employerSize : null,
       diagnoses,
@@ -155,14 +157,14 @@ export default function IntakeForm({ onSubmit, initialUtm }: Props) {
 
   if (step === 5) return (
     <QuestionStep step={5} total={totalSteps} title="What's your plan name?" hint="Optional. We can still check coverage without it." onBack={back} onNext={next}>
-      <input type="text" value={planName} onChange={e => setPlanName(e.target.value)}
+      <input type="text" value={planName} onChange={e => { setPlanName(e.target.value); setPlanId(null); }}
         className="w-full rounded-lg border border-neutral-300 px-3 py-3 focus:outline-none focus:border-[#ED1B1B]"
         placeholder="e.g. BlueOptions Silver 1234" />
       {planSuggestions.length > 0 && (
         <ul className="mt-2 border border-neutral-200 rounded-lg overflow-hidden">
           {planSuggestions.map(p => (
             <li key={p.planId}>
-              <button type="button" onClick={() => setPlanName(p.planName)}
+              <button type="button" onClick={() => { setPlanName(p.planName); setPlanId(p.planId); }}
                 className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-50">{p.planName}</button>
             </li>
           ))}

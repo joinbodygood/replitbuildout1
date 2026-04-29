@@ -70,15 +70,15 @@ async function scoreMedication(
 
   let row: CoverageRow | null = await lookupCoverage({
     pipeline, carrierKey: intake.carrier, state: intake.state,
-    planId: null, medication, indicationKey: indication,
+    planId: intake.planId, medication, indicationKey: indication,
   });
   let source = row?.source ?? "default_fallback";
   let lastSeenAt = row?.lastSeenAt ?? new Date();
 
-  if (pipeline.kind === "aca" && pipeline.useLiveLookup && intake.planName) {
+  if (pipeline.kind === "aca" && pipeline.useLiveLookup && intake.planId) {
     const rxcui = await getRxcuiFor(medication, meta.brand);
     if (rxcui) {
-      const live = await checkCoverage({ year: new Date().getFullYear(), rxcui, planId: intake.planName });
+      const live = await checkCoverage({ year: new Date().getFullYear(), rxcui, planId: intake.planId });
       if (live) {
         const lo = live.covered ? (live.paRequired ? 60 : 80) : 0;
         const hi = live.covered ? (live.paRequired ? 80 : 95) : 0;

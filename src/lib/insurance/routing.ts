@@ -10,6 +10,7 @@ export interface IntakeAnswers {
   state: string;
   zip: string;
   planName: string | null;
+  planId: string | null;
   employerName: string | null;
   employerSize: "lt_500" | "500_4999" | "5000_plus" | "unknown" | null;
   diagnoses: Array<"t2d" | "cvd" | "osa" | "htn" | "dyslipidemia" | "mash">;
@@ -29,7 +30,7 @@ export type Pipeline =
 
 export function resolvePipeline(intake: IntakeAnswers): Pipeline {
   if (intake.insuranceOrigin === "none") return { kind: "bypass", reason: "self_pay" };
-  if (intake.insuranceOrigin === "aca") return { kind: "aca", useLiveLookup: !!intake.planName };
+  if (intake.insuranceOrigin === "aca") return { kind: "aca", useLiveLookup: !!intake.planId };
   return { kind: intake.insuranceOrigin };
 }
 
