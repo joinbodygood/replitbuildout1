@@ -9,28 +9,42 @@ function isValid(intake: Partial<IntakeAnswers>): intake is IntakeAnswers {
   if (typeof intake.heightInches !== "number" || typeof intake.weightLb !== "number") return false;
   if (!intake.contact?.firstName || !intake.contact?.email) return false;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(intake.contact.email)) return false;
+  if (!Array.isArray(intake.diagnoses)) return false;
+  if (!intake.utm || typeof intake.utm !== "object") return false;
   return true;
 }
 
 export async function POST(req: NextRequest) {
-  const body = (await req.json()) as { intake: Partial<IntakeAnswers>; locale?: string };
+  let body: { intake: Partial<IntakeAnswers>; locale?: string };
+  try {
+    body = (await req.json()) as typeof body;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
   if (!isValid(body.intake)) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
   const intake = body.intake;
   const locale = body.locale ?? "en";
 
-  const result = await calculateCoverage(intake);
+  try {
+    const result = await calculateCoverage(intake);
 
-  const lead = await upsertLead({
-    intake, result,
-    ipAddress: req.headers.get("x-forwarded-for") ?? null,
-    userAgent: req.headers.get("user-agent") ?? null,
-    locale,
-  });
+    const lead = await upsertLead({
+      intake, result,
+      ipAddress: req.headers.get("x-forwarded-for") ?? null,
+      userAgent: req.headers.get("user-agent") ?? null,
+      locale,
+    });
 
-  // Fire-and-forget webhooks
-  fireLeadWebhooks({ leadId: lead.id, intake, result, locale }).catch(() => { /* silent */ });
+    fireLeadWebhooks({ leadId: lead.id, intake, result, locale }).catch(err => {
+      console.error("[insurance-check/submit] webhook fan-out failed", { leadId: lead.id, err });
+    });
 
-  return NextResponse.json({ leadId: lead.id, result });
+    return NextResponse.json({ leadId: lead.id, result });
+  } catch (err) {
+    console.error("[insurance-check/submit] handler failed", { email: intake.contact.email, err });
+    return NextResponse.json({ error: "internal" }, { status: 500 });
+  }
 }
