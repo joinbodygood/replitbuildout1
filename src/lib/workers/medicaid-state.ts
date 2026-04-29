@@ -18,21 +18,29 @@ export async function run() {
         const probHigh = e.covered ? (e.probHigh ?? 80) : 0;
         const status = !e.covered ? "not_on_formulary" : (e.pa ? "coverage_with_pa" : "high_probability");
 
-        await db.coverageIndex.upsert({
-          where: { coverage_index_no_plan: { carrierKey, state, medication, indicationKey } },
-          update: {
-            probLow, probHigh, paRequired: e.pa ?? true, stepTherapy: false,
-            status: status as never, notes: e.notes ?? null, source: "medicaid_state",
-            sourceEvidenceUrl: e.url ?? null, lastSeenAt: new Date(),
-          },
-          create: {
-            insuranceOrigin: "medicaid", carrierKey, state,
-            medication, indicationKey,
-            probLow, probHigh, paRequired: e.pa ?? true, stepTherapy: false,
-            status: status as never, notes: e.notes ?? null, source: "medicaid_state",
-            sourceEvidenceUrl: e.url ?? null,
-          },
+        const existing = await db.coverageIndex.findFirst({
+          where: { carrierKey, state, medication, indicationKey, planId: null },
         });
+        if (existing) {
+          await db.coverageIndex.update({
+            where: { id: existing.id },
+            data: {
+              probLow, probHigh, paRequired: e.pa ?? true, stepTherapy: false,
+              status: status as never, notes: e.notes ?? null, source: "medicaid_state",
+              sourceEvidenceUrl: e.url ?? null, lastSeenAt: new Date(),
+            },
+          });
+        } else {
+          await db.coverageIndex.create({
+            data: {
+              insuranceOrigin: "medicaid", carrierKey, state,
+              medication, indicationKey,
+              probLow, probHigh, paRequired: e.pa ?? true, stepTherapy: false,
+              status: status as never, notes: e.notes ?? null, source: "medicaid_state",
+              sourceEvidenceUrl: e.url ?? null,
+            },
+          });
+        }
         rowsWritten++;
       }
     }

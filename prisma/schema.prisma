@@ -531,8 +531,12 @@ model CoverageIndex {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
-  @@unique([carrierKey, state, medication, indicationKey], name: "coverage_index_no_plan")
+  // Partial unique on (carrierKey, state, medication, indicationKey) WHERE planId IS NULL
+  // is enforced via raw SQL migration `20260429140000_coverage_index_partial_unique`.
+  // Prisma 5 cannot express partial unique indexes, so we keep a regular composite
+  // index here for query performance.
   @@unique([planId, medication, indicationKey], name: "coverage_index_with_plan")
+  @@index([carrierKey, state, medication, indicationKey])
   @@index([insuranceOrigin, carrierKey, state])
   @@index([planId])
   @@index([medication, indicationKey])
@@ -572,13 +576,14 @@ model InsuranceCheckLead {
   updatedAt          DateTime     @updatedAt
 
   firstName          String
-  email              String
-  phone              String?
+  email              String       // encrypted (AES-256-GCM, see src/lib/crypto/lead-encryption.ts)
+  emailHash          String       // sha256(lowercased trimmed email) — used for idempotency lookups
+  phone              String?      // encrypted (nullable)
   smsConsent         Boolean      @default(false)
   emailConsent       Boolean      @default(true)
 
-  intakeJson         Json
-  resultJson         Json
+  intakeJson         Json         // encrypted blob: { ct: <base64> }
+  resultJson         Json         // encrypted blob: { ct: <base64> }
   resultHistory      Json?
   resultBucket       ResultBucket
   bestMedication     String
@@ -595,7 +600,7 @@ model InsuranceCheckLead {
 
   locale             String       @default("en")
 
-  @@index([email])
+  @@index([emailHash])
   @@index([createdAt])
   @@index([resultBucket])
 }

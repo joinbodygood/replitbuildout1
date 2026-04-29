@@ -39,21 +39,29 @@ export abstract class CarrierScraper {
       const probLow = r.covered ? (r.paRequired ? 50 : 70) : 0;
       const probHigh = r.covered ? (r.paRequired ? 75 : 90) : 0;
       const status = !r.covered ? "not_on_formulary" : (r.paRequired ? "coverage_with_pa" : "high_probability");
-      await db.coverageIndex.upsert({
-        where: { coverage_index_no_plan: { carrierKey: this.carrierKey, state: this.state, medication: r.medication, indicationKey: r.indicationKey } },
-        update: {
-          probLow, probHigh, paRequired: r.paRequired, tier: r.tier,
-          status: status as never, notes: r.notes ?? null, sourceEvidenceUrl: r.evidenceUrl ?? null,
-          source: "carrier_scrape", lastSeenAt: new Date(),
-        },
-        create: {
-          insuranceOrigin: "employer", carrierKey: this.carrierKey, state: this.state,
-          medication: r.medication, indicationKey: r.indicationKey,
-          probLow, probHigh, paRequired: r.paRequired, stepTherapy: false, tier: r.tier,
-          status: status as never, notes: r.notes ?? null, sourceEvidenceUrl: r.evidenceUrl ?? null,
-          source: "carrier_scrape",
-        },
+      const existing = await db.coverageIndex.findFirst({
+        where: { carrierKey: this.carrierKey, state: this.state, medication: r.medication, indicationKey: r.indicationKey, planId: null },
       });
+      if (existing) {
+        await db.coverageIndex.update({
+          where: { id: existing.id },
+          data: {
+            probLow, probHigh, paRequired: r.paRequired, tier: r.tier,
+            status: status as never, notes: r.notes ?? null, sourceEvidenceUrl: r.evidenceUrl ?? null,
+            source: "carrier_scrape", lastSeenAt: new Date(),
+          },
+        });
+      } else {
+        await db.coverageIndex.create({
+          data: {
+            insuranceOrigin: "employer", carrierKey: this.carrierKey, state: this.state,
+            medication: r.medication, indicationKey: r.indicationKey,
+            probLow, probHigh, paRequired: r.paRequired, stepTherapy: false, tier: r.tier,
+            status: status as never, notes: r.notes ?? null, sourceEvidenceUrl: r.evidenceUrl ?? null,
+            source: "carrier_scrape",
+          },
+        });
+      }
       written++;
     }
     return written;

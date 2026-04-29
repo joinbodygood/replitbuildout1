@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import type { IntakeAnswers } from "@/lib/insurance/routing";
 import type { CoverageResult } from "@/lib/insurance/confidence-engine";
 import type { ResultBucket } from "@prisma/client";
+import { encrypt, hashEmail } from "@/lib/crypto/lead-encryption";
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -18,7 +19,7 @@ export async function upsertLead(args: {
     (m.probHigh > best.probHigh ? m : best), result.medications[0]).medication;
 
   const recent = await db.insuranceCheckLead.findFirst({
-    where: { email: intake.contact.email.toLowerCase(), createdAt: { gt: new Date(Date.now() - SEVEN_DAYS_MS) } },
+    where: { emailHash: hashEmail(intake.contact.email), createdAt: { gt: new Date(Date.now() - SEVEN_DAYS_MS) } },
     orderBy: { createdAt: "desc" },
   });
 
@@ -27,13 +28,14 @@ export async function upsertLead(args: {
     return db.insuranceCheckLead.update({
       where: { id: recent.id },
       data: {
-        intakeJson: intake as never,
-        resultJson: result as never,
+        intakeJson: { ct: encrypt(JSON.stringify(intake)) } as never,
+        resultJson: { ct: encrypt(JSON.stringify(result)) } as never,
         resultHistory: [...history, recent.resultJson] as never,
         resultBucket: bucket,
         bestMedication: bestMed,
         firstName: intake.contact.firstName,
-        phone: intake.contact.phone,
+        emailHash: hashEmail(intake.contact.email),
+        phone: intake.contact.phone ? encrypt(intake.contact.phone) : null,
         smsConsent: intake.contact.smsConsent,
         emailConsent: intake.contact.emailConsent,
       },
@@ -43,12 +45,13 @@ export async function upsertLead(args: {
   return db.insuranceCheckLead.create({
     data: {
       firstName: intake.contact.firstName,
-      email: intake.contact.email.toLowerCase(),
-      phone: intake.contact.phone,
+      email: encrypt(intake.contact.email.toLowerCase()),
+      emailHash: hashEmail(intake.contact.email),
+      phone: intake.contact.phone ? encrypt(intake.contact.phone) : null,
       smsConsent: intake.contact.smsConsent,
       emailConsent: intake.contact.emailConsent,
-      intakeJson: intake as never,
-      resultJson: result as never,
+      intakeJson: { ct: encrypt(JSON.stringify(intake)) } as never,
+      resultJson: { ct: encrypt(JSON.stringify(result)) } as never,
       resultBucket: bucket,
       bestMedication: bestMed,
       utmSource: intake.utm.source ?? null,

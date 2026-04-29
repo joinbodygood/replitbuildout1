@@ -14,19 +14,27 @@ export async function run() {
         const indicationKey = indParts.join("_");
         const status = !e.covered ? "not_on_formulary" : (e.pa ? "coverage_with_pa" : "high_probability");
 
-        await db.coverageIndex.upsert({
-          where: { coverage_index_no_plan: { carrierKey, state: "_default", medication, indicationKey } },
-          update: {
-            probLow: e.probLow, probHigh: e.probHigh, paRequired: e.pa,
-            status: status as never, notes: e.notes ?? null, source: "manual", lastSeenAt: new Date(),
-          },
-          create: {
-            insuranceOrigin: "federal_military", carrierKey, state: "_default",
-            medication, indicationKey,
-            probLow: e.probLow, probHigh: e.probHigh, paRequired: e.pa, stepTherapy: false,
-            status: status as never, notes: e.notes ?? null, source: "manual",
-          },
+        const existing = await db.coverageIndex.findFirst({
+          where: { carrierKey, state: "_default", medication, indicationKey, planId: null },
         });
+        if (existing) {
+          await db.coverageIndex.update({
+            where: { id: existing.id },
+            data: {
+              probLow: e.probLow, probHigh: e.probHigh, paRequired: e.pa,
+              status: status as never, notes: e.notes ?? null, source: "manual", lastSeenAt: new Date(),
+            },
+          });
+        } else {
+          await db.coverageIndex.create({
+            data: {
+              insuranceOrigin: "federal_military", carrierKey, state: "_default",
+              medication, indicationKey,
+              probLow: e.probLow, probHigh: e.probHigh, paRequired: e.pa, stepTherapy: false,
+              status: status as never, notes: e.notes ?? null, source: "manual",
+            },
+          });
+        }
         rowsWritten++;
       }
     }
