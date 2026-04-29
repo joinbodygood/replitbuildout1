@@ -1,0 +1,51 @@
+services:
+  - type: cron
+    name: aca-qhp-bulk
+    schedule: "0 3 1 * *"
+    buildCommand: npm install
+    startCommand: npx tsx scripts/run-worker.ts aca-qhp-bulk
+  - type: cron
+    name: medicare-part-d
+    schedule: "0 4 25 * *"
+    buildCommand: npm install
+    startCommand: npx tsx scripts/run-worker.ts medicare-part-d
+  - type: cron
+    name: medicaid-state
+    schedule: "0 5 1 1,4,7,10 *"
+    buildCommand: npm install
+    startCommand: npx tsx scripts/run-worker.ts medicaid-state
+  - type: cron
+    name: pbm-baseline
+    schedule: "0 6 1 1,7 *"
+    buildCommand: npm install
+    startCommand: npx tsx scripts/run-worker.ts pbm-baseline
+  - type: cron
+    name: federal-military-sync
+    schedule: "0 6 1 1,4,7,10 *"
+    buildCommand: npm install
+    startCommand: npx tsx scripts/run-worker.ts federal-military-sync
+  - type: cron
+    name: carrier-floridablue
+    schedule: "0 7 5 * *"
+    buildCommand: npm install && npx playwright install chromium
+    startCommand: npx tsx scripts/run-worker.ts carrier-floridablue
+  - type: cron
+    name: carrier-aetna
+    schedule: "0 7 6 * *"
+    buildCommand: npm install && npx playwright install chromium
+    startCommand: npx tsx scripts/run-worker.ts carrier-aetna
+  - type: cron
+    name: carrier-uhc
+    schedule: "0 7 7 * *"
+    buildCommand: npm install && npx playwright install chromium
+    startCommand: npx tsx scripts/run-worker.ts carrier-uhc
+  - type: cron
+    name: carrier-cigna
+    schedule: "0 7 8 * *"
+    buildCommand: npm install && npx playwright install chromium
+    startCommand: npx tsx scripts/run-worker.ts carrier-cigna
+  - type: cron
+    name: carrier-humana
+    schedule: "0 7 9 * *"
+    buildCommand: npm install && npx playwright install chromium
+    startCommand: npx tsx scripts/run-worker.ts carrier-humana

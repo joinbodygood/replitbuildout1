@@ -80,20 +80,6 @@ model ProductImage {
   @@index([productId])
 }
 
-model InsuranceProbability {
-  id          String   @id @default(cuid())
-  carrier     String
-  planType    String
-  state       String
-  medication  String
-  probability Int
-  notes       String?
-  updatedAt   DateTime @updatedAt
-
-  @@unique([carrier, planType, state, medication])
-  @@index([carrier, state])
-}
-
 model QuizLead {
   id                String    @id @default(cuid())
   email             String
