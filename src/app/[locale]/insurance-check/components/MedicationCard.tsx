@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useParams } from "next/navigation";
 import type { MedicationResult } from "@/lib/insurance/confidence-engine";
 
 const STATUS_PILL: Record<MedicationResult["status"], { label: string; bg: string; text: string }> = {
@@ -18,40 +19,46 @@ interface Props {
   isFoundayo: boolean;
 }
 
-function ctaForCard(med: MedicationResult, isFoundayo: boolean): { primaryLabel: string; primaryHref: string; secondaryLabel?: string; secondaryHref?: string } {
+function ctaForCard(med: MedicationResult, isFoundayo: boolean, locale: string): { primaryLabel: string; primaryHref: string; secondaryLabel?: string; secondaryHref?: string } {
+  const selfPay = `/${locale}/quiz/result/compounded`;
+  const oral = `/${locale}/intake/glp1-oral`;
+  const eligibility = `/${locale}/intake/insurance-eligibility`;
+
   if (isFoundayo && med.status === "not_on_formulary") {
     return {
       primaryLabel: "Get Foundayo for $25/mo with Lilly's savings card →",
       primaryHref: "https://www.lilly.com/foundayo",
       secondaryLabel: "See compounded oral GLP-1 alternatives",
-      secondaryHref: "/self-pay#oral",
+      secondaryHref: oral,
     };
   }
   switch (med.status) {
     case "not_on_formulary":
-      return { primaryLabel: "See self-pay options →", primaryHref: "/self-pay" };
+      return { primaryLabel: "See self-pay options →", primaryHref: selfPay };
     case "unlikely":
       return {
-        primaryLabel: "See self-pay options →", primaryHref: "/self-pay",
-        secondaryLabel: "Want us to verify anyway? $25 →", secondaryHref: "/intake/insurance-eligibility",
+        primaryLabel: "See self-pay options →", primaryHref: selfPay,
+        secondaryLabel: "Want us to verify anyway? $25 →", secondaryHref: eligibility,
       };
     case "coverage_with_pa":
       return {
-        primaryLabel: "Confirm coverage for $25 →", primaryHref: "/intake/insurance-eligibility",
-        secondaryLabel: "Or skip insurance — see self-pay", secondaryHref: "/self-pay",
+        primaryLabel: "Confirm coverage for $25 →", primaryHref: eligibility,
+        secondaryLabel: "Or skip insurance — see self-pay", secondaryHref: selfPay,
       };
     case "high_probability":
       return {
-        primaryLabel: "Fast-track confirmation — $25 →", primaryHref: "/intake/insurance-eligibility",
-        secondaryLabel: "Or skip insurance — see self-pay", secondaryHref: "/self-pay",
+        primaryLabel: "Fast-track confirmation — $25 →", primaryHref: eligibility,
+        secondaryLabel: "Or skip insurance — see self-pay", secondaryHref: selfPay,
       };
   }
 }
 
 export default function MedicationCard({ med, isFoundayo }: Props) {
   const [open, setOpen] = useState(false);
+  const params = useParams<{ locale: string }>();
+  const locale = params?.locale ?? "en";
   const pill = STATUS_PILL[med.status];
-  const cta = ctaForCard(med, isFoundayo);
+  const cta = ctaForCard(med, isFoundayo, locale);
   const probDisplay = med.status === "not_on_formulary" ? "Not covered" : `${med.probLow}–${med.probHigh}%`;
   const isNew = isFoundayo;
 

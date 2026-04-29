@@ -15,8 +15,10 @@ export async function upsertLead(args: {
 }) {
   const { intake, result, ipAddress, userAgent, locale } = args;
   const bucket = result.bucket as ResultBucket;
-  const bestMed = result.medications.reduce((best, m) =>
-    (m.probHigh > best.probHigh ? m : best), result.medications[0]).medication;
+  const bestMed = result.medications.length === 0
+    ? "wegovy"
+    : result.medications.reduce((best, m) =>
+        (m.probHigh > best.probHigh ? m : best), result.medications[0]).medication;
 
   const recent = await db.insuranceCheckLead.findFirst({
     where: { emailHash: hashEmail(intake.contact.email), createdAt: { gt: new Date(Date.now() - SEVEN_DAYS_MS) } },

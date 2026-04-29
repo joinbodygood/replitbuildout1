@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import QuestionStep from "./QuestionStep";
 import ContactCaptureGate from "./ContactCaptureGate";
 import type { IntakeAnswers, ContactInfo, InsuranceOrigin } from "@/lib/insurance/routing";
@@ -67,11 +68,14 @@ export default function IntakeForm({ onSubmit, initialUtm }: Props) {
   const isEmployer = origin === "employer";
   const totalSteps = isEmployer ? 9 : 8;
 
+  const params = useParams<{ locale: string }>();
+  const locale = params?.locale ?? "en";
+
   useEffect(() => {
     if (origin === "none") {
-      window.location.href = "/self-pay";
+      window.location.href = `/${locale}/quiz/result/compounded`;
     }
-  }, [origin]);
+  }, [origin, locale]);
 
   const [planSuggestions, setPlanSuggestions] = useState<Array<{ planId: string; planName: string }>>([]);
   useEffect(() => {
