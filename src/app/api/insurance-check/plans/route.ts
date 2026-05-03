@@ -7,8 +7,13 @@ export async function GET(req: NextRequest) {
   const state = searchParams.get("state");
   const query = searchParams.get("q") ?? "";
   if (!carrierKey || !state || query.length < 2) return NextResponse.json({ plans: [] });
-  const rows = await searchPlansForAutocomplete({ carrierKey, state, query });
-  return NextResponse.json({
-    plans: rows.map(p => ({ planId: p.planId, planName: p.planName, metalLevel: p.metalLevel }))
-  });
+  try {
+    const rows = await searchPlansForAutocomplete({ carrierKey, state, query });
+    return NextResponse.json({
+      plans: rows.map(p => ({ planId: p.planId, planName: p.planName, metalLevel: p.metalLevel }))
+    });
+  } catch (err) {
+    console.warn("[insurance-check/plans] DB lookup failed", { carrierKey, state, query, err });
+    return NextResponse.json({ plans: [] });
+  }
 }
