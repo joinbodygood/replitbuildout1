@@ -52,12 +52,14 @@ export async function POST(req: NextRequest) {
     slug,
     category,
     authorName,
+    featuredImage,
     isPublished,
     translations,
   }: {
     slug?: string;
     category?: string;
     authorName?: string;
+    featuredImage?: string | null;
     isPublished?: boolean;
     translations?: Array<{
       locale: string;
@@ -94,6 +96,7 @@ export async function POST(req: NextRequest) {
       slug,
       category,
       authorName: authorName || "Dr. Linda Moleon, MD",
+      featuredImage: featuredImage?.trim() || null,
       isPublished: !!isPublished,
       publishedAt: isPublished ? new Date() : null,
       translations: {

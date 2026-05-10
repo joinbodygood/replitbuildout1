@@ -48,6 +48,7 @@ export default async function AdminBlogPage({ params }: Props) {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
+                <th className="text-left px-4 py-3 font-semibold w-16"></th>
                 <th className="text-left px-4 py-3 font-semibold">Title</th>
                 <th className="text-left px-4 py-3 font-semibold">Slug</th>
                 <th className="text-left px-4 py-3 font-semibold">Category</th>
@@ -60,7 +61,7 @@ export default async function AdminBlogPage({ params }: Props) {
             <tbody>
               {posts.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-body-muted">
+                  <td colSpan={8} className="px-4 py-12 text-center text-body-muted">
                     No blog posts yet. <Link href={`/${locale}/admin/blog/new`} className="text-brand-red underline">Create the first one</Link>.
                   </td>
                 </tr>
@@ -72,6 +73,18 @@ export default async function AdminBlogPage({ params }: Props) {
                 const locales = post.translations.map((t) => t.locale).sort().join(", ");
                 return (
                   <tr key={post.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="px-4 py-3">
+                      {post.featuredImage ? (
+                        <img
+                          src={post.featuredImage}
+                          alt=""
+                          className="w-12 h-12 object-cover rounded"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-body-muted text-xs">—</div>
+                      )}
+                    </td>
                     <td className="px-4 py-3 max-w-md truncate">{title}</td>
                     <td className="px-4 py-3 text-body-muted font-mono text-xs">{post.slug}</td>
                     <td className="px-4 py-3">

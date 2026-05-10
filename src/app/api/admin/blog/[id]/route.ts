@@ -55,6 +55,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
   if (typeof body.authorName === "string") data.authorName = body.authorName;
 
+  if ("featuredImage" in body) {
+    if (body.featuredImage === null || body.featuredImage === "") {
+      data.featuredImage = null;
+    } else if (typeof body.featuredImage === "string") {
+      data.featuredImage = body.featuredImage.trim();
+    }
+  }
+
   if (typeof body.isPublished === "boolean") {
     data.isPublished = body.isPublished;
     if (body.isPublished && !existing.publishedAt) {

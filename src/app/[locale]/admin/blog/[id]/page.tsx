@@ -23,6 +23,7 @@ export default async function EditBlogPostPage({ params }: Props) {
     slug: post.slug,
     category: post.category,
     authorName: post.authorName,
+    featuredImage: post.featuredImage,
     isPublished: post.isPublished,
     translations: post.translations.map((t) => ({
       locale: t.locale,
