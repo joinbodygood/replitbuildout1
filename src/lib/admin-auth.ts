@@ -1,8 +1,17 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { db as prisma } from "@/lib/db";
 import { cache } from "react";
 
 export const ADMIN_COOKIE = "bg_admin_session";
+export const SERVICE_API_KEY_HEADER = "x-api-key";
+
+const SERVICE_USER: AdminUser = {
+  id: "service-api-key",
+  email: "service@bodygoodstudio.com",
+  name: "Service (API key)",
+  role: "super_admin",
+  isActive: true,
+};
 
 export type AdminUser = {
   id: string;
@@ -49,6 +58,13 @@ export function hasPermission(role: string, resource: string): boolean {
 
 export const getAdminUser = cache(async (): Promise<AdminUser | null> => {
   try {
+    const headerStore = await headers();
+    const providedKey = headerStore.get(SERVICE_API_KEY_HEADER);
+    const expectedKey = process.env.ADMIN_API_KEY;
+    if (providedKey && expectedKey && providedKey === expectedKey) {
+      return SERVICE_USER;
+    }
+
     const cookieStore = await cookies();
     const token = cookieStore.get(ADMIN_COOKIE)?.value;
     if (!token) return null;
