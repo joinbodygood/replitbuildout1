@@ -4,8 +4,28 @@ import { db } from "@/lib/db";
 import { Container } from "@/components/ui/Container";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { MarkdownArticle, readingTimeMinutes } from "@/components/blog/MarkdownArticle";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
+
+export async function generateMetadata({ params }: Props) {
+  const { locale, slug } = await params;
+  const post = await db.blogPost.findUnique({
+    where: { slug },
+    include: { translations: { where: { locale } } },
+  });
+  const t = post?.translations[0];
+  if (!post || !t) return {};
+  return {
+    title: t.seoTitle || t.title,
+    description: t.seoDescription || t.excerpt,
+    openGraph: {
+      title: t.seoTitle || t.title,
+      description: t.seoDescription || t.excerpt,
+      images: post.featuredImage ? [post.featuredImage] : undefined,
+    },
+  };
+}
 
 export default async function BlogPostPage({ params }: Props) {
   const { locale, slug } = await params;
@@ -20,15 +40,7 @@ export default async function BlogPostPage({ params }: Props) {
   if (!post || !post.isPublished || !post.translations[0]) notFound();
 
   const t = post.translations[0];
-
-  // Simple markdown-to-HTML: headers, bold, lists
-  const htmlBody = t.body
-    .replace(/^### (.+)$/gm, '<h3 class="font-heading text-heading text-lg font-bold mt-8 mb-3">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 class="font-heading text-heading text-xl font-bold mt-10 mb-4">$1</h2>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-heading">$1</strong>')
-    .replace(/^- (.+)$/gm, '<li class="ml-4 text-body">• $1</li>')
-    .replace(/\n\n/g, '</p><p class="text-body leading-relaxed mb-4">')
-    .replace(/\n/g, "<br />");
+  const minutes = readingTimeMinutes(t.body);
 
   return (
     <>
@@ -38,27 +50,40 @@ export default async function BlogPostPage({ params }: Props) {
           <h1 className="font-heading text-heading text-3xl md:text-4xl font-bold mt-4 mb-4">
             {t.title}
           </h1>
-          <div className="flex items-center gap-3 text-body-muted text-sm">
+          <div className="flex flex-wrap items-center gap-3 text-body-muted text-sm">
             <span>{post.authorName}</span>
             <span>•</span>
             {post.publishedAt && (
-              <span>
-                {new Date(post.publishedAt).toLocaleDateString(
-                  locale === "es" ? "es-US" : "en-US",
-                  { month: "long", day: "numeric", year: "numeric" }
-                )}
-              </span>
+              <>
+                <span>
+                  {new Date(post.publishedAt).toLocaleDateString(
+                    locale === "es" ? "es-US" : "en-US",
+                    { month: "long", day: "numeric", year: "numeric" }
+                  )}
+                </span>
+                <span>•</span>
+              </>
             )}
+            <span>{minutes} {isEs ? "min de lectura" : "min read"}</span>
           </div>
         </Container>
       </section>
 
+      {post.featuredImage && (
+        <section className="bg-brand-pink-soft pb-12">
+          <Container narrow>
+            <img
+              src={post.featuredImage}
+              alt={t.title}
+              className="w-full rounded-card shadow-card"
+            />
+          </Container>
+        </section>
+      )}
+
       <section className="py-16">
         <Container narrow>
-          <div
-            className="text-body leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: `<p class="text-body leading-relaxed mb-4">${htmlBody}</p>` }}
-          />
+          <MarkdownArticle body={t.body} />
 
           <div className="mt-12 p-8 bg-brand-pink-soft rounded-card text-center">
             <p className="font-heading text-heading text-xl font-bold mb-2">

@@ -38,6 +38,7 @@ const NAV = [
   { label: "Discounts",           href: "/admin/discounts",                           icon: Tag,             badge: false },
   { label: "Referral Members",    href: "/admin/referrals",                           icon: Gift,            badge: false },
   { label: "Content",             href: "/admin/content",                             icon: FileText,        badge: false },
+  { label: "Blog",                href: "/admin/blog",                                icon: FileText,        badge: false },
   { label: "Reviews",             href: "/admin/content/reviews",                     icon: Star,            badge: false },
   { label: "Legal Pages",         href: "/admin/content/legal",                       icon: Scale,           badge: false },
   { label: "Messaging",           href: "/admin/messaging",                           icon: MessageSquare,   badge: false },

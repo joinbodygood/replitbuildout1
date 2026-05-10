@@ -46,7 +46,16 @@ export default async function BlogPage({ params }: Props) {
 
               return (
                 <Link key={post.id} href={`/${locale}/blog/${post.slug}`}>
-                  <Card className="h-full cursor-pointer">
+                  <Card className="h-full cursor-pointer overflow-hidden p-0">
+                    {post.featuredImage && (
+                      <img
+                        src={post.featuredImage}
+                        alt={t.title}
+                        className="w-full h-44 object-cover"
+                        loading="lazy"
+                      />
+                    )}
+                    <div className="p-6">
                     <Badge variant="pink">
                       {categoryLabels[post.category] || post.category}
                     </Badge>
@@ -66,6 +75,7 @@ export default async function BlogPage({ params }: Props) {
                           )}
                         </span>
                       )}
+                    </div>
                     </div>
                   </Card>
                 </Link>
