@@ -17,9 +17,12 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Body Good Studio | Medical Weight Loss Programs",
+  // [SEO-AB-CANDIDATE] Option B (specificity-led) to A/B test against the current Option A:
+  //   title: "GLP-1 Weight Loss Programs from $139/mo — Body Good Studio"
+  //   description: "Clinician-prescribed semaglutide and tirzepatide. Bilingual telehealth, insurance check, transparent pricing. Start with a free 60-second quiz."
+  title: "Medical Weight Loss with GLP-1 — Body Good Studio",
   description:
-    "Physician-led telehealth weight loss programs. GLP-1 medications starting at $139/mo. Bilingual care in English and Spanish.",
+    "Physician-led GLP-1 weight loss programs. Bilingual care, transparent pricing, insurance-friendly. Take our 60-second eligibility quiz.",
 };
 
 export default function RootLayout({

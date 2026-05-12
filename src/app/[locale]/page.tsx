@@ -1,4 +1,4 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Hero } from "@/components/sections/Hero";
 import { TrustMarquee } from "@/components/sections/TrustMarquee";
 import { WhatBringsYou } from "@/components/sections/WhatBringsYou";
@@ -15,6 +15,21 @@ import { BottomCTA } from "@/components/sections/BottomCTA";
 type Props = {
   params: Promise<{ locale: string }>;
 };
+
+export async function generateMetadata({ params }: Props) {
+  const { locale } = await params;
+  // [SEO-AB-CANDIDATE] Option B (specificity-led) lives in messages/en.json as a future swap:
+  //   "GLP-1 Weight Loss Programs from $139/mo — Body Good Studio"
+  //   "Clinician-prescribed semaglutide and tirzepatide. Bilingual telehealth, insurance check, transparent pricing. Start with a free 60-second quiz."
+  const t = await getTranslations({ locale, namespace: "meta" });
+  const title = t("title");
+  const description = t("description");
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+  };
+}
 
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;

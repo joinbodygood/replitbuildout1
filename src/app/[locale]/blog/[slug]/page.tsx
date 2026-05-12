@@ -42,8 +42,43 @@ export default async function BlogPostPage({ params }: Props) {
   const t = post.translations[0];
   const minutes = readingTimeMinutes(t.body);
 
+  const canonicalUrl = `https://joinbodygood.com/${locale}/blog/${post.slug}`;
+  const isoPublished = post.publishedAt
+    ? new Date(post.publishedAt).toISOString()
+    : new Date(post.createdAt).toISOString();
+  const isoModified = new Date(post.updatedAt).toISOString();
+  const blogJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: t.title,
+    description: t.excerpt,
+    author: { "@type": "Person", name: post.authorName },
+    publisher: {
+      "@type": "Organization",
+      name: "Body Good Studio",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://joinbodygood.com/logo.png",
+      },
+    },
+    datePublished: isoPublished,
+    dateModified: isoModified,
+    mainEntityOfPage: { "@type": "WebPage", "@id": canonicalUrl },
+    inLanguage: locale === "es" ? "es" : "en",
+  };
+  if (post.featuredImage) {
+    blogJsonLd.image = post.featuredImage;
+  }
+  // Sanitize the JSON-LD payload — server-built objects only, but escape
+  // any stray </script> sequences defensively per Google's structured-data guidance.
+  const blogJsonLdHtml = JSON.stringify(blogJsonLd).replace(/</g, "\\u003c");
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: blogJsonLdHtml }}
+      />
       <section className="py-16 bg-brand-pink-soft">
         <Container narrow>
           <Badge variant="pink">{post.category.replace(/-/g, " ").toUpperCase()}</Badge>
