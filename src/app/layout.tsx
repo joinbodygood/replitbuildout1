@@ -16,10 +16,24 @@ const manrope = Manrope({
   display: "swap",
 });
 
+// Production canonical host. We hardcode this so that pages built or rendered
+// on dev/preview hosts (Replit *.replit.app) never emit a non-production
+// canonical/og:url. Dev/staging deploys won't be indexed regardless.
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://joinbodygood.com";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Body Good Studio | Medical Weight Loss Programs",
   description:
     "Physician-led telehealth weight loss programs. GLP-1 medications starting at $139/mo. Bilingual care in English and Spanish.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    url: SITE_URL,
+    siteName: "Body Good Studio",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

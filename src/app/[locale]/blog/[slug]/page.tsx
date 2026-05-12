@@ -16,12 +16,17 @@ export async function generateMetadata({ params }: Props) {
   });
   const t = post?.translations[0];
   if (!post || !t) return {};
+  const canonicalPath = `/${locale}/blog/${slug}`;
   return {
     title: t.seoTitle || t.title,
     description: t.seoDescription || t.excerpt,
+    alternates: {
+      canonical: canonicalPath,
+    },
     openGraph: {
       title: t.seoTitle || t.title,
       description: t.seoDescription || t.excerpt,
+      url: canonicalPath,
       images: post.featuredImage ? [post.featuredImage] : undefined,
     },
   };
