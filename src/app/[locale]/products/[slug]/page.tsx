@@ -34,8 +34,64 @@ export default async function ProductPage({ params }: Props) {
 
   const isEs = locale === "es";
 
+  // Build Product JSON-LD. Server-rendered so Google sees it in initial HTML.
+  const canonicalUrl = `https://joinbodygood.com/${locale}/products/${product.slug}`;
+  const images = product.images.map((img) => img.url).filter(Boolean);
+  const offers = product.variants.map((variant) => ({
+    "@type": "Offer",
+    sku: variant.sku,
+    name: variant.label || t.name,
+    price: (variant.price / 100).toFixed(2),
+    priceCurrency: "USD",
+    availability: variant.isAvailable
+      ? "https://schema.org/InStock"
+      : "https://schema.org/OutOfStock",
+    url: canonicalUrl,
+  }));
+
+  // Only attach AggregateRating if the product actually has approved reviews.
+  const approvedReviews = await db.review.findMany({
+    where: { productSlug: product.slug, isApproved: true },
+    select: { rating: true },
+  });
+  let aggregateRating: Record<string, unknown> | undefined;
+  if (approvedReviews.length > 0) {
+    const sum = approvedReviews.reduce((acc, r) => acc + r.rating, 0);
+    aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: (sum / approvedReviews.length).toFixed(1),
+      reviewCount: approvedReviews.length,
+      bestRating: 5,
+      worstRating: 1,
+    };
+  }
+
+  const productJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: t.name,
+    description: t.descriptionShort,
+    brand: { "@type": "Brand", name: "Body Good Studio" },
+    category: product.category.replace(/_/g, " "),
+  };
+  if (product.sku) productJsonLd.sku = product.sku;
+  if (images.length > 0) productJsonLd.image = images;
+  if (offers.length === 1) {
+    productJsonLd.offers = offers[0];
+  } else if (offers.length > 1) {
+    productJsonLd.offers = offers;
+  }
+  if (aggregateRating) productJsonLd.aggregateRating = aggregateRating;
+  // Sanitize the JSON-LD payload — server-built objects only, but escape any stray
+  // </script> sequences defensively per Google's structured-data guidance (XSS-safe).
+  const productJsonLdHtml = JSON.stringify(productJsonLd).replace(/</g, "\\u003c");
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: productJsonLdHtml }}
+      />
       {/* Hero */}
       <section className="py-16 bg-brand-pink-soft">
         <Container narrow>
