@@ -9,6 +9,7 @@ import { Analytics } from "@/components/analytics/Analytics";
 import { CartProvider } from "@/context/CartContext";
 import { CartFlowToast } from "@/components/cart/CartFlowToast";
 import { ChatwootWidget } from "@/components/ChatwootWidget";
+import { buildAlternates } from "@/lib/seo/alternates";
 
 type Props = {
   children: React.ReactNode;
@@ -17,6 +18,21 @@ type Props = {
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
+}
+
+// Locale-layout-level metadata. Page-level generateMetadata calls (blog post,
+// product detail) override the alternates with translation-aware versions.
+// This default emits reciprocal hreflang for the locale root only, ensuring
+// /en and /es are paired even on pages that don't define their own metadata.
+export async function generateMetadata({ params }: Props) {
+  const { locale } = await params;
+  if (!routing.locales.includes(locale as "en" | "es")) return {};
+  return {
+    alternates: buildAlternates({
+      path: "/",
+      currentLocale: locale as "en" | "es",
+    }),
+  };
 }
 
 export default async function LocaleLayout({ children, params }: Props) {

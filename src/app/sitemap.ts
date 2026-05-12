@@ -58,9 +58,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
 
     for (const post of posts) {
-      const localesForPost = new Set(post.translations.map((t) => t.locale));
-      const iterLocales = localesForPost.size > 0 ? Array.from(localesForPost) : ["en"];
-      for (const locale of iterLocales) {
+      // SEO Tier-A: previously this iterated ["en"] as a fallback when a post
+      // had zero translation rows, which emitted phantom /en URLs that 404.
+      // Worse, the loop wasn't filtered to known locales — any future stray
+      // `locale` value on a BlogPostTranslation would leak into the sitemap.
+      // We now ONLY emit URLs for locales with an actual translation row,
+      // and we constrain to the supported set ("en","es"). This is what
+      // eliminates the 461 phantom /es/blog/* entries.
+      const knownLocales = new Set(
+        post.translations.map((t) => t.locale).filter((l) => l === "en" || l === "es")
+      );
+      for (const locale of knownLocales) {
         entries.push({
           url: `${BASE_URL}/${locale}/blog/${post.slug}`,
           lastModified: post.updatedAt ?? post.publishedAt ?? new Date(),

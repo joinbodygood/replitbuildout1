@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ProductVariantSelector } from "@/components/product/ProductVariantSelector";
 import { GoodRxPriceCheck } from "@/components/product/GoodRxPriceCheck";
+import { buildAlternates } from "@/lib/seo/alternates";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
@@ -22,6 +23,24 @@ async function getProduct(slug: string, locale: string) {
   });
 }
 
+export async function generateMetadata({ params }: Props) {
+  const { locale, slug } = await params;
+  const product = await db.product.findUnique({
+    where: { slug },
+    select: { translations: { select: { locale: true } } },
+  });
+  const availableLocales = (product?.translations.map((t) => t.locale) ?? []) as Array<
+    "en" | "es"
+  >;
+  return {
+    alternates: buildAlternates({
+      path: `/products/${slug}`,
+      currentLocale: locale as "en" | "es",
+      availableLocales,
+    }),
+  };
+}
+
 export default async function ProductPage({ params }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
@@ -33,6 +52,15 @@ export default async function ProductPage({ params }: Props) {
   if (!t) notFound();
 
   const isEs = locale === "es";
+
+  // SEO Tier-A: refill product pages currently rank for high-volume exact-match
+  // queries with zero clicks because the H1 carries branded copy. We do NOT touch
+  // the existing (conversion-tested) hero — instead we add a secondary H2 block
+  // immediately under the hero that exposes the exact-match terms to crawlers.
+  // Trigger: slug starts with "refill-" OR programTag/category indicates a refill SKU.
+  const isRefill = product.slug.startsWith("refill-");
+  const isTirzRefill =
+    isRefill && /tirzepatide|zepbound|mounjaro/i.test(product.slug);
 
   return (
     <>
@@ -50,6 +78,45 @@ export default async function ProductPage({ params }: Props) {
           </div>
         </Container>
       </section>
+
+      {/* SEO secondary headings — additive, never replaces hero. Only renders on
+          refill product pages so we surface high-volume exact-match queries
+          ("tirzepatide refill", "mounjaro refill", "tirzepatide + b3") that
+          currently get impressions but zero clicks because the H1 is branded. */}
+      {isTirzRefill && !isEs && (
+        <section className="py-8 bg-white border-b border-border">
+          <Container narrow>
+            <h2 className="font-heading text-heading text-2xl font-bold mb-3">
+              Tirzepatide refills &amp; Mounjaro refill options
+            </h2>
+            <p className="text-body leading-relaxed">
+              Looking for tirzepatide refills or a Mounjaro refill schedule? Our
+              physician-led program handles ongoing refills, dose adjustments, and
+              re-authorization in one monthly visit. Compounded tirzepatide is
+              available with optional B3 (niacinamide) for patients whose treatment
+              plan calls for the tirzepatide + B3 formulation, and we coordinate
+              with a licensed compounding pharmacy on every shipment.
+            </p>
+          </Container>
+        </section>
+      )}
+      {isTirzRefill && isEs && (
+        <section className="py-8 bg-white border-b border-border">
+          <Container narrow>
+            <h2 className="font-heading text-heading text-2xl font-bold mb-3">
+              Recargas de tirzepatida y opciones de recarga de Mounjaro
+            </h2>
+            <p className="text-body leading-relaxed">
+              Nuestro programa con supervisión médica gestiona las recargas
+              mensuales de tirzepatida y Mounjaro, ajustes de dosis y la
+              re-autorización en una sola consulta. La tirzepatida compuesta
+              está disponible con B3 (nicotinamida) opcional para pacientes
+              cuyo plan de tratamiento requiere la fórmula tirzepatida + B3,
+              coordinada con una farmacia magistral con licencia.
+            </p>
+          </Container>
+        </section>
+      )}
 
       {/* Add to Cart + Pricing */}
       <section className="py-12 border-b border-border">

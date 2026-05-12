@@ -5,25 +5,54 @@ import { Container } from "@/components/ui/Container";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { MarkdownArticle, readingTimeMinutes } from "@/components/blog/MarkdownArticle";
+import { buildAlternates, type SupportedLocale } from "@/lib/seo/alternates";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
 export async function generateMetadata({ params }: Props) {
   const { locale, slug } = await params;
+
+  // Pull the post WITH the list of locales it has translations for. We use
+  // `translations` without a `where` filter so we know which locales exist
+  // (independent of which one we're rendering).
   const post = await db.blogPost.findUnique({
     where: { slug },
-    include: { translations: { where: { locale } } },
+    select: {
+      featuredImage: true,
+      translations: {
+        select: { locale: true, title: true, seoTitle: true, seoDescription: true, excerpt: true },
+      },
+    },
   });
-  const t = post?.translations[0];
-  if (!post || !t) return {};
+  if (!post) return {};
+
+  const availableLocales = post.translations.map((t) => t.locale) as SupportedLocale[];
+  const currentT = post.translations.find((t) => t.locale === locale);
+
+  // If we're rendering /es/blog/<slug> but no ES translation exists, the page
+  // is about to call notFound() in the default export below. Belt-and-suspenders:
+  // emit noindex/nofollow so any short-lived rendering of an empty body is not
+  // crawled, AND so Search Console's "alternate without return link" bucket
+  // clears up. 461 /es/blog/* URLs are in this state right now.
+  if (!currentT) {
+    return {
+      robots: { index: false, follow: false },
+    };
+  }
+
   return {
-    title: t.seoTitle || t.title,
-    description: t.seoDescription || t.excerpt,
+    title: currentT.seoTitle || currentT.title,
+    description: currentT.seoDescription || currentT.excerpt,
     openGraph: {
-      title: t.seoTitle || t.title,
-      description: t.seoDescription || t.excerpt,
+      title: currentT.seoTitle || currentT.title,
+      description: currentT.seoDescription || currentT.excerpt,
       images: post.featuredImage ? [post.featuredImage] : undefined,
     },
+    alternates: buildAlternates({
+      path: `/blog/${slug}`,
+      currentLocale: locale as SupportedLocale,
+      availableLocales,
+    }),
   };
 }
 
