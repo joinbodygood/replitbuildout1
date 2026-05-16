@@ -13,6 +13,14 @@ const SERVICE_USER: AdminUser = {
   isActive: true,
 };
 
+const SMILEY_USER: AdminUser = {
+  id: "smiley-api-key",
+  email: "smiley@bodygoodstudio.com",
+  name: "Smiley (API key)",
+  role: "super_admin",
+  isActive: true,
+};
+
 export type AdminUser = {
   id: string;
   email: string;
@@ -60,9 +68,15 @@ export const getAdminUser = cache(async (): Promise<AdminUser | null> => {
   try {
     const headerStore = await headers();
     const providedKey = headerStore.get(SERVICE_API_KEY_HEADER);
-    const expectedKey = process.env.ADMIN_API_KEY;
-    if (providedKey && expectedKey && providedKey === expectedKey) {
-      return SERVICE_USER;
+    if (providedKey) {
+      const adminKey = process.env.ADMIN_API_KEY;
+      if (adminKey && providedKey === adminKey) {
+        return SERVICE_USER;
+      }
+      const smileyKey = process.env.SMILEY_API_KEY;
+      if (smileyKey && providedKey === smileyKey) {
+        return SMILEY_USER;
+      }
     }
 
     const cookieStore = await cookies();
